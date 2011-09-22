@@ -1,4 +1,5 @@
 CXXFLAGS=-m32 -O2 -ffreestanding -nostdlib -fno-builtin -fno-rtti -fno-exceptions -Wall -Werror -Wextra
+OBJS=loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o
 
 all: kernel
 
@@ -14,7 +15,7 @@ floppy.img: kernel pad
 pad:
 	dd if=/dev/zero of=pad bs=1 count=750
 
-kernel: loader.o kernel.o video.o main.o cxa.o
+kernel: $(OBJS)
 	ld -m elf_i386 -T link2.ld -o kernel $^
 	#ld -m i386linux -T link2.ld -o kernel $^
 
@@ -32,6 +33,18 @@ cxa.o: cxa.cpp
 	g++ -c $(CXXFLAGS) -o $@ $< 
 
 video.o: video.cpp video.h
+	g++ -c $(CXXFLAGS) -o $@ $< 
+
+mutex.o: mutex.cpp mutex.h
+	g++ -c $(CXXFLAGS) -o $@ $< 
+
+local.o: local.cpp local.h
+	g++ -c $(CXXFLAGS) -o $@ $< 
+
+operators.o: operators.cpp operators.h
+	g++ -c $(CXXFLAGS) -o $@ $< 
+
+mm.o: mm.cpp mm.h
 	g++ -c $(CXXFLAGS) -o $@ $< 
 
 clean:
