@@ -1,7 +1,12 @@
 #include "cxa.h"
+#include "paging.h"
+#include "gdt.h"
 
 extern "C" void _main()
 {
+	paging_init();
+	gdt_init();
+
 	extern void (* start_ctors)();
 	extern void (* end_ctors)();
 	void (**constructor)() = & start_ctors;

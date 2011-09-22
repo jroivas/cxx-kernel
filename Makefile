@@ -1,5 +1,5 @@
-CXXFLAGS=-m32 -O2 -ffreestanding -nostdlib -fno-builtin -fno-rtti -fno-exceptions -Wall -Werror -Wextra
-OBJS=loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o
+CXXFLAGS=-m32 -ffreestanding -nostdlib -fno-builtin -fno-rtti -fno-exceptions -Wall -Werror -Wextra -fstrength-reduce -fomit-frame-pointer -finline-functions -nostdinc
+OBJS=loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o
 
 all: kernel
 
@@ -15,8 +15,8 @@ floppy.img: kernel pad
 pad:
 	dd if=/dev/zero of=pad bs=1 count=750
 
-kernel: $(OBJS)
-	ld -m elf_i386 -T link2.ld -o kernel $^
+kernel: link2.ld $(OBJS)
+	ld -m elf_i386 -T link2.ld -o kernel $(OBJS)
 	#ld -m i386linux -T link2.ld -o kernel $^
 
 loader.o: loader.asm
@@ -45,6 +45,12 @@ operators.o: operators.cpp operators.h
 	g++ -c $(CXXFLAGS) -o $@ $< 
 
 mm.o: mm.cpp mm.h
+	g++ -c $(CXXFLAGS) -o $@ $< 
+
+paging.o: paging.cpp paging.h
+	g++ -c $(CXXFLAGS) -o $@ $< 
+
+gdt.o: gdt.cpp gdt.h
 	g++ -c $(CXXFLAGS) -o $@ $< 
 
 clean:
