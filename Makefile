@@ -1,5 +1,4 @@
 CXXFLAGS=-m32 -O2 -ffreestanding -nostdlib -fno-builtin -fno-rtti -fno-exceptions -Wall -Werror -Wextra
-CFLAGS=-m32 -O2 -ffreestanding -nostdlib -fno-builtin -fno-exceptions -Wall -Werror -Wextra
 
 all: kernel
 
@@ -15,13 +14,9 @@ floppy.img: kernel pad
 pad:
 	dd if=/dev/zero of=pad bs=1 count=750
 
-#kernel: loader.o kernel.o video.o support.o cxa.o
 kernel: loader.o kernel.o video.o main.o cxa.o
 	ld -m elf_i386 -T link2.ld -o kernel $^
 	#ld -m i386linux -T link2.ld -o kernel $^
-
-#support.o: support.c
-#	gcc -c $(CFLAGS) -o $@ $<
 
 loader.o: loader.asm
 	#nasm -f aout -o $@ $<
