@@ -106,7 +106,8 @@ void Video::print(const char *cp)
 			}
 		}
 		else if (*ch=='\t') {
-			for (int i=0; i<TAB_SIZE; i++) putCh(' ');
+			//for (int i=0; i<TAB_SIZE; i++) putCh(' ');
+			m_x += TAB_SIZE;
 		} else {
 			putCh(*ch);
 		}
@@ -116,13 +117,14 @@ void Video::print(const char *cp)
 void Video::putCh(char c)
 {
 	if (m_x>=width()) {
-		m_x = 0;
+		m_x -= width();
 		m_y++;
 	}
 
 	unsigned int offset = m_y*width() + m_x; 
 	if (offset>=size()) {
-		clear(); //TODO scrolling
+		scroll();
+		//clear(); //TODO scrolling
 	}
 
 	m_videomem[offset] = c | VIDEO_COLOR_MASK;
@@ -130,4 +132,9 @@ void Video::putCh(char c)
 
 	scroll();
 	setCursor();
+
+#if 0
+	volatile unsigned int a;
+	for (a=0; a<0x4ffffff; a++) { }
+#endif
 }

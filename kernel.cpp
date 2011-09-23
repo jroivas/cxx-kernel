@@ -4,6 +4,7 @@
 #include "gdt.h"
 
 #if 0
+//Use this if you don't have a memory management and malloc
 Video video;
 
 extern "C" int main()
@@ -26,7 +27,7 @@ extern "C" int main()
 	video->print("Hello world!\n");
 	video->print("\nC++ kernel.\n");
 	video->print("And a TAB\t test!\n");
-	video->print("Removing letter A\bB and continuing\n");
+	video->print("Removing letter A\bB and continuing.\n");
 	video->print("\b\b\bABCDEFG\n");
 #if 0
 	for (int i=0; i<22; i++) {

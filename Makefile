@@ -17,7 +17,6 @@ pad:
 
 kernel: link2.ld $(OBJS)
 	ld -m elf_i386 -T link2.ld -o kernel $(OBJS)
-	#ld -m i386linux -T link2.ld -o kernel $^
 
 loader.o: loader.asm
 	#nasm -f aout -o $@ $<

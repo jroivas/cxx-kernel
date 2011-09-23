@@ -1,5 +1,6 @@
 #include "string.h"
 #include "types.h"
+#include "mm.h"
 
 void *Mem::copy(void *dest, void *src, size_t size)
 {
@@ -33,3 +34,37 @@ void *Mem::setw(void *s, unsigned short c, size_t size)
 	return s;
 }
 
+
+String::String()
+{
+	m_str = NULL;
+}
+
+String::String(const char *str)
+{
+	if (str!=NULL) {
+		unsigned int l = length(str);
+		m_str = (char*)kmalloc(l+1);
+		Mem::copy((void*)m_str, (void*)str, l);
+		m_str[l] = 0;
+	} else m_str = NULL;
+}
+
+unsigned int String::length(const char *str)
+{
+	if (str==NULL) return 0;
+
+	unsigned int cnt = 0;
+	const char *tmp = str;
+	while (tmp!=NULL) {
+		cnt++;
+		tmp++;
+	}
+
+	return cnt;
+}
+
+unsigned int String::length()
+{
+	return length(m_str);
+}

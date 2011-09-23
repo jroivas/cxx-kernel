@@ -31,7 +31,7 @@ public:
 	bool canAllocPage();
 	unsigned char *map(unsigned int cnt);
 	//void forceMap(unsigned int i);
-	//void freePage(unsigned int i);
+	void freePages(unsigned int *ptr, unsigned int cnt);
 
 private:
 	class MetaPage
@@ -110,6 +110,32 @@ unsigned char *PageMap::map(unsigned int cnt)
 	}
 	m.unlock();
 	return tmp;
+}
+
+void PageMap::freePages(unsigned int *ptr, unsigned int cnt)
+{
+	/* FIXME: Current design makes implementing freeing page quite challenging
+	   As a hack solution it goes thorough page directory and ALL the memory mappings
+	   of available mapped pages. Of course this is suboptimal.
+	   As a workaround consider reusing pages in malloc/realloc/free as effectively as possible.
+	 */
+
+	if (cnt==0) cnt=1;
+	unsigned int *pagemap;
+	for (int i=0; i<PAGE_CNT; i++) {
+		pagemap = (unsigned int*)(__page_directory[i] & ~0x0F);
+		if (pagemap == 0) continue;
+		if ((__page_directory[i] & 0x3) != 0x3) continue;
+		PageMap pm(pagemap);
+		for (int j=0; j<PAGE_CNT; j++) {
+			if (pm.meta.address(j)==ptr) {
+				if (j+cnt>PAGE_CNT) cnt=PAGE_CNT-j;
+				for (unsigned int k=0; k<cnt; k++) {
+					pm.meta.setFree(j+k);
+				}
+			}
+		}
+	}
 }
 
 void PageMap::init()

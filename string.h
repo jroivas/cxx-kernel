@@ -13,4 +13,16 @@ public:
 private:
 };
 
+class String
+{
+public:
+	String();
+	String(const char *str);
+	unsigned int length();
+	static unsigned int length(const char *str);
+
+private:
+	char *m_str;
+};
+
 #endif
