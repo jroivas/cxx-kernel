@@ -1,5 +1,5 @@
 CXXFLAGS=-m32 -ffreestanding -nostdlib -fno-builtin -fno-rtti -fno-exceptions -Wall -Werror -Wextra -fstrength-reduce -fomit-frame-pointer -finline-functions -nostdinc
-OBJS=loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o
+OBJS=loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o port.o
 
 all: kernel
 
@@ -51,6 +51,12 @@ paging.o: paging.cpp paging.h
 	g++ -c $(CXXFLAGS) -o $@ $< 
 
 gdt.o: gdt.cpp gdt.h
+	g++ -c $(CXXFLAGS) -o $@ $< 
+
+string.o: string.cpp string.h
+	g++ -c $(CXXFLAGS) -o $@ $< 
+
+port.o: port.cpp port.h
 	g++ -c $(CXXFLAGS) -o $@ $< 
 
 clean:

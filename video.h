@@ -12,12 +12,14 @@ public:
 	void putCh(char c);
 
 	void resize(int width, int height);
+	void scroll();
 
 	inline unsigned int size();
 	inline unsigned int width();
 	inline unsigned int height();
 
 private:
+	void setCursor();
 	unsigned short *m_videomem;
 	unsigned int m_x;
 	unsigned int m_y;
