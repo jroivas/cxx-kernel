@@ -20,15 +20,18 @@ unsigned int *__page_directory = (unsigned int*) 0x10000; //TODO FIXME
 int __paging_cnt = 0;
 unsigned int *__free_page_address = (unsigned int*)PAGING_START_POS;
 
+//Mutex for locking mapping and prevent theading/SMP problems
+static unsigned int __page_mapping_mutex = 0;
+
 class PageMap
 {
 public:
 	PageMap(unsigned int *addr);
 	void init();
-	//void initialize(unsigned int *addr);
 	bool canAllocPage();
 	unsigned char *map(unsigned int cnt);
-	void forceMap(unsigned int i);
+	//void forceMap(unsigned int i);
+	//void freePage(unsigned int i);
 
 private:
 	class MetaPage
@@ -61,48 +64,67 @@ private:
 
 	unsigned int *m_addr;
 	MetaPage meta;
+	Mutex m;
 };
 
 PageMap::PageMap(unsigned int *addr)
 {
 	m_addr = addr;
 	meta = MetaPage(m_addr);
+	m = Mutex(&__page_mapping_mutex);
 }
 
+#if 0
 void PageMap::forceMap(unsigned int i)
 {
+	m.lock();
 	meta.lock();
 	meta.setUsed(i);
 	meta.unlock();
+	m.unlock();
 }
+#endif
 
 bool PageMap::canAllocPage()
 {
+	m.lock();
 	if (meta.isAvailablePages(1)) {
+		m.unlock();
 		return true;
 	}
 	if (meta.findFreePages(1)>0) {
+		m.unlock();
 		return true;
 	}
 
+	m.unlock();
 	return false;
 }
 
 unsigned char *PageMap::map(unsigned int cnt)
 {
+	m.lock();
 	unsigned char *tmp = meta.map(cnt, __free_page_address);
 	if (tmp!=NULL) {
 		__free_page_address += (PAGE_SIZE*cnt);
 	}
+	m.unlock();
 	return tmp;
 }
 
 void PageMap::init()
 {
-	meta.mapPage(0, __free_page_address);
+	m.lock();
+
+	//meta.mapPage(0, __free_page_address);
 	meta.initialize(__free_page_address);
 
 	__free_page_address += PAGE_SIZE;
+
+	__page_directory[0] = (unsigned int)m_addr;
+	__page_directory[0] |= 0x3;
+
+	m.unlock();
 }
 
 PageMap::MetaPage::MetaPage()
@@ -113,10 +135,6 @@ PageMap::MetaPage::MetaPage()
 PageMap::MetaPage::MetaPage(unsigned int *addr)
 {
 	m_addr = addr;
-#if 0
-	m_addr_page = addr;
-	m_addr = NULL;
-#endif
 }
 
 unsigned char *PageMap::MetaPage::map(unsigned int cnt, unsigned int *freeaddr)
@@ -137,9 +155,14 @@ unsigned char *PageMap::MetaPage::map(unsigned int cnt, unsigned int *freeaddr)
 		return (unsigned char*)address(index);
 
 	} else if ((f=findFreePages(cnt))>0) {
+		/*
+		 * FIXME TODO: this makes a hole in the memory since already mapped pages are not possibly continuous
+		 * On userspace it should not matter since we can map this area as one continuous shit
+		 */
 		for (unsigned int i=0; i<cnt; i++) {
 			setUsed(f+i);
-			mapPage(f+i, (unsigned int*)curraddr);
+			//mapPage(f+i, (unsigned int*)curraddr);
+			//curraddr += PAGE_SIZE;
 		}
 		unlock();
 
@@ -166,23 +189,18 @@ void PageMap::MetaPage::initialize(unsigned int *addr)
 	m_index[PAGE_MAP_MUTEX] = 0;
 	m_index[3] = 0;
 
-	for (unsigned int i=PAGE_MAP_INDEX; i<PAGE_CNT; i++) {
+	m = Mutex((char*)&m_index[PAGE_MAP_MUTEX]);
+
+	m.lock();
+
+	/* Set all pages free */
+	for (unsigned int i=PAGE_MAP_INDEX; i<(PAGE_CNT+PAGE_MAP_INDEX); i++) {
 		m_index[i] = 0;
 	}
 
-	m = Mutex((char*)&m_index[PAGE_MAP_MUTEX]);
 	setUsed(0);
 
-#if 0
-	if (m_addr_page==NULL) return;
-
-	m_addr = addr;
-	m_addr[0] = (unsigned int)addr;
-	m_addr[1] = 1;
-	m_addr[2] = 0;
-	m = Mutex((char*)&m_addr[2]);
-	setUsed(0);
-#endif
+	m.unlock();
 }
 
 void PageMap::MetaPage::lock()
@@ -240,10 +258,6 @@ unsigned int PageMap::MetaPage::count()
 {
 	if (m_index==NULL) return NULL;
 	return m_index[PAGE_MAP_CNT];
-#if 0
-	if (m_addr==NULL) return NULL;
-	return m_addr[1];
-#endif
 }
 
 void PageMap::MetaPage::increaseCnt()
@@ -261,6 +275,7 @@ bool PageMap::MetaPage::isFree(unsigned int index)
 void PageMap::MetaPage::setFree(unsigned int index)
 {
 	if (m_addr==NULL) return;
+	if (index==0) return;
 	((unsigned char*)m_index)[PAGE_MAP_INDEX+index]=0;
 }
 
@@ -269,6 +284,7 @@ void PageMap::MetaPage::setUsed(unsigned int index)
 	if (m_addr==NULL) return;
 	((unsigned char*)m_index)[PAGE_MAP_INDEX+index]=1;
 }
+
 
 
 void paging_map_table(unsigned int *tbl,  unsigned int address)
@@ -314,16 +330,14 @@ bool paging_map_page(unsigned int *tbl,  unsigned int cnt)
 }
 
 
-void *paging_alloc(unsigned int cnt/*, unsigned int *address*/)
+void *paging_alloc(unsigned int cnt)
 {
 	if (cnt==0) return NULL;
 
+	/* Permanently ran out of paging tables */
 	if (__paging_cnt>=PAGE_CNT) return NULL;
 
 	unsigned int *__page_table = __page_directory + (__paging_cnt*PAGING_SIZE);
-
-	//__free_page_address = (unsigned int*)(4096*(PAGE_CNT+__paging_cnt));
-	//__free_page_address = (unsigned int*)((unsigned int)(__free_page_address)+(PAGE_SIZE*cnt));
 
 	PageMap map(__page_table);
 	if (!map.canAllocPage()) {
@@ -331,11 +345,12 @@ void *paging_alloc(unsigned int cnt/*, unsigned int *address*/)
 		__page_table = __page_directory + (__paging_cnt*PAGING_SIZE);
 		map = PageMap(__page_table);
 		map.init();
-	}
-	//map.initialize(address);
-	return map.map(cnt);
 
-	//paging_map_table(__page_table, address);
+		/* Error, can't alloc pages */
+		if (!map.canAllocPage()) return NULL;
+	}
+
+	return map.map(cnt);
 }
 
 void paging_init()
