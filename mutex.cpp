@@ -1,6 +1,11 @@
 #include "mutex.h"
 #include "types.h"
 
+Mutex::Mutex()
+{
+	m_ptr = NULL;
+}
+
 Mutex::Mutex(void *ptr)
 {
 	m_ptr = (char*)ptr;

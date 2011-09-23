@@ -4,6 +4,7 @@
 class Mutex
 {
 public:
+	Mutex();
 	Mutex(void *ptr);
 	~Mutex();
 
