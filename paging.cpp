@@ -121,8 +121,8 @@ void PageMap::init()
 
 	__free_page_address += PAGE_SIZE;
 
-	__page_directory[0] = (unsigned int)m_addr;
-	__page_directory[0] |= 0x3;
+	__page_directory[__paging_cnt-1] = (unsigned int)m_addr;
+	__page_directory[__paging_cnt-1] |= 0x3;
 
 	m.unlock();
 }
@@ -368,8 +368,9 @@ void paging_init()
 	__page_directory[0] = (unsigned int)__kernel_page_table;
 	__page_directory[0] |= 0x3;
 
-	__paging_cnt++;
-	__free_page_address = (unsigned int*)(PAGE_SIZE*(PAGE_CNT+4));
+	//__free_page_address = (unsigned int*)(__kernel_page_table+PAGING_SIZE+4);
+	__free_page_address = (unsigned int*)(PAGING_SIZE*(PAGE_CNT+4));
+	//__free_page_address = (unsigned int*)(PAGE_SIZE*(PAGE_CNT+4));
 	//PageMap kernel_map(__page_address);
 
 	asm volatile("mov %0, %%cr3":: "b"(__page_directory));

@@ -3,7 +3,7 @@
 #include "paging.h"
 #include "gdt.h"
 
-#if 1
+#if 0
 Video video;
 
 extern "C" int main()
@@ -20,11 +20,6 @@ extern "C" int main()
 
 extern "C" int main()
 {
-/*
-	paging_init();
-	gdt_init();
-*/
-
 	Video *video = new Video();
 	
 	video->clear();

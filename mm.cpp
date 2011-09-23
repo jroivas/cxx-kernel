@@ -1,16 +1,20 @@
 #include "mm.h"
+#include "paging.h"
 
-static void *current_pos = reinterpret_cast<void *>(0x02000000);
+//static void *current_pos = reinterpret_cast<void *>(0x02000000);
 
 void *kmalloc(size_t size)
 {
 	if (size==0) return NULL;
+	int cnt = size/4096+1; //FIXME
+	char *pos = (char*)paging_alloc(cnt);
 
-	char *ptr = ((char*)current_pos+size);
+	//char *ptr = ((char*)current_pos+size);
+	char *ptr = ((char*)pos);
 	char *tmp = ptr;
 
 	// This always ensures that the memory is cleared
-	while (tmp<(char*)current_pos+size) {
+	while (tmp<(char*)pos+size) {
 		*tmp = 0;
 		tmp++;
 	}
