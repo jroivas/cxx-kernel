@@ -2,8 +2,8 @@
 #include "string.h"
 #include "port.h"
 
-#define VIDEO_MEMORY_LOCATION 0xB8000
-//#define VIDEO_MEMORY_LOCATION 0xC00B8000
+//#define VIDEO_MEMORY_LOCATION 0xB8000
+#define VIDEO_MEMORY_LOCATION 0xC00B8000
 #define VIDEO_COLOR_MASK 0x0700
 #define CHAR_LF 0x0A
 #define CHAR_CR 0x0D

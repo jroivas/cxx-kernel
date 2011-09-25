@@ -7,7 +7,10 @@ void *kmalloc(size_t size)
 {
 	if (size==0) return NULL;
 	int cnt = size/4096+1; //FIXME
+	//int cnt = size/4096; //FIXME
+
 	char *pos = (char*)paging_alloc(cnt);
+	if (pos==NULL) return NULL;
 
 	//char *ptr = ((char*)current_pos+size);
 	char *ptr = ((char*)pos);

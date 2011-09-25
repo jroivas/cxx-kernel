@@ -1,19 +1,36 @@
 #include "cxa.h"
 #include "paging.h"
 #include "gdt.h"
+#include "types.h"
 
-extern "C" void _main()
+//extern main(unsigned long multiboot, unsigned long magic);
+extern int main();
+
+extern "C" void _main(unsigned long multiboot, unsigned long magic)
 {
-	paging_init();
+	(void)magic;
+	if (magic == 0x1BADB002) {
+		return;
+	}
+
+#if 0
+	unsigned short *tmp = (unsigned short *)(KERNEL_VIRTUAL+0xB8000);
+	*tmp = 0x1744; //D
+#endif
+
 	gdt_init();
+	paging_init((MultibootInfo *)multiboot);
 
 	extern void (* start_ctors)();
 	extern void (* end_ctors)();
 	void (**constructor)() = & start_ctors;
+	//void (**constructor)() = (void(**)())(((unsigned int)&start_ctors)+KERNEL_VIRTUAL);
 	while (constructor<&end_ctors) {
 		((void (*) (void)) (*constructor)) ();
 		constructor++;
 	}
+
+	main();
 }
 
 extern "C" void _atexit()

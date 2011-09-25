@@ -6,8 +6,8 @@
 //#define VIRT_TO_PHYS 0x40000000
 #define LPOS 0x100000
 //#define PAGING_POS 0x10000
-#define PAGING_START_POS 0x10000
-#define PAGE_SIZE 4096
+#define PAGING_START_POS 0x1000
+//#define PAGE_SIZE 4096
 
 #define PAGE_MAP_CNT 1
 #define PAGE_MAP_MUTEX 2
@@ -15,10 +15,21 @@
 
 //#define PAGING_SIZE 0x1000
 #define PAGING_SIZE (sizeof(unsigned int*)*PAGE_CNT) // A little bit more portable
+#define PAGE_SIZE PAGING_SIZE
 
 unsigned int *__page_directory = (unsigned int*) 0x10000; //TODO FIXME
 int __paging_cnt = 0;
 unsigned int *__free_page_address = (unsigned int*)PAGING_START_POS;
+
+struct MemoryMap
+{
+        unsigned long size;
+        unsigned long base_addr_low;
+        unsigned long base_addr_high;
+        unsigned long length_low;
+        unsigned long length_high;
+        unsigned long type;
+};
 
 //Mutex for locking mapping and prevent theading/SMP problems
 static unsigned int __page_mapping_mutex = 0;
@@ -123,7 +134,7 @@ void PageMap::freePages(unsigned int *ptr, unsigned int cnt)
 	if (cnt==0) cnt=1;
 	unsigned int *pagemap;
 	for (int i=0; i<PAGE_CNT; i++) {
-		pagemap = (unsigned int*)(__page_directory[i] & ~0x0F);
+		pagemap = (unsigned int*)(__page_directory[i] & ~0xF);
 		if (pagemap == 0) continue;
 		if ((__page_directory[i] & 0x3) != 0x3) continue;
 		PageMap pm(pagemap);
@@ -133,6 +144,7 @@ void PageMap::freePages(unsigned int *ptr, unsigned int cnt)
 				for (unsigned int k=0; k<cnt; k++) {
 					pm.meta.setFree(j+k);
 				}
+				return;
 			}
 		}
 	}
@@ -143,12 +155,14 @@ void PageMap::init()
 	m.lock();
 
 	//meta.mapPage(0, __free_page_address);
-	meta.initialize(__free_page_address);
-
-	__free_page_address += PAGE_SIZE;
+	meta.mapPage(0, __free_page_address);
 
 	__page_directory[__paging_cnt-1] = (unsigned int)m_addr;
 	__page_directory[__paging_cnt-1] |= 0x3;
+
+	meta.initialize(__free_page_address);
+
+	__free_page_address += PAGE_SIZE;
 
 	m.unlock();
 }
@@ -200,6 +214,9 @@ unsigned char *PageMap::MetaPage::map(unsigned int cnt, unsigned int *freeaddr)
 
 void PageMap::MetaPage::mapPage(unsigned int index, unsigned int *addr)
 {
+	if (m_addr==NULL) return;
+	//if (index==0) return;
+
 	m_addr[index] = (unsigned int)addr | 0x3;
 }
 
@@ -213,7 +230,8 @@ void PageMap::MetaPage::initialize(unsigned int *addr)
 	m_index[0] = (unsigned int)addr;
 	m_index[PAGE_MAP_CNT] = 1;
 	m_index[PAGE_MAP_MUTEX] = 0;
-	m_index[3] = 0;
+	//m_index[3] = 0;
+	m_index[3] = __paging_cnt-1;
 
 	m = Mutex((char*)&m_index[PAGE_MAP_MUTEX]);
 
@@ -269,6 +287,7 @@ unsigned int PageMap::MetaPage::findFreePages(unsigned int cnt)
 unsigned int *PageMap::MetaPage::address(unsigned int index)
 {
 	if (m_addr==NULL) return NULL;
+#if 0
 	if (index==0) {
 		return m_index;
 		//return (unsigned int*)m_addr[0];
@@ -276,6 +295,13 @@ unsigned int *PageMap::MetaPage::address(unsigned int index)
 		//return (unsigned int*)(m_addr[0]+(__paging_cnt*PAGING_SIZE));
 		return (unsigned int*)(m_addr[index] & ~0xF);
 	}
+#else
+	if (index==0) {
+		return (unsigned int*)m_index[3];
+	} else if (index<PAGE_CNT) {
+		return (unsigned int*)((m_index[3]<<22)+index*PAGING_SIZE);
+	}
+#endif
 
 	return NULL;
 }
@@ -319,8 +345,10 @@ void paging_map_table(unsigned int *tbl,  unsigned int address)
 		tbl[i] = address | 0x3;
 		address += PAGE_SIZE;
 	}
+	__free_page_address = (unsigned int*)(address + PAGE_SIZE);
 }
 
+#if 0
 bool paging_map_page(unsigned int *tbl,  unsigned int cnt)
 {
 	if (tbl==NULL) return false;
@@ -355,6 +383,7 @@ bool paging_map_page(unsigned int *tbl,  unsigned int cnt)
 	return true;
 }
 
+#endif
 
 void *paging_alloc(unsigned int cnt)
 {
@@ -366,6 +395,7 @@ void *paging_alloc(unsigned int cnt)
 	unsigned int *__page_table = __page_directory + (__paging_cnt*PAGING_SIZE);
 
 	PageMap map(__page_table);
+#if 0
 	if (!map.canAllocPage()) {
 		__paging_cnt++;
 		__page_table = __page_directory + (__paging_cnt*PAGING_SIZE);
@@ -375,10 +405,78 @@ void *paging_alloc(unsigned int cnt)
 		/* Error, can't alloc pages */
 		if (!map.canAllocPage()) return NULL;
 	}
+#endif
 
 	return map.map(cnt);
 }
 
+void *startmem = (void *)0x40000000;
+unsigned char *mem_map = (unsigned char *)(KERNEL_VIRTUAL+0x500);
+unsigned int maxmem = 0;
+
+class Paging
+{
+public:
+	Paging();
+	void init();
+	
+private:
+};
+
+Paging::Paging()
+{
+	
+}
+
+void Paging::init()
+{
+	unsigned int limit = 1024;
+	for (unsigned int i=0; i<limit; i++) {
+	}
+}
+
+void paging_mmap_init(MultibootInfo *info)
+{
+	MemoryMap *mmap = (MemoryMap*)(info->mmap_addr + KERNEL_VIRTUAL);
+	unsigned int info_end = info->mmap_addr + info->mmap_length + KERNEL_VIRTUAL;
+
+	while ((unsigned int)(mmap) + mmap->size < info_end) {
+		if ((mmap->base_addr_low + mmap->length_low) > maxmem) {
+			maxmem = mmap->base_addr_low + mmap->length_low;
+		}
+
+		unsigned long addr = mmap->base_addr_low / 0x1000;
+		unsigned long limit = mmap->length_low / 0x1000;
+
+		while (addr<0x120 && limit>0) {
+			addr++;
+			limit--;
+		}
+
+		if (mmap->type == 1) {
+			while (limit>0) {
+				mem_map[addr/8] |= 1 << addr % 8;
+				addr++;
+				limit--;
+			}
+		}
+		else if (mmap->type == 2 || mmap->type == 3) {
+			//Skip
+		}
+		else {
+			return;
+		}
+		mmap = (MemoryMap *)(((unsigned int)mmap) + mmap->size + sizeof(unsigned int));
+	}
+}
+
+void paging_init(MultibootInfo *info)
+{
+	paging_mmap_init(info);
+
+}
+
+#if 0
 void paging_init()
 {
 	for(int i=0; i<PAGE_CNT; i++) {
@@ -395,9 +493,14 @@ void paging_init()
 	__page_directory[0] |= 0x3;
 
 	//__free_page_address = (unsigned int*)(__kernel_page_table+PAGING_SIZE+4);
-	__free_page_address = (unsigned int*)(PAGING_SIZE*(PAGE_CNT+4));
+	//__free_page_address = (unsigned int*)(PAGING_SIZE*(PAGE_CNT+4));
 	//__free_page_address = (unsigned int*)(PAGE_SIZE*(PAGE_CNT+4));
 	//PageMap kernel_map(__page_address);
+
+	__paging_cnt++;
+	unsigned int *__page_table = __page_directory + (__paging_cnt*PAGING_SIZE);
+	PageMap map(__page_table);
+	map.init();
 
 	asm volatile("mov %0, %%cr3":: "b"(__page_directory));
 
@@ -406,3 +509,4 @@ void paging_init()
 	cr0 |= 0x80000000;
 	asm volatile("mov %0, %%cr0":: "b"(cr0));
 }
+#endif

@@ -2,12 +2,13 @@
 #include "cxa.h"
 #include "paging.h"
 #include "gdt.h"
+#include "types.h"
 
-#if 0
+#if 1
 //Use this if you don't have a memory management and malloc
 Video video;
 
-extern "C" int main()
+int main()
 {
 	video.clear();
 	video.print("Hello world!\n");
@@ -19,23 +20,29 @@ extern "C" int main()
 }
 #else
 
-extern "C" int main()
+//extern "C" int main()
+int main()
 {
 	Video *video = new Video();
-	
-	video->clear();
-	video->print("Hello world!\n");
-	video->print("\nC++ kernel.\n");
-	video->print("And a TAB\t test!\n");
-	video->print("Removing letter A\bB and continuing.\n");
-	video->print("\b\b\bABCDEFG\n");
+
+	if (video!=NULL) {
+		video->clear();
+		video->print("Hello world!\n");
+		video->print("\nC++ kernel.\n");
+		video->print("And a TAB\t test!\n");
+		video->print("Removing letter A\bB and continuing.\n");
+		video->print("\b\b\bABCDEFG\n");
 #if 0
 	for (int i=0; i<22; i++) {
 		video->print("Line\n");
 	}
 #endif
 
-	delete video;
+		delete video;
+	}
+
+	while(1) { }
+
 
 	return 0;
 }
