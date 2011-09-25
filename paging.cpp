@@ -419,8 +419,10 @@ class Paging
 public:
 	Paging();
 	void init();
+	void map(void *phys, void *virt, unsigned int flags);
 	
 private:
+	void *getPage();
 };
 
 Paging::Paging()
@@ -430,9 +432,61 @@ Paging::Paging()
 
 void Paging::init()
 {
-	unsigned int limit = 1024;
-	for (unsigned int i=0; i<limit; i++) {
+}
+
+void *Paging::getPage()
+{
+	unsigned char t = 0;
+	static unsigned int count = 0;
+	unsigned char i = 0;
+	while (1) {
+		if ((mem_map[count] & (1<<t)) != 0) {
+			mem_map[count] ^= (1<<t);
+			while (t>0) {
+				i++;
+				t--;
+			}
+			return (void *)(((count*8)+i)*PAGE_SIZE);
+		}
+
+		//Last bit
+		if (t==7) {
+			t = 0;
+			count++;
+		} else {
+			t++;
+		}
+
+		if (count*PAGE_SIZE >= maxmem) {
+			return NULL;
+		}
 	}
+	return NULL;
+}
+
+void Paging::map(void *phys, void *virt, unsigned int flags)
+{
+	unsigned int pagedir = (unsigned long)virt >> 22;
+	unsigned int pagetable = (unsigned long)virt >> 12 & 0x3FF;
+
+	unsigned long *pd = (unsigned long *) 0xFFFFF000;
+        if ((pd[pagedir] & 1) != 1)
+        {
+                pd[pagedir] = (unsigned long) getPage() | 0x3;
+        }
+
+        unsigned long *pt = (unsigned long *) 0xFFC00000 + (0x400 * pagedir);
+        if ((pt[pagetable] & 1) == 1)
+        {
+/*
+                //printf("System Failure!\n\tPT: 0x%x\t\tnum: 0x%x", pagedir, pagetable);
+                cli();
+                hlt();
+*/
+		return;
+        }
+
+        pt[pagetable] = ((unsigned long)phys) | (flags & 0xFFF) | 0x01;
 }
 
 void paging_mmap_init(MultibootInfo *info)

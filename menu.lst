@@ -1,0 +1,4 @@
+timeout 3
+default 0
+title C++ kernel
+kernel /boot/kernel

@@ -6,20 +6,23 @@ OBJS=loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o pag
 
 all: kernel
 
-run: kernel
+run: run_iso
+
+run_qemu: kernel
 	qemu -kernel kernel
 
 kernel: link2.ld $(OBJS)
 	ld -m elf_i386 -T link2.ld -o kernel $(OBJS)
 
-run_img: floppy.img
-	qemu -fda floppy.img -boot a
+kernel.iso: kernel menu.lst stage2_eltorito
+	mkdir -p isofiles/boot/grub
+	cp -f kernel isofiles/boot/kernel
+	cp -f stage2_eltorito isofiles/boot/grub/
+	cp -f menu.lst isofiles/boot/grub/
+	genisoimage -R -b boot/grub/stage2_eltorito -no-emul-boot -quiet -boot-load-size 4 -boot-info-table -o kernel.iso ./isofiles
 
-floppy.img: kernel pad
-	cat grub/boot/grub/stage1 grub/boot/grub/stage2 pad kernel > floppy.img
-
-pad:
-	dd if=/dev/zero of=pad bs=1 count=750
+run_iso: kernel.iso
+	qemu -cdrom kernel.iso
 
 loader.o: loader.asm
 	nasm -f elf32 -o $@ $<
@@ -61,4 +64,4 @@ port.o: port.cpp port.h
 	$(CXX) -c $(CXXFLAGS) -o $@ $< 
 
 clean:
-	rm -f kernel floppy.img *.o
+	rm -f kernel kernel.iso *.o

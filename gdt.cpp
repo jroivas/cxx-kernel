@@ -16,7 +16,7 @@ struct gdt_ptr_t
 	unsigned int base;
 } __attribute__((packed));
 
-struct gdt_entry_t gdt[3];
+struct gdt_entry_t gdt[6];
 struct gdt_ptr_t gdt_ptr;
 
 extern "C" void gdt_flush();
@@ -36,13 +36,15 @@ void gdt_set_gate(int num, unsigned long base, unsigned long limit, unsigned cha
 
 void gdt_init()
 {
-	gdt_ptr.limit = (sizeof(struct gdt_entry_t) * 3) - 1;
+	gdt_ptr.limit = (sizeof(struct gdt_entry_t) * 6) - 1;
 	//gdt_ptr.limit = (sizeof(struct gdt_entry_t) * 6) - 1;
 	gdt_ptr.base = (unsigned int)&gdt;
  
 	gdt_set_gate(0, 0, 0, 0, 0);
 	gdt_set_gate(1, 0, 0xFFFFFFFF, 0x9A, 0xCF);
 	gdt_set_gate(2, 0, 0xFFFFFFFF, 0x92, 0xCF);
+	gdt_set_gate(3, 0, 0xFFFFFFFF, 0xFA, 0xCF);
+	gdt_set_gate(4, 0, 0xFFFFFFFF, 0xF2, 0xCF);
  
 	gdt_flush();
 }
