@@ -44,19 +44,7 @@ multiboot_header:
 	dd MULTIBOOT_CHECKSUM
 
 start:
-;	mov ecx, eax
-;	lgdt [trickgdt]
-;	mov ax, 0x10
-;	mov ds, ax
-;	mov es, ax
-;	mov fs, ax
-;	mov gs, ax
-;	mov ss, ax
-;	jmp 0x08:higherhalf
- 
-higherhalf:
 	mov [multiboot_magic_data - KERNEL_VIRTUAL], eax
-	;mov [multiboot_magic_data - KERNEL_VIRTUAL], ecx
 	mov [multiboot_info_data - KERNEL_VIRTUAL], ebx
 	;mov ax, 0x1741
 	;mov [0xB8000],ax
@@ -132,16 +120,3 @@ gdt_flush_exit:
 ALIGN 4
 stack:
    resb STACKSIZE                     ; reserve 16k stack on a doubleword boundary
-
-[section .setup] ; tells the assembler to include this data in the '.setup' section
- 
-trickgdt:
-	dw gdt_end - gdt - 1 ; size of the GDT
-	dd gdt ; linear address of GDT
- 
-gdt:
-	dd 0, 0							; null gate
-	db 0xFF, 0xFF, 0, 0, 0, 10011010b, 11001111b, 0x40	; code selector 0x08: base 0x40000000, limit 0xFFFFFFFF, type 0x9A, granularity 0xCF
-	db 0xFF, 0xFF, 0, 0, 0, 10010010b, 11001111b, 0x40	; data selector 0x10: base 0x40000000, limit 0xFFFFFFFF, type 0x92, granularity 0xCF
- 
-gdt_end:

@@ -2,6 +2,7 @@
 #include "paging.h"
 #include "gdt.h"
 #include "types.h"
+#include "kernel.h"
 
 //extern main(unsigned long multiboot, unsigned long magic);
 extern int main();
@@ -24,13 +25,14 @@ extern "C" void _main(unsigned long multiboot, unsigned long magic)
 	extern void (* start_ctors)();
 	extern void (* end_ctors)();
 	void (**constructor)() = & start_ctors;
-	//void (**constructor)() = (void(**)())(((unsigned int)&start_ctors)+KERNEL_VIRTUAL);
 	while (constructor<&end_ctors) {
 		((void (*) (void)) (*constructor)) ();
 		constructor++;
 	}
 
-	main();
+	Kernel k;
+	k.run();
+	//main();
 }
 
 extern "C" void _atexit()

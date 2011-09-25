@@ -8,7 +8,7 @@ Mutex::Mutex()
 
 Mutex::Mutex(void *ptr)
 {
-	m_ptr = (char*)ptr;
+	m_ptr = (unsigned char*)ptr;
 }
 
 Mutex::~Mutex()
@@ -48,6 +48,7 @@ bool Mutex::wait()
 	while (*m_ptr==1) {
 		//Sleep
 	}
+
 	return true;
 }
 

@@ -15,7 +15,7 @@ public:
 	void abort();
 
 private:
-	char *m_ptr;
+	unsigned char *m_ptr;
 };
 
 #endif

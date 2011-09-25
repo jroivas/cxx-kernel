@@ -1,8 +1,11 @@
 #include "video.h"
+#include "types.h"
+#include "kernel.h"
+#if 0
 #include "cxa.h"
 #include "paging.h"
 #include "gdt.h"
-#include "types.h"
+#endif
 
 #if 0
 //Use this if you don't have a memory management and malloc
@@ -21,7 +24,12 @@ int main()
 #else
 
 //extern "C" int main()
-int main()
+//int main()
+Kernel::Kernel()
+{
+}
+
+int Kernel::run()
 {
 	Video *video = new Video();
 
