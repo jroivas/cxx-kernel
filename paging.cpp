@@ -1,6 +1,5 @@
 #include "paging.h"
 #include "types.h"
-#include "mutex.h"
 
 #define PAGE_CNT 1024
 //#define VIRT_TO_PHYS 0x40000000
@@ -33,6 +32,7 @@ struct MemoryMap
 
 //Mutex for locking mapping and prevent theading/SMP problems
 static unsigned int __page_mapping_mutex = 0;
+static unsigned int __page_mapping_alloc_mutex = 0;
 
 class PageMap
 {
@@ -414,24 +414,20 @@ void *startmem = (void *)0x40000000;
 unsigned char *mem_map = (unsigned char *)(KERNEL_VIRTUAL+0x500);
 unsigned int maxmem = 0;
 
-class Paging
-{
-public:
-	Paging();
-	void init();
-	void map(void *phys, void *virt, unsigned int flags);
-	
-private:
-	void *getPage();
-};
-
 Paging::Paging()
 {
-	
+	m = Mutex(&__page_mapping_mutex);
+	m_alloc = Mutex(&__page_mapping_alloc_mutex);
 }
 
-void Paging::init()
+void Paging::lock()
 {
+	m_alloc.lock();
+}
+
+void Paging::unlock()
+{
+	m_alloc.unlock();
 }
 
 void *Paging::getPage()
@@ -446,6 +442,7 @@ void *Paging::getPage()
 				i++;
 				t--;
 			}
+			m.unlock();
 			return (void *)(((count*8)+i)*PAGE_SIZE);
 		}
 
@@ -458,13 +455,22 @@ void *Paging::getPage()
 		}
 
 		if (count*PAGE_SIZE >= maxmem) {
+			m.unlock();
 			return NULL;
 		}
 	}
 	return NULL;
 }
 
-void Paging::map(void *phys, void *virt, unsigned int flags)
+void Paging::freePage(void *ptr)
+{
+	unsigned long count = (((unsigned long)ptr) / 0x8000);
+        unsigned char bit = ((((unsigned long)ptr) / 0x1000) % 8);
+
+	mem_map[count] |= bit;
+}
+
+bool Paging::map(void *phys, void *virt, unsigned int flags)
 {
 	unsigned int pagedir = (unsigned long)virt >> 22;
 	unsigned int pagetable = (unsigned long)virt >> 12 & 0x3FF;
@@ -476,17 +482,63 @@ void Paging::map(void *phys, void *virt, unsigned int flags)
         }
 
         unsigned long *pt = (unsigned long *) 0xFFC00000 + (0x400 * pagedir);
-        if ((pt[pagetable] & 1) == 1)
-        {
+        if ((pt[pagetable] & 1) == 1) {
 /*
                 //printf("System Failure!\n\tPT: 0x%x\t\tnum: 0x%x", pagedir, pagetable);
                 cli();
                 hlt();
 */
-		return;
+		return false;
         }
 
         pt[pagetable] = ((unsigned long)phys) | (flags & 0xFFF) | 0x01;
+
+	return true;
+}
+
+void *Paging::unmap(void *ptr)
+{
+	unsigned int pagedir = (unsigned long)ptr >> 22;
+	unsigned int pagetable = (unsigned long)ptr >> 12 & 0x3FF;
+	
+        unsigned long *pt = (unsigned long *) 0xFFC00000 + (0x400 * pagedir);
+        if ((pt[pagetable] & 1) == 1) {
+		return NULL;
+	}
+
+	pt[pagetable] &= 0xFFFFFFFE;
+	return (void *) (pt[pagetable] & 0xFFFFF000);
+}
+
+void *Paging::alloc(size_t cnt)
+{
+	m.lock();
+	void *tmp = startmem;
+
+	while (cnt>0) {
+		if (map(getPage(), startmem, 0x3)) {
+			startmem = (void*)((unsigned int)startmem + PAGE_SIZE);
+			cnt--;
+		} else {
+			m.unlock();
+			return NULL;
+		}
+	}
+
+	m.unlock();
+	return tmp;
+}
+
+void Paging::free(void *ptr, size_t cnt)
+{
+	m.lock();
+	while (cnt>0) {
+		freePage(unmap(ptr));
+		ptr = (void*)((unsigned int)ptr + PAGE_SIZE);
+		//ptr += PAGE_SIZE;
+		cnt--;
+	}
+	m.unlock();
 }
 
 void paging_mmap_init(MultibootInfo *info)

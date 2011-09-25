@@ -4,7 +4,7 @@
 #include "gdt.h"
 #include "types.h"
 
-#if 1
+#if 0
 //Use this if you don't have a memory management and malloc
 Video video;
 
