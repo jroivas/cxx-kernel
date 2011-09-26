@@ -2,13 +2,13 @@
 #include "types.h"
 #include "x86.h"
 
-#define PAGE_CNT 1024
-#define LPOS 0x100000
+//#define PAGE_CNT 1024
+//#define LPOS 0x100000
 #define PAGING_START_POS 0x40000000
 //#define PAGING_START_POS 0x1000
 //#define PAGE_SIZE 4096
 
-#define PAGING_SIZE (sizeof(ptr32_t)*PAGE_CNT) // A little bit more portable
+//#define PAGING_SIZE (sizeof(ptr32_t)*PAGE_CNT) // A little bit more portable
 #define PAGE_SIZE PAGING_SIZE
 
 ptr32_t __page_directory    = (ptr32_t)0xFFFFF000; //TODO

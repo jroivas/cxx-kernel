@@ -44,7 +44,8 @@ String::String(const char *str)
 {
 	if (str!=NULL) {
 		unsigned int l = length(str);
-		m_str = (char*)kmalloc(l+1);
+		//m_str = (char*)kmalloc(l+1);
+		m_str = (char*)MM::instance()->alloc(l+1);
 		Mem::copy((void*)m_str, (void*)str, l);
 		m_str[l] = 0;
 	} else m_str = NULL;
