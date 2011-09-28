@@ -1,11 +1,14 @@
 #ifndef MUTEX_H
 #define MUTEX_H
 
+#include "types.h"
+
+
 class Mutex
 {
 public:
 	Mutex();
-	Mutex(void *ptr);
+	Mutex(ptr_val_t volatile *ptr);
 	~Mutex();
 
 	void lock();
@@ -15,7 +18,8 @@ public:
 	void abort();
 
 private:
-	unsigned char *m_ptr;
+	int CAS(int cmp, int set);
+	ptr_val_t volatile *m_ptr;
 };
 
 #endif

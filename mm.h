@@ -1,12 +1,10 @@
 #ifndef MM_H
 #define MM_H
 
-#include "types.h"
 #include "mutex.h"
+#include "types.h"
 
 
-class AllocInfo;
-class FreeInfo;
 class MM
 {
 public:
@@ -21,6 +19,7 @@ public:
 	static MM *instance();
 	void *alloc(size_t size, AllocType t=AllocNormal);
 	bool free(void *p);
+	void *realloc(void *ptr, size_t size);
 
 private:
 	void *allocPage(size_t cnt);
@@ -28,11 +27,15 @@ private:
 	void *allocMemClear(size_t size);
 	void *findAvail(size_t size);
 	Mutex m;
-	Mutex mf;
-/*
-	AllocInfo *m_root;
-	FreeInfo *m_freed;
-*/
+	void *m_lastPage;
+	void *m_freeTop;
+	void *m_freeMax;
 };
+
+extern "C" void *malloc(size_t size);
+extern "C" void free(void *ptr);
+extern "C" void *calloc(size_t cnt, size_t size);
+extern "C" void *realloc(void *ptr, size_t size);
+
 
 #endif
