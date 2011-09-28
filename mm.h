@@ -14,11 +14,15 @@ public:
 		AllocClear,
 		AllocPage
 	};
+	enum AllocLock {
+		AllocDoNotLock = 0,
+		AllocDoLock
+	};
 
 	MM();
 	static MM *instance();
 	void *alloc(size_t size, AllocType t=AllocNormal);
-	bool free(void *p);
+	bool free(void *p, AllocLock l=AllocDoLock);
 	void *realloc(void *ptr, size_t size);
 
 private:

@@ -22,14 +22,16 @@ Mutex::~Mutex()
 
 int Mutex::CAS(int cmp, int set)
 {
-	unsigned char res;
-	asm volatile (
-		".1: lock; cmpxchgl %2,%1\n"
-		"jnz .1\n"
-		"sete %0\n"
-		: "=q" (res), "=m" (*m_ptr)
-		: "r" (set), "m" (*m_ptr), "a" (cmp)
-		:"memory");
+        int res = cmp;
+        asm volatile(
+                "lock; cmpxchgl %1,%2\n"
+                "setz %%al\n"
+                "movzbl %%al,%0"
+                : "+a"(res)
+                : "r" (set), "m"(*(m_ptr))
+                : "memory"
+                );
+
 	return res;
 }
 
@@ -37,7 +39,7 @@ void Mutex::lock()
 {
 	if (m_ptr==NULL) return;
 
-	CAS(0, 1);
+	while (CAS(0, 1)==0);
 }
 
 bool Mutex::isLocked()
@@ -56,7 +58,7 @@ void Mutex::unlock()
 	// If already unlocked return
 	if (*m_ptr==0) return;
 
-	CAS(1, 0);
+	while (CAS(1, 0)==0);
 }
 
 bool Mutex::wait()
