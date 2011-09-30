@@ -5,6 +5,7 @@
 #include "types.h"
 
 
+struct PtrInfo;
 class MM
 {
 public:
@@ -26,6 +27,8 @@ public:
 	void *realloc(void *ptr, size_t size);
 
 private:
+	void treeAdd(PtrInfo *p);
+	void *releaseFree(PtrInfo *p, PtrInfo *parent);
 	void *allocPage(size_t cnt);
 	void *allocMem(size_t size, AllocType t);
 	void *allocMemClear(size_t size);
