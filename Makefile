@@ -2,7 +2,7 @@ CXX=clang++
 #CXX=g++
 #CXXFLAGS=-m32 -ffreestanding -nostdlib -fno-builtin -fno-rtti -fno-exceptions -Wall -Werror -Wextra -fstrength-reduce -fomit-frame-pointer -finline-functions -nostdinc
 CXXFLAGS=-m32 -ffreestanding -fno-builtin -fno-rtti -fno-exceptions -Wall -Werror -Wextra -fomit-frame-pointer -finline-functions -nostdinc
-OBJS=loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o port.o x86.o
+OBJS=loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o port.o x86.o idt.o idt_handlers.o
 
 all: kernel
 
@@ -25,6 +25,9 @@ run_iso: kernel.iso
 	qemu -cdrom kernel.iso
 
 loader.o: loader.asm
+	nasm -f elf32 -o $@ $<
+
+idt_handlers.o: idt_handlers.asm
 	nasm -f elf32 -o $@ $<
 
 main.o: main.cpp
@@ -66,6 +69,8 @@ port.o: port.cpp port.h
 x86.o: x86.cpp x86.h
 	$(CXX) -c $(CXXFLAGS) -o $@ $< 
 
+idt.o: idt.cpp idt.h
+	$(CXX) -c $(CXXFLAGS) -o $@ $< 
 
 clean:
 	rm -f kernel kernel.iso *.o

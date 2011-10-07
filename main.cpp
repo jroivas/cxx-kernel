@@ -4,9 +4,6 @@
 #include "types.h"
 #include "kernel.h"
 
-//extern main(unsigned long multiboot, unsigned long magic);
-extern int main();
-
 extern "C" void _main(unsigned long multiboot, unsigned long magic)
 {
 	(void)magic;
@@ -30,9 +27,12 @@ extern "C" void _main(unsigned long multiboot, unsigned long magic)
 		constructor++;
 	}
 
-	Kernel k;
-	k.run();
-	//main();
+	/* Run the kernel */
+	Kernel *k = new Kernel();
+
+	k->run();
+
+	delete k;
 }
 
 extern "C" void _atexit()
