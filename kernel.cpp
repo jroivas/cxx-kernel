@@ -1,9 +1,12 @@
 #include "types.h"
 #include "kernel.h"
+#include "idt.h"
 
 Kernel::Kernel()
 {
 	video = new Video();
+	IDT::getInstance()->initISR();
+	IDT::getInstance()->initIRQ();
 }
 
 Kernel::~Kernel()

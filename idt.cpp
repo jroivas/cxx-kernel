@@ -3,8 +3,8 @@
 #include "types.h"
 #include "string.h"
 
-//extern "C" void idt_load(void *p);
-extern "C" void idt_load(IDT::Ptr p);
+extern "C" void idt_load(void *p);
+//extern "C" void idt_load(IDT::Ptr p);
 
 static IDT *global_idt = NULL;;
 
@@ -31,7 +31,7 @@ IDT::IDT()
 
 void IDT::load()
 {
-	idt_load(idtp);
+	idt_load(&idtp);
 	//idt_load(&idtp);
 }
 
