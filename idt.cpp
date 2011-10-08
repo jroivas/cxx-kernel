@@ -195,7 +195,7 @@ extern "C" void irq_handler(Regs * r)
 	if (r==NULL) {
 		Video tmp;
 		tmp.clear();
-		tmp.print("ERROR! IRQ, regs.\n");
+		tmp.printf("ERROR! IRQ, regs.\n");
 		cli();
 		hlt();
 	}
@@ -220,7 +220,7 @@ extern "C" void isr_handler(Regs * r)
 	if (r==NULL) {
 		Video tmp;
 		tmp.clear();
-		tmp.print("ERROR! ISR, regs.\n");
+		tmp.printf("ERROR! ISR, regs.\n");
 		cli();
 		hlt();
 	}
@@ -228,10 +228,8 @@ extern "C" void isr_handler(Regs * r)
 		// Got it
 		Video tmp;
 		tmp.clear();
-		tmp.print("ERROR! ISR\n");
+		tmp.printf("ERROR! ISR\n");
 		cli();
 		hlt();
 	}
-	Video tmp;
-	tmp.print("ISR!\n");
 }

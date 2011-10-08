@@ -11,7 +11,6 @@ Kernel::Kernel()
 	IDT::getInstance()->initISR();
 	IDT::getInstance()->initIRQ();
 
-        //Timer::getInstance()->setFrequency(1000);
         Timer::getInstance()->setFrequency(KERNEL_FREQUENCY);
 }
 
