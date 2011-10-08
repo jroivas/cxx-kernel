@@ -10,7 +10,7 @@ typedef void (*routine_t)(Regs *r);
 class IDT
 {
 public:
-	static IDT *getInstance();
+	static IDT *get();
 	void initISR();
 	void initIRQ();
 	static routine_t routine(unsigned int i);

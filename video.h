@@ -7,6 +7,7 @@ public:
 	Video();
 	~Video();
 
+	static Video *get();
 	void clear();
         void printf(const char *fmt, ...);
 	void print(const char *cp);

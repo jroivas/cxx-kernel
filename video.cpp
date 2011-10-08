@@ -14,6 +14,16 @@
 #define SCROLL_SIZE 1
 #define PORT 0x3D4
 
+static Video *__global_video = NULL;
+
+Video *Video::get()
+{
+	if (__global_video==NULL) {
+		__global_video = new Video();
+	}
+	return __global_video;
+}
+
 Video::Video()
 {
 	m_x = 0;

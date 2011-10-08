@@ -3,15 +3,18 @@
 #include "idt.h"
 #include "x86.h"
 #include "timer.h"
+#include "kb.h"
 
 Kernel::Kernel()
 {
-	video = new Video();
+	//video = new Video();
+	video = Video::get();
 
-	IDT::getInstance()->initISR();
-	IDT::getInstance()->initIRQ();
+	IDT::get()->initISR();
+	IDT::get()->initIRQ();
 
-        Timer::getInstance()->setFrequency(KERNEL_FREQUENCY);
+        Timer::get()->setFrequency(KERNEL_FREQUENCY);
+        KB::get();
 }
 
 Kernel::~Kernel()
@@ -26,23 +29,24 @@ int Kernel::run()
 	sti();
 	if (video!=NULL) {
 		video->clear();
-		video->printf("Ticks: %lu!\n",Timer::getInstance()->getTicks());
+		video->printf("Ticks: %lu!\n",Timer::get()->getTicks());
 		video->printf("Hello world!\n");
 		video->printf("\nC++ kernel.\n");
 		video->printf("And a TAB\t test!\n");
 		video->printf("Removing letter A\bB and continuing.\n");
 		video->printf("\b\b\bABCDEFG\n");
-		video->printf("Ticks: %lu!\n",Timer::getInstance()->getTicks());
+		video->printf("Ticks: %lu!\n",Timer::get()->getTicks());
 
                 /* Some random timing... */
                 volatile int b = 5;
                 for (int i=0; i<0x4FFFFFF; i++) { b = b + i; }
-		video->printf("Ticks: %lu!\n",Timer::getInstance()->getTicks());
-                Timer::getInstance()->wait(100);
-		video->printf("Ticks: %lu!\n",Timer::getInstance()->getTicks());
+		video->printf("Ticks: %lu!\n",Timer::get()->getTicks());
+                Timer::get()->wait(100);
+		video->printf("Ticks: %lu!\n",Timer::get()->getTicks());
 
 		//delete video;
 	}
+	while(1) {}
 
 	//asm ("int $0x20");
 	//asm ("int $0x1F");

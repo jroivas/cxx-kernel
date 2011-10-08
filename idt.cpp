@@ -10,7 +10,7 @@ extern "C" void idt_load();
 static IDT *__global_idt = NULL;;
 IDT::Ptr idt_idtp;
 
-IDT *IDT::getInstance()
+IDT *IDT::get()
 {
 	if (__global_idt==NULL) {
 		__global_idt = new IDT();
@@ -49,7 +49,7 @@ void IDT::uninstallRoutine(unsigned int i)
 
 routine_t IDT::routine(unsigned int i)
 {
-	return getInstance()->routines[i];
+	return get()->routines[i];
 	//return NULL;
 }
 
@@ -200,7 +200,7 @@ extern "C" void irq_handler(Regs * r)
 	void (*handler)(Regs *r);
 	handler = NULL;
 
-	handler = IDT::getInstance()->routine(r->int_no - 32);
+	handler = IDT::get()->routine(r->int_no - 32);
 	if (handler!=NULL) {
 		handler(r);
 	}

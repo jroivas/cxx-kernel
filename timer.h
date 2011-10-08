@@ -6,7 +6,7 @@
 class Timer
 {
 public:
-        static Timer *getInstance();
+        static Timer *get();
         void setFrequency(unsigned int hz);
         void wait(unsigned long ticks_to_wait);
         unsigned long getTicks() { return ticks; }

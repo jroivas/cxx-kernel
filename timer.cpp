@@ -5,7 +5,7 @@
 
 static Timer *__global_timer = NULL;
 
-Timer *Timer::getInstance()
+Timer *Timer::get()
 {
         if (__global_timer==NULL) {
                 __global_timer = new Timer;
@@ -15,7 +15,7 @@ Timer *Timer::getInstance()
 
 Timer::Timer()
 {
-        IDT::getInstance()->installRoutine(0, Timer::handler);
+        IDT::get()->installRoutine(0, Timer::handler);
         ticks = 0;
 }
 

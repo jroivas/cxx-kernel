@@ -7,7 +7,7 @@ CXX=clang++
 #OF=-fguess-branch-probability -fif-conversion2 -fif-conversion -fmerge-constants -fsplit-wide-types -ftree-builtin-call-dce -ftree-ccp -ftree-ch -ftree-copyrename -ftree-dce -ftree-dominator-opts -ftree-dse -ftree-forwprop -ftree-fre -ftree-phiprop -ftree-sra -ftree-pta -ftree-ter -funit-at-a-time
 CXXFLAGS=-m32 -ffreestanding -fno-builtin -fno-rtti -fno-exceptions -Wall -Werror -Wextra -fomit-frame-pointer -finline-functions
 CXXFLAGSO=-O2 $(CXXFLAGS)
-OBJS=loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o port.o x86.o idt.o idt_handlers.o timer.o
+OBJS=loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o port.o x86.o idt.o idt_handlers.o timer.o kb.o
 
 all: kernel
 
@@ -78,6 +78,9 @@ idt.o: idt.cpp idt.h
 	$(CXX) -c $(CXXFLAGS) -o $@ $< 
 
 timer.o: timer.cpp timer.h
+	$(CXX) -c $(CXXFLAGS) -o $@ $< 
+
+kb.o: kb.cpp kb.h
 	$(CXX) -c $(CXXFLAGS) -o $@ $< 
 
 clean:
