@@ -19,25 +19,26 @@ public:
 	struct Ptr {
 		unsigned short limit;
 		unsigned int base;
-	};
-
-private:
-	IDT();
+	} __attribute__((packed));
 	struct Entry {
 		unsigned short base_low;
 		unsigned short sel;
 		unsigned char always0;
 		unsigned char flags;
 		unsigned short base_high;
-	};
+	} __attribute__((packed));
 
-	Entry idt[256];
-	Ptr idtp;
+private:
+	IDT();
+
+//	Entry idt[256];
+//	Ptr idtp;
 
 	routine_t routines[IRQ_ROUTINES];
 
 	void load();
 	void setGate(unsigned char num, unsigned long base, unsigned short sel, unsigned char flags);
+	void remapIRQ();
 };
 
 #endif

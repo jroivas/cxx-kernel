@@ -1,6 +1,7 @@
 #include "types.h"
 #include "kernel.h"
 #include "idt.h"
+#include "x86.h"
 
 Kernel::Kernel()
 {
@@ -18,6 +19,7 @@ Kernel::~Kernel()
 int Kernel::run()
 {
 
+	sti();
 	if (video!=NULL) {
 		video->clear();
 		video->print("Hello world!\n");
@@ -28,6 +30,9 @@ int Kernel::run()
 
 		delete video;
 	}
+
+	asm ("int $0x20");
+	//asm ("int $0x1F");
 
 
 	return 0;

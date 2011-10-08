@@ -2,36 +2,43 @@
 #include "port.h"
 #include "types.h"
 #include "string.h"
+#include "x86.h"
+#include "video.h"
 
 extern "C" void idt_load(void *p);
+extern "C" void idt_load2();
 //extern "C" void idt_load(IDT::Ptr p);
 
-static IDT *global_idt = NULL;;
+static IDT *__global_idt = NULL;;
+IDT::Ptr idt_idtp;
+IDT::Entry idt[256];
 
 IDT *IDT::getInstance()
 {
-	if (global_idt==NULL) {
-		global_idt = new IDT();
+	if (__global_idt==NULL) {
+		__global_idt = new IDT();
 	}
-	return global_idt;
+	return __global_idt;
 }
 
 IDT::IDT()
 {
-	idtp.limit = (sizeof(Entry)*256)-1;
-	idtp.base = (unsigned int)&idt;
+	idt_idtp.limit = (sizeof(Entry)*256)-1;
+	idt_idtp.base = (unsigned int)&idt;
 
 	Mem::set(&idt, 0, sizeof(Entry)*256);
-	load();
 
 	for (int i=0; i<IRQ_ROUTINES; i++) {
 		routines[i] = 0;
 	}
+
+	load();
 }
 
 void IDT::load()
 {
-	idt_load(&idtp);
+	idt_load2();
+	//idt_load(&idtp);
 	//idt_load(&idtp);
 }
 
@@ -126,6 +133,20 @@ void IDT::initISR()
 	ISR_GATE(31);
 }
 
+void IDT::remapIRQ()
+{
+	Port::out(0x20, 0x11);
+	Port::out(0xA0, 0x11);
+	Port::out(0x21, 0x20);
+	Port::out(0xA1, 0x28);
+	Port::out(0x21, 0x04);
+	Port::out(0xA1, 0x02);
+	Port::out(0x21, 0x01);
+	Port::out(0xA1, 0x01);
+	Port::out(0x21, 0x0);
+	Port::out(0xA1, 0x0);
+}
+
 #define IRQ_GATE_DEF(x) extern "C" void irq##x();
 #define IRQ_GATE(x) setGate(x+32, (unsigned)irq##x, 0x08, 0x8E);
 IRQ_GATE_DEF(0);
@@ -146,6 +167,8 @@ IRQ_GATE_DEF(14);
 IRQ_GATE_DEF(15);
 void IDT::initIRQ()
 {
+	remapIRQ();
+
 	IRQ_GATE(0);
 	IRQ_GATE(1);
 	IRQ_GATE(2);
@@ -166,6 +189,15 @@ void IDT::initIRQ()
 
 extern "C" void irq_handler(Regs * r)
 {
+	if (r==NULL) {
+		Video tmp;
+		tmp.clear();
+		tmp.print("ERROR! IRQ, regs.\n");
+		cli();
+		hlt();
+	}
+
+#if 0
 	void (*handler)(Regs *r);
 	handler = NULL;
 
@@ -174,6 +206,9 @@ extern "C" void irq_handler(Regs * r)
 		handler(r);
 	}
 
+#endif
+	Video tmp;
+	tmp.print("IRQ!\n");
 	if (r->int_no >= 40) {
 		Port::out(0xA0, 0x20);
 	}
@@ -183,7 +218,21 @@ extern "C" void irq_handler(Regs * r)
 
 extern "C" void isr_handler(Regs * r)
 {
+	if (r==NULL) {
+		Video tmp;
+		tmp.clear();
+		tmp.print("ERROR! ISR, regs.\n");
+		cli();
+		hlt();
+	}
 	if (r->int_no < 32) {
 		// Got it
+		Video tmp;
+		tmp.clear();
+		tmp.print("ERROR! ISR\n");
+		cli();
+		hlt();
 	}
+	Video tmp;
+	tmp.print("ISR!\n");
 }

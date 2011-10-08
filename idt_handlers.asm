@@ -1,8 +1,15 @@
 KERNEL_SPACE equ 0x10
 
-extern irq_handler
-extern isr_handler
+[extern irq_handler]
+[extern isr_handler]
+
+[global get_esp]
+get_esp:
+        mov eax, esp
+        ret
+
 [global idt_load]
+[global idt_load2]
 idt_load:
 	push ebp
 	mov ebp,esp
@@ -11,6 +18,11 @@ idt_load:
 	lidt [ebx]
 
 	leave
+	ret
+
+[extern idt_idtp]
+idt_load2:
+	lidt [idt_idtp]
 	ret
 
 irq_common:
@@ -110,7 +122,17 @@ irq_init 15
 isr%1:
 	cli
 	push byte 0
-	push byte (%1 + 32)
+	push byte %1
+	jmp isr_common
+%endmacro
+
+%macro isr_init_err 1
+
+[global isr%1]
+
+isr%1:
+	cli
+	push byte %1
 	jmp isr_common
 %endmacro
 
@@ -122,13 +144,13 @@ isr_init 4
 isr_init 5
 isr_init 6
 isr_init 7
-isr_init 8
+isr_init_err 8
 isr_init 9
-isr_init 10
-isr_init 11
-isr_init 12
-isr_init 13
-isr_init 14
+isr_init_err 10
+isr_init_err 11
+isr_init_err 12
+isr_init_err 13
+isr_init_err 14
 isr_init 15
 isr_init 16
 isr_init 17
