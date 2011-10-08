@@ -1,6 +1,9 @@
 #include "video.h"
 #include "string.h"
 #include "port.h"
+#include "mm.h"
+#include "args.h"
+#include <stdarg.h>
 
 //#define VIDEO_MEMORY_LOCATION 0xB8000
 #define VIDEO_MEMORY_LOCATION 0xC00B8000
@@ -87,6 +90,8 @@ void Video::print(const char *cp)
 	const char *str = cp;
 	const char *ch;
 
+	for (ch = str; *ch; ch++) putCh(*ch);
+#if 0
 	for (ch = str; *ch; ch++) {
 		if (*ch=='\r') {
 			m_x = 0;
@@ -112,6 +117,157 @@ void Video::print(const char *cp)
 			putCh(*ch);
 		}
 	}
+#endif
+}
+
+void Video::print_l(long val, int radix)
+{
+        if (val==0) {
+                putCh('0');
+                return;
+        }
+        bool n = false;
+        if (val<0) {
+                val *= -1;
+                n = true;
+        }
+        unsigned int l = 0;
+        int tmp = val;
+        while (tmp>0) { tmp/=radix; l++; }
+        if (n) l++;
+        if (l==0) l=1;
+
+        char s[256];
+        //char *s = (char*)calloc(1,l+1);
+        if (n) s[0]='-';
+        s[l]=0;
+        l--;
+        while (l>0) {
+                char t = val%radix;
+                if (t<10) s[l]='0'+t;
+                else s[l]='A'+t-10;
+                val/=radix;
+                l--;
+        } 
+        if (val>0) {
+                //s[l]='0'+val%radix;
+                char t = val%radix;
+                if (t<10) s[l]='0'+t;
+                else s[l]='A'+t-10;
+        }
+        print(s);
+        //free(s);
+}
+
+void Video::print_ul(unsigned long val, int radix)
+{
+        if (val==0) {
+                putCh('0');
+                return;
+        }
+        int l = 0;
+        int tmp = val;
+        while (tmp>0) { tmp/=radix; l++; }
+        if (l==0) l=1;
+
+        char s[256];
+        //char *s = (char*)calloc(1,l+1);
+        s[l]=0;
+        l--;
+        while (l>0) {
+                char t = val%radix;
+                if (t<10) s[l]='0'+t;
+                else s[l]='A'+(t-10);
+                val/=radix;
+                l--;
+        } 
+        if (val>0) {
+                char t = val%radix;
+                if (t<10) s[l]='0'+t;
+                else s[l]='A'+t-10;
+        }
+        print(s);
+        //free(s);
+}
+
+void Video::printf(const char *fmt, ...)
+{
+#if 0
+        Args args;
+        args.init(&fmt);
+#endif
+        va_list al;
+        va_start(al, fmt);
+
+	const char *str = fmt;
+	const char *ch;
+        bool f = false;
+        bool s_signed = true;
+
+	for (ch = str; *ch; ch++) {
+                if (f) {
+                        if (*ch=='%') {
+                                putCh('%');
+                                f = false;
+                        }
+                        else if (*ch=='s') {
+                                print(va_arg(al, const char*));
+                                f = false;
+                        }
+                        else if (*ch=='u') {
+                                s_signed = false;
+                        }
+                        else if (*ch=='x') {
+                                putCh('0');
+                                putCh('x');
+                                print_ul(va_arg(al, unsigned int), 16);
+                                f = false;
+                        }
+                        else if (*ch=='d') {
+                                if (!s_signed) {
+                                        print_ul(va_arg(al, unsigned int));
+                                } else {
+                                        print_l(va_arg(al, int));
+                                }
+                                f = false;
+                        } else if (*ch=='l') {
+                                if (!s_signed) {
+                                        print_ul(va_arg(al, unsigned long));
+                                } else {
+                                        print_ul(va_arg(al, long));
+                                }
+                                f = false;
+                        }
+                } 
+                else if (*ch=='%') {
+                        f = true;
+                        s_signed = true;
+                }
+		else if (*ch=='\r') {
+			m_x = 0;
+		}
+		else if (*ch=='\n') {
+			m_x = 0;
+			m_y++;
+		}
+		else if (*ch=='\b') {
+			if (m_x==0 && m_y>0) {
+				m_y--;
+				m_x = width()-1;
+			} else if (m_y==0 && m_x==0) {
+				//Do nothing
+			} else {
+				m_x--;
+			}
+		}
+		else if (*ch=='\t') {
+			//for (int i=0; i<TAB_SIZE; i++) putCh(' ');
+			m_x += TAB_SIZE;
+		} else {
+			putCh(*ch);
+		}
+        }
+        //args.end();
 }
 
 void Video::putCh(char c)
@@ -134,7 +290,8 @@ void Video::putCh(char c)
 	setCursor();
 
 #if 0
-	volatile unsigned int a;
-	for (a=0; a<0x4ffffff; a++) { }
+	//volatile unsigned int a;
+	unsigned int a;
+	for (a=0; a<0x1ffffff; a++) { }
 #endif
 }

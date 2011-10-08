@@ -47,6 +47,11 @@ void IDT::installRoutine(unsigned int i, void (*handler)(Regs *r))
 	routines[i] = handler;
 }
 
+void IDT::uninstallRoutine(unsigned int i)
+{
+	routines[i] = NULL;
+}
+
 routine_t IDT::routine(unsigned int i)
 {
 	return getInstance()->routines[i];

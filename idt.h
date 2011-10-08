@@ -15,6 +15,7 @@ public:
 	void initIRQ();
 	static routine_t routine(unsigned int i);
 	void installRoutine(unsigned int i, void (*handler)(Regs *r));
+	void uninstallRoutine(unsigned int i);
 
 	struct Ptr {
 		unsigned short limit;
