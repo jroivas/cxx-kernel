@@ -2,7 +2,6 @@
 #include "string.h"
 #include "port.h"
 #include "mm.h"
-#include "args.h"
 #include <stdarg.h>
 
 //#define VIDEO_MEMORY_LOCATION 0xB8000
@@ -203,6 +202,7 @@ void Video::printf(const char *fmt, ...)
 	const char *ch;
         bool f = false;
         bool s_signed = true;
+        int l_cnt = 0;
 
 	for (ch = str; *ch; ch++) {
                 if (f) {
@@ -214,8 +214,9 @@ void Video::printf(const char *fmt, ...)
                                 print(va_arg(al, const char*));
                                 f = false;
                         }
-                        else if (*ch=='u') {
-                                s_signed = false;
+                        else if (*ch=='l') {
+                                //s_signed = false;
+                                l_cnt++;
                         }
                         else if (*ch=='x') {
                                 putCh('0');
@@ -230,12 +231,18 @@ void Video::printf(const char *fmt, ...)
                                         print_l(va_arg(al, int));
                                 }
                                 f = false;
-                        } else if (*ch=='l') {
+                        } else if (*ch=='u') {
+                                if (l_cnt==0) print_ul(va_arg(al, unsigned int));
+                                else if (l_cnt==1) print_ul(va_arg(al, unsigned long));
+                                else if (l_cnt==2) print_ul(va_arg(al, unsigned long long));
+#if 0
+                                s_signed = false;
                                 if (!s_signed) {
                                         print_ul(va_arg(al, unsigned long));
                                 } else {
                                         print_ul(va_arg(al, long));
                                 }
+#endif
                                 f = false;
                         }
                 } 
@@ -261,7 +268,6 @@ void Video::printf(const char *fmt, ...)
 			}
 		}
 		else if (*ch=='\t') {
-			//for (int i=0; i<TAB_SIZE; i++) putCh(' ');
 			m_x += TAB_SIZE;
 		} else {
 			putCh(*ch);
@@ -280,7 +286,6 @@ void Video::putCh(char c)
 	unsigned int offset = m_y*width() + m_x; 
 	if (offset>=size()) {
 		scroll();
-		//clear(); //TODO scrolling
 	}
 
 	m_videomem[offset] = c | VIDEO_COLOR_MASK;

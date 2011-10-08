@@ -9,19 +9,8 @@ get_esp:
         ret
 
 [global idt_load]
-[global idt_load2]
-idt_load:
-	push ebp
-	mov ebp,esp
-	sub esp,0x40
-	mov ebx,[ebp+8]
-	lidt [ebx]
-
-	leave
-	ret
-
 [extern idt_idtp]
-idt_load2:
+idt_load:
 	lidt [idt_idtp]
 	ret
 

@@ -4,8 +4,10 @@ CXX=clang++
 #CXXFLAGS=-m32 -ffreestanding -fno-builtin -fno-rtti -fno-exceptions -Wall -Werror -Wextra -fomit-frame-pointer -finline-functions -nostdinc
 #CXXFLAGS=-m32 -ffreestanding -fno-builtin -fno-rtti -fno-exceptions -Wall -Werror -Wextra -fomit-frame-pointer -finline-functions
 #CXXFLAGS=-m32 -ffreestanding -fno-rtti -fno-exceptions -Wall -Werror -Wextra -fomit-frame-pointer -finline-functions
+#OF=-fguess-branch-probability -fif-conversion2 -fif-conversion -fmerge-constants -fsplit-wide-types -ftree-builtin-call-dce -ftree-ccp -ftree-ch -ftree-copyrename -ftree-dce -ftree-dominator-opts -ftree-dse -ftree-forwprop -ftree-fre -ftree-phiprop -ftree-sra -ftree-pta -ftree-ter -funit-at-a-time
 CXXFLAGS=-m32 -ffreestanding -fno-builtin -fno-rtti -fno-exceptions -Wall -Werror -Wextra -fomit-frame-pointer -finline-functions
-OBJS=loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o port.o x86.o idt.o idt_handlers.o timer.o args.o
+CXXFLAGSO=-O2 $(CXXFLAGS)
+OBJS=loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o port.o x86.o idt.o idt_handlers.o timer.o
 
 all: kernel
 
@@ -43,19 +45,19 @@ cxa.o: cxa.cpp
 	$(CXX) -c $(CXXFLAGS) -o $@ $< 
 
 video.o: video.cpp video.h
-	$(CXX) -c $(CXXFLAGS) -o $@ $< 
+	$(CXX) -c $(CXXFLAGSO) -o $@ $< 
 
 mutex.o: mutex.cpp mutex.h
-	$(CXX) -c $(CXXFLAGS) -o $@ $< 
+	$(CXX) -c $(CXXFLAGSO) -o $@ $< 
 
 local.o: local.cpp local.h
 	$(CXX) -c $(CXXFLAGS) -o $@ $< 
 
 operators.o: operators.cpp operators.h
-	$(CXX) -c $(CXXFLAGS) -o $@ $< 
+	$(CXX) -c $(CXXFLAGSO) -o $@ $< 
 
 mm.o: mm.cpp mm.h
-	$(CXX) -c $(CXXFLAGS) -o $@ $< 
+	$(CXX) -c $(CXXFLAGSO) -o $@ $< 
 
 paging.o: paging.cpp paging.h
 	$(CXX) -c $(CXXFLAGS) -o $@ $< 
@@ -64,7 +66,7 @@ gdt.o: gdt.cpp gdt.h
 	$(CXX) -c $(CXXFLAGS) -o $@ $< 
 
 string.o: string.cpp string.h
-	$(CXX) -c $(CXXFLAGS) -o $@ $< 
+	$(CXX) -c $(CXXFLAGSO) -o $@ $< 
 
 port.o: port.cpp port.h
 	$(CXX) -c $(CXXFLAGS) -o $@ $< 
@@ -76,9 +78,6 @@ idt.o: idt.cpp idt.h
 	$(CXX) -c $(CXXFLAGS) -o $@ $< 
 
 timer.o: timer.cpp timer.h
-	$(CXX) -c $(CXXFLAGS) -o $@ $< 
-
-args.o: args.cpp args.h
 	$(CXX) -c $(CXXFLAGS) -o $@ $< 
 
 clean:

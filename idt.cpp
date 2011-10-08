@@ -5,9 +5,7 @@
 #include "x86.h"
 #include "video.h"
 
-extern "C" void idt_load(void *p);
-extern "C" void idt_load2();
-//extern "C" void idt_load(IDT::Ptr p);
+extern "C" void idt_load();
 
 static IDT *__global_idt = NULL;;
 IDT::Ptr idt_idtp;
@@ -37,7 +35,7 @@ IDT::IDT()
 
 void IDT::load()
 {
-	idt_load2();
+	idt_load();
 	//idt_load(&idtp);
 	//idt_load(&idtp);
 }
@@ -202,18 +200,14 @@ extern "C" void irq_handler(Regs * r)
 		hlt();
 	}
 
-#if 0
 	void (*handler)(Regs *r);
 	handler = NULL;
 
-//	handler = irq_routines[r->int_no - 32];
-	if (handler) {
+	handler = IDT::getInstance()->routine(r->int_no - 32);
+	if (handler!=NULL) {
 		handler(r);
 	}
 
-#endif
-	Video tmp;
-	tmp.print("IRQ!\n");
 	if (r->int_no >= 40) {
 		Port::out(0xA0, 0x20);
 	}

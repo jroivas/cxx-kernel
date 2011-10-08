@@ -2,6 +2,7 @@
 #define KERNEL_H
 
 #include "video.h"
+#define KERNEL_FREQUENCY 1020
 
 class Kernel
 {
