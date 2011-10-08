@@ -9,7 +9,6 @@ extern "C" void idt_load();
 
 static IDT *__global_idt = NULL;;
 IDT::Ptr idt_idtp;
-IDT::Entry idt[256];
 
 IDT *IDT::getInstance()
 {
@@ -36,8 +35,6 @@ IDT::IDT()
 void IDT::load()
 {
 	idt_load();
-	//idt_load(&idtp);
-	//idt_load(&idtp);
 }
 
 void IDT::installRoutine(unsigned int i, void (*handler)(Regs *r))

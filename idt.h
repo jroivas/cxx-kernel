@@ -21,6 +21,9 @@ public:
 		unsigned short limit;
 		unsigned int base;
 	} __attribute__((packed));
+
+private:
+	IDT();
 	struct Entry {
 		unsigned short base_low;
 		unsigned short sel;
@@ -29,11 +32,7 @@ public:
 		unsigned short base_high;
 	} __attribute__((packed));
 
-private:
-	IDT();
-
-//	Entry idt[256];
-//	Ptr idtp;
+	Entry idt[256];
 
 	routine_t routines[IRQ_ROUTINES];
 
