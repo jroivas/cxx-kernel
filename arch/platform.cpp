@@ -43,6 +43,26 @@ State *Platform::state()
 	return m_state;
 }
 
+int Platform::CAS(ptr_val_t volatile *m_ptr, int cmp, int set)
+{
+	#ifdef __i386__
+        int res = cmp;
+        asm volatile(
+                "lock; cmpxchgl %1,%2\n"
+                "setz %%al\n"
+                "movzbl %%al,%0"
+                : "+a"(res)
+                : "r" (set), "m"(*(m_ptr))
+                : "memory"
+                );
+
+	return res;
+	#endif
+	//if (*m_ptr==cmp)
+	*m_ptr=set;
+	return 1;
+}
+
 Timer *Platform::timer()
 {
 	#ifdef __i386__

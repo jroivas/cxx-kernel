@@ -26,9 +26,7 @@ Kernel::~Kernel()
 int Kernel::run()
 {
 
-	//state->startInterrupts();
 	platform->state()->startInterrupts();
-	//sti();
 	if (video!=NULL) {
 		video->clear();
 		video->printf("Ticks: %lu!\n",Timer::get()->getTicks());

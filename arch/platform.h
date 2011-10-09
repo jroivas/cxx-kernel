@@ -6,6 +6,7 @@
 #include "video.h"
 #include "idt.h"
 #include "kb.h"
+#include "types.h"
 
 class Platform
 {
@@ -17,6 +18,7 @@ public:
 	static Video *video();
 	static IDT *idt();
 	static KB *kb();
+	static int CAS(ptr_val_t volatile *m_ptr, int cmp, int set);
 
 private:
 	/* Plese extend the platform enums when supported */

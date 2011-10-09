@@ -1,9 +1,6 @@
 #include "mutex.h"
 #include "types.h"
-#ifdef USE_LINUX
-#include "stdio.h"
-#include <pthread.h>
-#endif
+#include "arch/platform.h"
 
 Mutex::Mutex()
 {
@@ -22,17 +19,7 @@ Mutex::~Mutex()
 
 int Mutex::CAS(int cmp, int set)
 {
-        int res = cmp;
-        asm volatile(
-                "lock; cmpxchgl %1,%2\n"
-                "setz %%al\n"
-                "movzbl %%al,%0"
-                : "+a"(res)
-                : "r" (set), "m"(*(m_ptr))
-                : "memory"
-                );
-
-	return res;
+	return Platform::CAS(m_ptr,cmp,set);
 }
 
 void Mutex::lock()
