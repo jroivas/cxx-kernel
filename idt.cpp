@@ -2,8 +2,9 @@
 #include "port.h"
 #include "types.h"
 #include "string.h"
-#include "x86.h"
+//#include "x86.h"
 #include "video.h"
+#include "arch/platform.h"
 
 extern "C" void idt_load();
 
@@ -193,8 +194,10 @@ extern "C" void irq_handler(Regs * r)
 		Video tmp;
 		tmp.clear();
 		tmp.printf("ERROR! IRQ, regs.\n");
-		cli();
-		hlt();
+
+		Platform p;
+		p.state()->seizeInterrupts();
+		p.state()->halt();
 	}
 
 	void (*handler)(Regs *r);
@@ -218,15 +221,19 @@ extern "C" void isr_handler(Regs * r)
 		Video tmp;
 		tmp.clear();
 		tmp.printf("ERROR! ISR, regs.\n");
-		cli();
-		hlt();
+
+		Platform p;
+		p.state()->seizeInterrupts();
+		p.state()->halt();
 	}
 	if (r->int_no < 32) {
 		// Got it
 		Video tmp;
 		tmp.clear();
 		tmp.printf("ERROR! ISR\n");
-		cli();
-		hlt();
+
+		Platform p;
+		p.state()->seizeInterrupts();
+		p.state()->halt();
 	}
 }

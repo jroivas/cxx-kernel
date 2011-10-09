@@ -1,23 +1,21 @@
-CXX=clang++
-#CXX=g++
-#CXXFLAGS=-m32 -ffreestanding -nostdlib -fno-builtin -fno-rtti -fno-exceptions -Wall -Werror -Wextra -fstrength-reduce -fomit-frame-pointer -finline-functions -nostdinc
-#CXXFLAGS=-m32 -ffreestanding -fno-builtin -fno-rtti -fno-exceptions -Wall -Werror -Wextra -fomit-frame-pointer -finline-functions -nostdinc
-#CXXFLAGS=-m32 -ffreestanding -fno-builtin -fno-rtti -fno-exceptions -Wall -Werror -Wextra -fomit-frame-pointer -finline-functions
-#CXXFLAGS=-m32 -ffreestanding -fno-rtti -fno-exceptions -Wall -Werror -Wextra -fomit-frame-pointer -finline-functions
-#OF=-fguess-branch-probability -fif-conversion2 -fif-conversion -fmerge-constants -fsplit-wide-types -ftree-builtin-call-dce -ftree-ccp -ftree-ch -ftree-copyrename -ftree-dce -ftree-dominator-opts -ftree-dse -ftree-forwprop -ftree-fre -ftree-phiprop -ftree-sra -ftree-pta -ftree-ter -funit-at-a-time
-CXXFLAGS=-m32 -ffreestanding -fno-builtin -fno-rtti -fno-exceptions -Wall -Werror -Wextra -fomit-frame-pointer -finline-functions
-CXXFLAGSO=-O2 $(CXXFLAGS)
-OBJS=loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o port.o x86.o idt.o idt_handlers.o timer.o kb.o
+include config.mk
+CXXFLAGS:=$(CXXFLAGS) -I.
+CXXFLAGSO:=$(CXXFLAGSO) -I.
+OBJS=loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o port.o idt.o idt_handlers.o timer.o kb.o
+
+#LIBS=-Larch/ -larch
+LIBS=arch/arch.a arch/$(ARCH)/$(ARCH).a
 
 all: kernel
+
 
 run: run_iso
 
 run_qemu: kernel
 	qemu -kernel kernel
 
-kernel: link2.ld $(OBJS)
-	ld -m elf_i386 -T link2.ld -o kernel $(OBJS)
+kernel: link2.ld $(OBJS) $(LIBS)
+	$(LD) -m elf_i386 -T link2.ld -o kernel $(OBJS) $(LIBS)
 
 kernel.iso: kernel menu.lst stage2_eltorito
 	mkdir -p isofiles/boot/grub
@@ -28,6 +26,9 @@ kernel.iso: kernel menu.lst stage2_eltorito
 
 run_iso: kernel.iso
 	qemu -cdrom kernel.iso
+
+platform:
+	make -C platform
 
 loader.o: loader.asm
 	nasm -f elf32 -o $@ $<
@@ -83,5 +84,13 @@ timer.o: timer.cpp timer.h
 kb.o: kb.cpp kb.h
 	$(CXX) -c $(CXXFLAGS) -o $@ $< 
 
+states.o: states.cpp states.h
+	$(CXX) -c $(CXXFLAGS) -o $@ $< 
+
+arch/$(ARCH)/$(ARCH).a:
+arch/arch.a:
+	make -C arch
+
 clean:
+	make -C arch clean
 	rm -f kernel kernel.iso *.o

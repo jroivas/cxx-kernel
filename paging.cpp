@@ -1,6 +1,7 @@
 #include "paging.h"
 #include "types.h"
-#include "x86.h"
+#include "arch/platform.h"
+//#include "x86.h"
 
 //#define PAGE_CNT 1024
 //#define LPOS 0x100000
@@ -187,8 +188,13 @@ bool PagingPrivate::map(void *phys, void *virt, unsigned int flags)
         ptr32_t pt = (ptr32_t )0xFFC00000 + (0x400 * pagedir);
         if ((pt[pagetable] & 1) == 1) {
                 //printf("System Failure!\n\tPT: 0x%x\t\tnum: 0x%x", pagedir, pagetable);
+		Platform p;
+		p.state()->seizeInterrupts();
+		p.state()->halt();
+/*
                 cli();
                 hlt();
+*/
 		return false;
         }
 

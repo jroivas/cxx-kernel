@@ -1,7 +1,6 @@
 #include "types.h"
 #include "kernel.h"
 #include "idt.h"
-#include "x86.h"
 #include "timer.h"
 #include "kb.h"
 
@@ -9,6 +8,7 @@ Kernel::Kernel()
 {
 	//video = new Video();
 	video = Video::get();
+	platform = new Platform();
 
 	IDT::get()->initISR();
 	IDT::get()->initIRQ();
@@ -26,7 +26,9 @@ Kernel::~Kernel()
 int Kernel::run()
 {
 
-	sti();
+	//state->startInterrupts();
+	platform->state()->startInterrupts();
+	//sti();
 	if (video!=NULL) {
 		video->clear();
 		video->printf("Ticks: %lu!\n",Timer::get()->getTicks());
