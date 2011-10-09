@@ -1,6 +1,7 @@
 #include "timer.h"
 #include "idt.h"
 #include "types.h"
+#include "arch/platform.h"
 
 static Timer *__global_timer = NULL;
 

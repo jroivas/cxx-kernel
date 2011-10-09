@@ -1,16 +1,15 @@
-#ifndef IDT_H
-#define IDT_H
+#ifndef IDT_X86_H
+#define IDT_X86_H
 
 #include "regs.h"
+#include "idt.h"
 
 #define IRQ_ROUTINES 16
 
-typedef void (*routine_t)(Regs *r);
-
-class IDT
+class IDTX86 : public IDT
 {
 public:
-	static IDT *get();
+	IDTX86();
 	void initISR();
 	void initIRQ();
 	static routine_t routine(unsigned int i);
@@ -22,8 +21,9 @@ public:
 		unsigned int base;
 	} __attribute__((packed));
 
+protected:
+	routine_t getRoutine(unsigned int i);
 private:
-	IDT();
 	struct Entry {
 		unsigned short base_low;
 		unsigned short sel;

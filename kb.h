@@ -8,10 +8,10 @@ class KB
 public:
 	static KB *get();
 
-private:
-	KB();
-	void run(Regs *r);
+protected:
+	KB() { }
 	static void handler(Regs *r);
+	virtual void run(Regs *r) = 0;
 };
 
 #endif

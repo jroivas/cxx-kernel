@@ -2,13 +2,12 @@ include config.mk
 CXXFLAGS:=$(CXXFLAGS) -I.
 CXXFLAGSO:=$(CXXFLAGSO) -I.
 #OBJS=loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o idt.o idt_handlers.o timer.o kb.o
-OBJS=kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o idt.o timer.o kb.o
+OBJS=arch/$(ARCH)/loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o idt.o timer.o kb.o
 
 #LIBS=-Larch/ -larch
 LIBS=arch/arch.a arch/$(ARCH)/$(ARCH).a
 
 all: kernel
-
 
 run: run_iso
 
@@ -82,6 +81,7 @@ kb.o: kb.cpp kb.h
 states.o: states.cpp states.h
 	$(CXX) -c $(CXXFLAGS) -o $@ $< 
 
+arch/$(ARCH)/loader.o:
 arch/$(ARCH)/$(ARCH).a:
 arch/arch.a:
 	make -C arch

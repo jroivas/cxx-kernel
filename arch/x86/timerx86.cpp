@@ -1,6 +1,6 @@
 #include "timerx86.h"
 #include "port.h"
-#include "idt.h"
+#include "idtx86.h"
 
 #define TIMER_ISR_NUMBER 0
 

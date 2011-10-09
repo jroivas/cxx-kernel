@@ -1,4 +1,4 @@
-#include "idt.h"
+#include "idtx86.h"
 #include "port.h"
 #include "types.h"
 #include "string.h"
@@ -8,18 +8,20 @@
 
 extern "C" void idt_load();
 
-static IDT *__global_idt = NULL;;
-IDT::Ptr idt_idtp;
+//static IDTX86 *__global_idt = NULL;;
+IDTX86::Ptr idt_idtp;
 
-IDT *IDT::get()
+#if 0
+IDTX86 *IDTX86::get()
 {
 	if (__global_idt==NULL) {
-		__global_idt = new IDT();
+		__global_idt = new IDTX86();
 	}
 	return __global_idt;
 }
+#endif
 
-IDT::IDT()
+IDTX86::IDTX86()
 {
 	idt_idtp.limit = (sizeof(Entry)*256)-1;
 	idt_idtp.base = (unsigned int)&idt;
@@ -33,28 +35,27 @@ IDT::IDT()
 	load();
 }
 
-void IDT::load()
+void IDTX86::load()
 {
 	idt_load();
 }
 
-void IDT::installRoutine(unsigned int i, void (*handler)(Regs *r))
+void IDTX86::installRoutine(unsigned int i, void (*handler)(Regs *r))
 {
 	routines[i] = handler;
 }
 
-void IDT::uninstallRoutine(unsigned int i)
+void IDTX86::uninstallRoutine(unsigned int i)
 {
 	routines[i] = NULL;
 }
 
-routine_t IDT::routine(unsigned int i)
+routine_t IDTX86::getRoutine(unsigned int i)
 {
-	return get()->routines[i];
-	//return NULL;
+	return routines[i];
 }
 
-void IDT::setGate(unsigned char num, unsigned long base, unsigned short sel, unsigned char flags)
+void IDTX86::setGate(unsigned char num, unsigned long base, unsigned short sel, unsigned char flags)
 {
 	idt[num].base_low = (base & 0xFFFF);
 	idt[num].base_high = ((base>>16) & 0xFFFF);
@@ -98,7 +99,7 @@ ISR_GATE_DEF(28);
 ISR_GATE_DEF(29);
 ISR_GATE_DEF(30);
 ISR_GATE_DEF(31);
-void IDT::initISR()
+void IDTX86::initISR()
 {
 	ISR_GATE(0);
 	ISR_GATE(1);
@@ -134,7 +135,7 @@ void IDT::initISR()
 	ISR_GATE(31);
 }
 
-void IDT::remapIRQ()
+void IDTX86::remapIRQ()
 {
 	Port::out(0x20, 0x11);
 	Port::out(0xA0, 0x11);
@@ -166,7 +167,7 @@ IRQ_GATE_DEF(12);
 IRQ_GATE_DEF(13);
 IRQ_GATE_DEF(14);
 IRQ_GATE_DEF(15);
-void IDT::initIRQ()
+void IDTX86::initIRQ()
 {
 	remapIRQ();
 
@@ -203,7 +204,7 @@ extern "C" void irq_handler(Regs * r)
 	void (*handler)(Regs *r);
 	handler = NULL;
 
-	handler = IDT::get()->routine(r->int_no - 32);
+	handler = IDTX86::get()->routine(r->int_no - 32);
 	if (handler!=NULL) {
 		handler(r);
 	}

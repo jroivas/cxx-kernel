@@ -1,19 +1,20 @@
 #include "kb.h"
 #include "types.h"
-#include "port.h"
 #include "idt.h"
 #include "video.h"
+#include "arch/platform.h"
 
 static KB *__global_kb = NULL;
 
 KB *KB::get()
 {
 	if (__global_kb==NULL) {
-		__global_kb = new KB();
+		__global_kb = Platform::kb();
 	}
 	return __global_kb;
 }
 
+#if 0
 KB::KB()
 {
         IDT::get()->installRoutine(1, KB::handler);
@@ -35,6 +36,7 @@ void KB::run(Regs *r)
 #endif
 	Video::get()->putCh('!');
 }
+#endif
 
 void KB::handler(Regs *r)
 {

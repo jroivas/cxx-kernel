@@ -16,9 +16,9 @@ public:
 	void resize(int width, int height);
 	void scroll();
 
-	inline unsigned int size();
-	inline unsigned int width();
-	inline unsigned int height();
+	unsigned int size();
+	unsigned int width();
+	unsigned int height();
 
 protected:
 	void print_ul(unsigned long val, int radix=10);

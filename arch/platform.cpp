@@ -5,10 +5,14 @@
 #include "x86/statesx86.h"
 #include "x86/timerx86.h"
 #include "x86/videox86.h"
+#include "x86/idtx86.h"
+#include "x86/kbx86.h"
 #endif
 
 static Timer *__platform_timer = NULL;
 static Video *__platform_video = NULL;
+static IDT   *__platform_idt   = NULL;
+static KB    *__platform_kb    = NULL;
 
 Platform::Platform()
 {
@@ -58,4 +62,24 @@ Video *Platform::video()
 	}
 	#endif
 	return __platform_video;
+}
+
+IDT *Platform::idt()
+{
+	#ifdef __i386__
+	if (__platform_idt==NULL) {
+		__platform_idt = new IDTX86();
+	}
+	#endif
+	return __platform_idt;
+}
+
+KB *Platform::kb()
+{
+	#ifdef __i386__
+	if (__platform_kb==NULL) {
+		__platform_kb = new KBX86();
+	}
+	#endif
+	return __platform_kb;
 }

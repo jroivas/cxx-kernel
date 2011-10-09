@@ -4,6 +4,8 @@
 #include "states.h"
 #include "timer.h"
 #include "video.h"
+#include "idt.h"
+#include "kb.h"
 
 class Platform
 {
@@ -13,6 +15,8 @@ public:
 	State *state();
 	static Timer *timer();
 	static Video *video();
+	static IDT *idt();
+	static KB *kb();
 
 private:
 	/* Plese extend the platform enums when supported */
