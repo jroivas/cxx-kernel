@@ -1,6 +1,5 @@
 #include "timer.h"
 #include "idt.h"
-#include "port.h"
 #include "types.h"
 
 static Timer *__global_timer = NULL;
@@ -8,32 +7,26 @@ static Timer *__global_timer = NULL;
 Timer *Timer::get()
 {
         if (__global_timer==NULL) {
-                __global_timer = new Timer;
+                //__global_timer = new Timer;
+                __global_timer = Platform::timer();
         }
         return __global_timer;
 }
 
 Timer::Timer()
 {
-        IDT::get()->installRoutine(0, Timer::handler);
+        //IDT::get()->installRoutine(TIMER_ISR_NUMBER, Timer::handler);
         ticks = 0;
 }
 
-void Timer::setFrequency(unsigned int hz)
+void Timer::setFrequency(unsigned int hz) 
 {
-        unsigned int val = 1193180/hz;
-        Port::out(0x43, 0x36);
-        Port::out(0x40, val&0xFF);
-        Port::out(0x40, (val>>8)&0xFF);
+	(void)hz;
 }
 
 void Timer::run(Regs *r)
 {
-        (void)r;
-        ticks++;
-        if (ticks%10==0) {
-                Port::out(0x20, 0x20);
-        }
+	(void)r;
 }
 
 void Timer::handler(Regs *r)

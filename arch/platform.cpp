@@ -1,8 +1,14 @@
 #include "platform.h"
 #include "types.h"
+
 #ifdef __i386__
 #include "x86/statesx86.h"
+#include "x86/timerx86.h"
+#include "x86/videox86.h"
 #endif
+
+static Timer *__platform_timer = NULL;
+static Video *__platform_video = NULL;
 
 Platform::Platform()
 {
@@ -31,4 +37,25 @@ Platform::~Platform()
 State *Platform::state()
 {
 	return m_state;
+}
+
+Timer *Platform::timer()
+{
+	#ifdef __i386__
+	if (__platform_timer==NULL) {
+		__platform_timer = new TimerX86();
+	}
+	#endif
+
+	return __platform_timer;
+}
+
+Video *Platform::video()
+{
+	#ifdef __i386__
+	if (__platform_video==NULL) {
+		__platform_video = new VideoX86();
+	}
+	#endif
+	return __platform_video;
 }

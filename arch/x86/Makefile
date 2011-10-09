@@ -1,7 +1,7 @@
 include ../../config.mk
 CXXFLAGS:=$(CXXFLAGS) -I../../
 
-OBJS=statesx86.o x86.o
+OBJS=loader.o idt_handlers.o statesx86.o x86.o port.o timerx86.o videox86.o
 
 all: x86.a
 
@@ -9,10 +9,25 @@ x86.a: $(OBJS)
 	ar rcs $@ $(OBJS)
 	ranlib $@
 
+loader.o: loader.asm
+	nasm -f elf32 -o $@ $<
+
+idt_handlers.o: idt_handlers.asm
+	nasm -f elf32 -o $@ $<
+
 statesx86.o: statesx86.cpp
 	$(CXX) -c $(CXXFLAGS) -o $@ $< 
 
+timerx86.o: timerx86.cpp
+	$(CXX) -c $(CXXFLAGS) -o $@ $< 
+
+videox86.o: videox86.cpp
+	$(CXX) -c $(CXXFLAGS) -o $@ $< 
+
 x86.o: x86.cpp
+	$(CXX) -c $(CXXFLAGS) -o $@ $< 
+
+port.o: port.cpp
 	$(CXX) -c $(CXXFLAGS) -o $@ $< 
 
 clean:

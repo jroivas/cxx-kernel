@@ -1,25 +1,27 @@
 #include "video.h"
 #include "string.h"
-#include "port.h"
+//#include "port.h"
 #include "mm.h"
+#include "arch/platform.h"
 #include <stdarg.h>
 
 //#define VIDEO_MEMORY_LOCATION 0xB8000
-#define VIDEO_MEMORY_LOCATION 0xC00B8000
+//#define VIDEO_MEMORY_LOCATION 0xC00B8000
 #define VIDEO_COLOR_MASK 0x0700
 #define CHAR_LF 0x0A
 #define CHAR_CR 0x0D
 #define CHAR_EMPTY ' '
 #define TAB_SIZE 8
 #define SCROLL_SIZE 1
-#define PORT 0x3D4
+//#define PORT 0x3D4
 
 static Video *__global_video = NULL;
 
 Video *Video::get()
 {
 	if (__global_video==NULL) {
-		__global_video = new Video();
+		//__global_video = new Video();
+		__global_video = Platform::video();
 	}
 	return __global_video;
 }
@@ -32,7 +34,8 @@ Video::Video()
 	m_width = 80;
 	m_height = 25;
 
-	m_videomem = (unsigned short *)VIDEO_MEMORY_LOCATION;
+	m_videomem = NULL;
+	//m_videomem = (unsigned short *)VIDEO_MEMORY_LOCATION;
 }
 
 Video::~Video()
@@ -64,6 +67,7 @@ void Video::resize(int width, int height)
 
 void Video::clear()
 {
+	if (m_videomem==NULL) return;
 	unsigned int i = 0;
 
 	while (i<size()) {
@@ -76,16 +80,20 @@ void Video::clear()
 
 void Video::setCursor()
 {
+	// Dummy function
+#if 0
 	unsigned int pos = m_y*width() + m_x;
 
 	Port::out(PORT, 0x0F);
 	Port::out(PORT+1, pos&0xFF);
 	Port::out(PORT, 0x0E);
 	Port::out(PORT+1, (pos>>8)&0xFF);
+#endif
 }
 
 void Video::scroll()
 {
+	if (m_videomem==NULL) return;
 	if (m_y>=height()) {
 		unsigned int size = (height()-1)*width();
 		Mem::copy(m_videomem, m_videomem + SCROLL_SIZE*width(), size);
@@ -288,6 +296,7 @@ void Video::printf(const char *fmt, ...)
 
 void Video::putCh(char c)
 {
+	if (m_videomem==NULL) return;
 	if (m_x>=width()) {
 		m_x -= width();
 		m_y++;

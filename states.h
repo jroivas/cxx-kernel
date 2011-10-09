@@ -8,11 +8,6 @@ public:
 	virtual void halt() = 0;
 	virtual void seizeInterrupts() = 0;
 	virtual void startInterrupts() = 0;
-/*
-	virtual void halt()  { }
-	virtual void seizeInterrupts() { }
-	virtual void startInterrupts() { }
-*/
 
 	enum HWState {
 		HWStateNormal = 0,

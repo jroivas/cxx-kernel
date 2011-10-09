@@ -7,14 +7,14 @@ class Timer
 {
 public:
         static Timer *get();
-        void setFrequency(unsigned int hz);
         void wait(unsigned long ticks_to_wait);
         unsigned long getTicks() { return ticks; }
+        virtual void setFrequency(unsigned int hz);
 
-private:
+protected:
         Timer();
+        virtual void run(Regs *r);
         static void handler(Regs *r);
-        void run(Regs *r);
         unsigned long ticks;
 };
 

@@ -20,18 +20,14 @@ public:
 	inline unsigned int width();
 	inline unsigned int height();
 
-private:
+protected:
 	void print_ul(unsigned long val, int radix=10);
         void print_l(long val, int radix=10);
-#if 0
-	void print_ld(unsigned int val) { print_lu(val); }
-        void print_d(int val) { print_u(val); }
-#endif
+
 	void setCursor();
 	unsigned short *m_videomem;
 	unsigned int m_x;
 	unsigned int m_y;
-
 	unsigned int m_width;
 	unsigned int m_height;
 };

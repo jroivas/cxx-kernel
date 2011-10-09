@@ -2,6 +2,8 @@
 #define PLATFORM_H
 
 #include "states.h"
+#include "timer.h"
+#include "video.h"
 
 class Platform
 {
@@ -9,6 +11,8 @@ public:
 	Platform();
 	~Platform();
 	State *state();
+	static Timer *timer();
+	static Video *video();
 
 private:
 	/* Plese extend the platform enums when supported */

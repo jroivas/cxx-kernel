@@ -1,7 +1,8 @@
 include config.mk
 CXXFLAGS:=$(CXXFLAGS) -I.
 CXXFLAGSO:=$(CXXFLAGSO) -I.
-OBJS=loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o port.o idt.o idt_handlers.o timer.o kb.o
+#OBJS=loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o idt.o idt_handlers.o timer.o kb.o
+OBJS=kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o idt.o timer.o kb.o
 
 #LIBS=-Larch/ -larch
 LIBS=arch/arch.a arch/$(ARCH)/$(ARCH).a
@@ -29,12 +30,6 @@ run_iso: kernel.iso
 
 platform:
 	make -C platform
-
-loader.o: loader.asm
-	nasm -f elf32 -o $@ $<
-
-idt_handlers.o: idt_handlers.asm
-	nasm -f elf32 -o $@ $<
 
 main.o: main.cpp
 	$(CXX) -c $(CXXFLAGS) -o $@ $< 
@@ -69,8 +64,8 @@ gdt.o: gdt.cpp gdt.h
 string.o: string.cpp string.h
 	$(CXX) -c $(CXXFLAGSO) -o $@ $< 
 
-port.o: port.cpp port.h
-	$(CXX) -c $(CXXFLAGS) -o $@ $< 
+#port.o: port.cpp port.h
+#	$(CXX) -c $(CXXFLAGS) -o $@ $< 
 
 x86.o: x86.cpp x86.h
 	$(CXX) -c $(CXXFLAGS) -o $@ $< 
