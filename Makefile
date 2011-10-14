@@ -2,7 +2,7 @@ include config.mk
 CXXFLAGS:=$(CXXFLAGS) -I.
 CXXFLAGSO:=$(CXXFLAGSO) -I.
 #OBJS=loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o idt.o idt_handlers.o timer.o kb.o
-OBJS=arch/$(ARCH)/loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o idt.o timer.o kb.o
+OBJS=arch/$(ARCH)/loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o idt.o timer.o kb.o fb.o
 
 #LIBS=-Larch/ -larch
 LIBS=arch/arch.a arch/$(ARCH)/$(ARCH).a
@@ -76,6 +76,9 @@ timer.o: timer.cpp timer.h
 	$(CXX) -c $(CXXFLAGS) -o $@ $< 
 
 kb.o: kb.cpp kb.h
+	$(CXX) -c $(CXXFLAGS) -o $@ $< 
+
+fb.o: fb.cpp fb.h
 	$(CXX) -c $(CXXFLAGS) -o $@ $< 
 
 states.o: states.cpp states.h
