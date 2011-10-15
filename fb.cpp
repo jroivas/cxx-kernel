@@ -38,6 +38,8 @@ void FB::putPixel(int x, int y, unsigned char r, unsigned char g, unsigned char 
 {
 	if (backbuffer==NULL) return;
 	if (current==NULL) return;
+	x %= current->width;
+	y %= current->height;
 	switch (current->depth) {
 		case 16:
 			{
@@ -90,6 +92,8 @@ void FB::putPixel(int x, int y, unsigned char r, unsigned char g, unsigned char 
 void FB::putPixel(int x, int y, unsigned int color)
 {
 	if (backbuffer!=NULL && current!=NULL && current->depth==32) {
+		if (x>=current->width) x %= current->width;
+		if (y>=current->width) y %= current->height;
 		unsigned int *pos = (unsigned int*)(backbuffer+(y*current->bytes_per_line + x*4));
 		*pos = color;
 	} else {
@@ -98,5 +102,15 @@ void FB::putPixel(int x, int y, unsigned int color)
 		unsigned char r = (color>>16) & 0xff;
 		unsigned char a = (color>>24) & 0xff;
 		putPixel(x, y, r,g,b,a);
+	}
+}
+
+void FB::clear()
+{
+	if (backbuffer==NULL) return;
+	unsigned char *dest = backbuffer+(current->height*current->bytes_per_line);
+	unsigned char *ptr = backbuffer;
+	while (ptr<dest) {
+		*ptr++ = 0;
 	}
 }

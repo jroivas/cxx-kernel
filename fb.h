@@ -17,10 +17,11 @@ public:
 	};
 
 	FB();
-	virtual ModeConfig *query(ModeConfig prefer) = 0;
+	virtual ModeConfig *query(ModeConfig *prefer) = 0;
 	virtual bool configure(ModeConfig *mode) = 0;
 	virtual void blit() = 0;
 	void swap();
+	void clear();
 	unsigned char *data();
 	void setSingleBuffer();
 	void putPixel(int x, int y, unsigned char r, unsigned char g, unsigned char b, unsigned char a=255);
