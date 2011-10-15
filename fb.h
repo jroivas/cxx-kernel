@@ -22,12 +22,14 @@ public:
 	virtual void blit() = 0;
 	void swap();
 	unsigned char *data();
+	void setSingleBuffer();
 	void putPixel(int x, int y, unsigned char r, unsigned char g, unsigned char b, unsigned char a=255);
 	void putPixel(int x, int y, unsigned int color);
 
 protected:
 	unsigned char *buffer;
 	unsigned char *backbuffer;
+	bool double_buffer;
 	ModeConfig *current;
 };
 #endif
