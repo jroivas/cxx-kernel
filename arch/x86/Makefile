@@ -2,7 +2,7 @@ include ../../config.mk
 CXXFLAGS:=$(CXXFLAGS) -I../../
 
 #OBJS=loader.o idt_handlers.o statesx86.o x86.o port.o timerx86.o videox86.o idtx86.o kbx86.o
-OBJS=idt_handlers.o statesx86.o x86.o port.o timerx86.o videox86.o idtx86.o kbx86.o
+OBJS=idt_handlers.o statesx86.o x86.o port.o timerx86.o videox86.o idtx86.o kbx86.o vesa.o
 
 all: x86.a loader.o
 
@@ -35,6 +35,9 @@ kbx86.o: kbx86.cpp
 	$(CXX) -c $(CXXFLAGS) -o $@ $< 
 
 port.o: port.cpp
+	$(CXX) -c $(CXXFLAGS) -o $@ $< 
+
+vesa.o: vesa.cpp
 	$(CXX) -c $(CXXFLAGS) -o $@ $< 
 
 clean:

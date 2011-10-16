@@ -1,5 +1,10 @@
 #include "fb.h"
+#ifdef __linux__
+#include <stdlib.h>
+#else
 #include "types.h"
+#include "mm.h"
+#endif
 
 FB::FB()
 {
@@ -7,11 +12,49 @@ FB::FB()
 	buffer = NULL;
 	backbuffer = NULL;
 	double_buffer = true;
+	tmp_w = 0;
+	tmp_h = 0;
+}
+
+FB::~FB()
+{
+	freeBuffers();
 }
 
 void FB::setSingleBuffer()
 {
 	double_buffer = false;
+}
+
+void FB::allocBuffers()
+{
+	buffer = (unsigned char*)malloc(current->bytes_per_line*(current->height+1));
+	backbuffer = (unsigned char*)malloc(current->bytes_per_line*(current->height+1));
+}
+
+void FB::freeBuffers()
+{
+	if (buffer!=NULL) {
+		free(buffer);
+		buffer = NULL;
+	}
+	if (backbuffer!=NULL) {
+		free(backbuffer);
+		backbuffer = NULL;
+	}
+}
+
+bool FB::configure(ModeConfig *mode)
+{
+	if (mode==NULL) return false;
+
+	current = mode;
+	tmp_w = mode->width-1;
+	tmp_h = mode->height-1;
+
+	allocBuffers();
+
+	return true;
 }
 
 unsigned char *FB::data()
@@ -36,10 +79,16 @@ void FB::swap()
 
 void FB::putPixel(int x, int y, unsigned char r, unsigned char g, unsigned char b, unsigned char a)
 {
+
 	if (backbuffer==NULL) return;
 	if (current==NULL) return;
+#if 0
+	if (x>tmp_w) x %= current->width;
+	if (y>tmp_h) y %= current->height;
+#else
 	x %= current->width;
 	y %= current->height;
+#endif
 	switch (current->depth) {
 		case 16:
 			{
@@ -51,14 +100,15 @@ void FB::putPixel(int x, int y, unsigned char r, unsigned char g, unsigned char 
 			*pos = color;
 			}
 			break;
-		case 24:
+		/*case 24:
 			{
-			unsigned char *pos = (unsigned char*)(backbuffer+(y*current->bytes_per_line + x*3));
+			unsigned char *pos = (unsigned char*)(backbuffer+(y*current->bytes_per_line + x*4));
 			*pos++ = r;
 			*pos++ = g;
 			*pos++ = b;
 			}
-			break;
+			break;*/
+		case 24:
 		case 32:
 			{
 			unsigned int *pos = (unsigned int*)(backbuffer+(y*current->bytes_per_line + x*4));
@@ -92,8 +142,8 @@ void FB::putPixel(int x, int y, unsigned char r, unsigned char g, unsigned char 
 void FB::putPixel(int x, int y, unsigned int color)
 {
 	if (backbuffer!=NULL && current!=NULL && current->depth==32) {
-		if (x>=current->width) x %= current->width;
-		if (y>=current->width) y %= current->height;
+		x %= current->width;
+		y %= current->height;
 		unsigned int *pos = (unsigned int*)(backbuffer+(y*current->bytes_per_line + x*4));
 		*pos = color;
 	} else {

@@ -17,8 +17,9 @@ public:
 	};
 
 	FB();
+	~FB();
 	virtual ModeConfig *query(ModeConfig *prefer) = 0;
-	virtual bool configure(ModeConfig *mode) = 0;
+	virtual bool configure(ModeConfig *mode);
 	virtual void blit() = 0;
 	void swap();
 	void clear();
@@ -28,9 +29,13 @@ public:
 	void putPixel(int x, int y, unsigned int color);
 
 protected:
+	void allocBuffers();
+	void freeBuffers();
 	unsigned char *buffer;
 	unsigned char *backbuffer;
 	bool double_buffer;
 	ModeConfig *current;
+	int tmp_w;
+	int tmp_h;
 };
 #endif

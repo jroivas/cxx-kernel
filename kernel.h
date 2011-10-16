@@ -4,7 +4,7 @@
 #include "video.h"
 #include "states.h"
 #include "arch/platform.h"
-#define KERNEL_FREQUENCY 1020
+#define KERNEL_FREQUENCY 1000
 
 class Kernel
 {

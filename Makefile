@@ -7,7 +7,7 @@ OBJS=arch/$(ARCH)/loader.o kernel.o video.o main.o cxa.o mutex.o local.o operato
 #LIBS=-Larch/ -larch
 LIBS=arch/arch.a arch/$(ARCH)/$(ARCH).a
 
-all: kernel
+all: other kernel
 
 run: run_iso
 
@@ -27,13 +27,16 @@ kernel.iso: kernel menu.lst stage2_eltorito
 run_iso: kernel.iso
 	qemu -cdrom kernel.iso
 
+other:
+	make -C 3rdparty
+
 platform:
 	make -C platform
 
 main.o: main.cpp
 	$(CXX) -c $(CXXFLAGS) -o $@ $< 
 
-kernel.o: kernel.cpp
+kernel.o: kernel.cpp kernel.h
 	$(CXX) -c $(CXXFLAGS) -o $@ $< 
 
 cxa.o: cxa.cpp
