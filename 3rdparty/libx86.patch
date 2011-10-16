@@ -1,0 +1,170 @@
+diff -urN libx86.orig//lrmi.c libx86.my/lrmi.c
+--- libx86.orig//lrmi.c	2011-10-16 16:41:19.655891295 +0300
++++ libx86.my/lrmi.c	2011-10-16 17:03:50.349005307 +0300
+@@ -28,6 +28,11 @@
+ 
+ #if defined(__linux__) && defined(__i386__)
+ 
++#define IF_MASK X86_EFLAGS_IF
++#define IOPL_MASK X86_EFLAGS_IOPL
++#define VIF_MASK X86_EFLAGS_VIF
++#define TF_MASK X86_EFLAGS_TF
++
+ #include <asm/vm86.h>
+ 
+ #ifdef USE_LIBC_VM86
+@@ -93,7 +98,7 @@
+ 	void *old_sighandler;
+ 	int vret;
+ #endif
+-} context = { 0 };
++} context;
+ 
+ 
+ static inline void
+@@ -578,6 +583,8 @@
+ 		fprintf(stderr, "%02x ", (unsigned int)p[i]);
+ 
+ 	fputs("]\n", stderr);
++#else
++	(void)vret;
+ #endif
+ }
+ 
+diff -urN libx86.orig//Makefile libx86.my/Makefile
+--- libx86.orig//Makefile	2011-10-16 16:41:19.655891295 +0300
++++ libx86.my/Makefile	2011-10-16 17:03:50.350005295 +0300
+@@ -1,3 +1,4 @@
++include ../../config.mk
+ OBJECTS = x86-common.o
+ CFLAGS ?= -O2 -Wall -DDEBUG -g
+ LIBDIR ?= /usr/lib
+diff -urN libx86.orig//thunk.c libx86.my/thunk.c
+--- libx86.orig//thunk.c	2011-10-16 16:41:19.655891295 +0300
++++ libx86.my/thunk.c	2011-10-16 17:03:50.351005283 +0300
+@@ -137,6 +137,7 @@
+ 
+ int LRMI_init() {
+ 	int i;
++	volatile char *ptr = 0;
+ 	X86EMU_intrFuncs intFuncs[256];
+ 
+ 	if (!LRMI_common_init())
+@@ -169,7 +170,7 @@
+ 	X86_ESP = 0xFFF9;
+ 	memset (stack, 0, 64*1024);
+ 
+-	*((char *)0) = 0x4f; /* Make sure that we end up jumping back to a
++	*(ptr) = 0x4f; /* Make sure that we end up jumping back to a
+ 				halt instruction */
+ 
+ 	M.mem_base = 0;
+diff -urN libx86.orig//x86-common.c libx86.my/x86-common.c
+--- libx86.orig//x86-common.c	2011-10-16 16:41:19.655891295 +0300
++++ libx86.my/x86-common.c	2011-10-16 17:03:50.352005270 +0300
+@@ -46,13 +46,15 @@
+ 	int ready;
+ 	int count;
+ 	struct mem_block blocks[REAL_MEM_BLOCKS];
+-} mem_info = { 0 };
++} mem_info;
++//} mem_info = { 0 };
+ 
+ static int
+ real_mem_init(void)
+ {
+ 	void *m;
+ 	int fd_zero;
++	int i;
+ 
+ 	if (mem_info.ready)
+ 		return 1;
+@@ -77,6 +79,10 @@
+ 
+ 	mem_info.ready = 1;
+ 	mem_info.count = 1;
++	for (i=1; i<REAL_MEM_BLOCKS; i++) {
++		mem_info.blocks[0].size = 0;
++		mem_info.blocks[0].free = 0;
++	}
+ 	mem_info.blocks[0].size = REAL_MEM_SIZE;
+ 	mem_info.blocks[0].free = 1;
+ 
+diff -urN libx86.orig//x86emu/prim_ops.c libx86.my/x86emu/prim_ops.c
+--- libx86.orig//x86emu/prim_ops.c	2011-10-16 16:41:19.654891307 +0300
++++ libx86.my/x86emu/prim_ops.c	2011-10-16 17:13:24.437828210 +0300
+@@ -2406,7 +2406,7 @@
+ 	}
+ 	div = dvd / (u32)s;
+ 	mod = dvd % (u32)s;
+-	if (abs(div) > 0xffffffff) {
++	if (llabs(div) > 0xffffffffUL) {
+ 		x86emu_intr_raise(0);
+ 		return;
+ 	}
+diff -urN libx86.orig//x86emu/sys.c libx86.my/x86emu/sys.c
+--- libx86.orig//x86emu/sys.c	2011-10-16 16:41:19.653891319 +0300
++++ libx86.my/x86emu/sys.c	2011-10-16 17:17:55.352441309 +0300
+@@ -425,6 +425,7 @@
+ 	X86EMU_pioAddr addr)
+ {
+ 	printf("No real inb\n");
++	(void)addr;
+ DB(	if (DEBUG_IO_TRACE())
+ 		printk("inb %#04x \n", addr);)
+ 	return 0;
+@@ -441,6 +442,7 @@
+ static u16 X86API p_inw(
+ 	X86EMU_pioAddr addr)
+ {
++	(void)addr;
+ 	printf("No real inw\n");
+ DB(	if (DEBUG_IO_TRACE())
+ 		printk("inw %#04x \n", addr);)
+@@ -458,6 +460,7 @@
+ static u32 X86API p_inl(
+ 	X86EMU_pioAddr addr)
+ {
++	(void)addr;
+ 	printf("No real inl\n");
+ DB(	if (DEBUG_IO_TRACE())
+ 		printk("inl %#04x \n", addr);)
+@@ -475,6 +478,8 @@
+ 	X86EMU_pioAddr addr,
+ 	u8 val)
+ {
++	(void)addr;
++	(void)val;
+ 	printf("No real outb\n");
+ DB(	if (DEBUG_IO_TRACE())
+ 		printk("outb %#02x -> %#04x \n", val, addr);)
+@@ -492,6 +497,8 @@
+ 	X86EMU_pioAddr addr,
+ 	u16 val)
+ {
++	(void)addr;
++	(void)val;
+ 	printf("No real outw\n");
+ DB(	if (DEBUG_IO_TRACE())
+ 		printk("outw %#04x -> %#04x \n", val, addr);)
+@@ -509,6 +516,8 @@
+ 	X86EMU_pioAddr addr,
+ 	u32 val)
+ {
++	(void)addr;
++	(void)val;
+ 	printf("No real outl\n");
+ DB(	if (DEBUG_IO_TRACE())
+ 		printk("outl %#08x -> %#04x \n", val, addr);)
+diff -urN libx86.orig//x86emu/x86emu/x86emui.h libx86.my/x86emu/x86emu/x86emui.h
+--- libx86.orig//x86emu/x86emu/x86emui.h	2011-10-16 16:41:19.651891344 +0300
++++ libx86.my/x86emu/x86emu/x86emui.h	2011-10-16 17:07:20.248381205 +0300
+@@ -58,7 +58,7 @@
+ #ifdef __cplusplus
+ #define	X86EMU_UNUSED(v)
+ #else
+-#define	X86EMU_UNUSED(v)	v
++#define	X86EMU_UNUSED(v)	__attribute__((unused))v
+ #endif
+ 
+ #include "x86emu.h"
