@@ -6,7 +6,7 @@
 class StateX86 : public State
 {
 public:
-	StateX86() { }
+	StateX86() : State() { }
 	void halt();
 	void seizeInterrupts();
 	void startInterrupts();

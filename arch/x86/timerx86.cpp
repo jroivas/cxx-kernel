@@ -4,7 +4,7 @@
 
 #define TIMER_ISR_NUMBER 0
 
-TimerX86::TimerX86()
+TimerX86::TimerX86() : Timer()
 {
 	IDT::get()->installRoutine(TIMER_ISR_NUMBER, TimerX86::handler);
 }

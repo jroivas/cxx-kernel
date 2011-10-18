@@ -5,7 +5,7 @@
 
 #define KB_IRQ_NUMBER 1
 
-KBX86::KBX86()
+KBX86::KBX86() : KB()
 {
         IDT::get()->installRoutine(KB_IRQ_NUMBER, KBX86::handler);
 }

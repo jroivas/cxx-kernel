@@ -4,7 +4,7 @@
 #define VIDEO_MEMORY_LOCATION 0xC00B8000
 #define PORT 0x3D4
 
-VideoX86::VideoX86()
+VideoX86::VideoX86() : Video()
 {
 	m_videomem = (unsigned short *)VIDEO_MEMORY_LOCATION;
 }

@@ -32,7 +32,8 @@ double diffTiming(struct timeval *start, struct timeval *end)
 #else
 #define TIME_START()
 #define TIME_END()
-#define printf(...)
+//#define mprintf(...)
+void printf(...) {}
 #endif
 
 enum PtrState
@@ -90,7 +91,10 @@ void *MM::allocPage(size_t cnt)
 	return block;
 #else
 	Paging p;
-	return p.alloc(cnt);
+	p.lock();
+	void *tmp = p.alloc(cnt);
+	p.unlock();
+	return tmp;
 #endif
 }
 
@@ -336,7 +340,7 @@ void *MM::allocMem(size_t size, AllocType t)
 
 	if (size2%PAGE_SIZE>0) m=1;
 	ptr_val_t cnt = size2/PAGE_SIZE+m;
-		
+
 
 	ptr_t ptr = NULL;
 #if 1
@@ -385,6 +389,7 @@ void *MM::allocMem(size_t size, AllocType t)
 		return NULL;
 	}
 
+	//Platform::video()->printf("allocMem 3\n");
 	PtrInfo *tmp = (PtrInfo*)ptr;
 	tmp->prev = NULL;
 	tmp->next = NULL;

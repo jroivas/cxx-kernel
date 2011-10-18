@@ -7,12 +7,14 @@
 #include "x86/videox86.h"
 #include "x86/idtx86.h"
 #include "x86/kbx86.h"
+#include "x86/vesa.h"
 #endif
 
 static Timer *__platform_timer = NULL;
 static Video *__platform_video = NULL;
 static IDT   *__platform_idt   = NULL;
 static KB    *__platform_kb    = NULL;
+static FB    *__platform_fb    = NULL;
 
 Platform::Platform()
 {
@@ -102,4 +104,14 @@ KB *Platform::kb()
 	}
 	#endif
 	return __platform_kb;
+}
+
+FB *Platform::fb()
+{
+	#ifdef __i386__
+	if (__platform_fb==NULL) {
+		__platform_fb = new Vesa();
+	}
+	#endif
+	return __platform_fb;
 }

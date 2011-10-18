@@ -7,7 +7,7 @@ LIBS=$(ARCH)/$(ARCH).a
 
 all: arch.a
 
-arch.a: $(OBJS)
+arch.a: $(OBJS) compile_arch
 	ar rcs $@ $(OBJS)
 	ranlib $@
 
@@ -15,6 +15,7 @@ platform.o: platform.cpp
 	$(CXX) -c $(CXXFLAGS) -o $@ $< 
 
 $(ARCH)/$(ARCH).a:
+compile_arch:
 	make -C $(ARCH)
 
 clean:

@@ -7,8 +7,8 @@
 Kernel::Kernel()
 {
 	//video = new Video();
-	video = Video::get();
 	platform = new Platform();
+	video = Video::get();
 
 	IDT::get()->initISR();
 	IDT::get()->initIRQ();
@@ -25,7 +25,6 @@ Kernel::~Kernel()
 
 int Kernel::run()
 {
-
 	platform->state()->startInterrupts();
 	if (video!=NULL) {
 		video->clear();
@@ -46,6 +45,8 @@ int Kernel::run()
 
 		//delete video;
 	}
+	platform->fb();
+	platform->fb()->query(NULL);
 	while(1) {}
 
 	//asm ("int $0x20");

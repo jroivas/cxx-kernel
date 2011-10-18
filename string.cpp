@@ -4,6 +4,7 @@
 
 void *Mem::copy(void *dest, void *src, size_t size)
 {
+	if (dest==src) return dest;
 	char *d = (char*)dest;
 	char *s = (char*)src;
 	for (size_t i=0; i<size; i++) {
@@ -11,6 +12,23 @@ void *Mem::copy(void *dest, void *src, size_t size)
 		d++;
 		s++;
 	}
+	return dest;
+}
+
+void *Mem::move(void *dest, void *src, size_t size)
+{
+	if (dest==NULL || src==NULL) return NULL;
+	if (dest==src) return dest;
+	if (dest>src) {
+		char *d = ((char*)dest)+size-1;
+		char *s = ((char*)src)+size-1;
+		for (size_t i=0; i<size; i++) {
+			*d = *s;
+			d--;
+			s--;
+		}
+	} else return Mem::copy(dest,src,size);
+
 	return dest;
 }
 
@@ -68,4 +86,19 @@ unsigned int String::length(const char *str)
 unsigned int String::length()
 {
 	return length(m_str);
+}
+
+extern "C" void *memcpy(void *dest, const void *src, unsigned int n)
+{
+	return Mem::copy(dest, (void*)src, n);
+}
+
+extern "C" void *memset(void *s, int c, size_t n)
+{
+	return Mem::set(s, c, n);
+}
+
+extern "C" void *memmove(void *dest, const void *src, size_t n)
+{
+	return Mem::move(dest, (void*)src, n);
 }

@@ -31,10 +31,13 @@ class Paging
 {
 public:
 	Paging();
-	void *alloc(size_t cnt);
+	void *alloc(size_t cnt, unsigned int align=0);
 	void free(void *ptr, size_t cnt);
 	void lock();
 	void unlock();
+	void *mapPhys(void* phys, unsigned int length);
+	void unmapPhys(void* phys, unsigned int length);
+	void map(void *phys, void *virt, unsigned int flags);
 	
 private:
 	PagingPrivate *_d;

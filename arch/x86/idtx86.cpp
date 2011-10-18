@@ -8,20 +8,9 @@
 
 extern "C" void idt_load();
 
-//static IDTX86 *__global_idt = NULL;;
 IDTX86::Ptr idt_idtp;
 
-#if 0
-IDTX86 *IDTX86::get()
-{
-	if (__global_idt==NULL) {
-		__global_idt = new IDTX86();
-	}
-	return __global_idt;
-}
-#endif
-
-IDTX86::IDTX86()
+IDTX86::IDTX86() : IDT()
 {
 	idt_idtp.limit = (sizeof(Entry)*256)-1;
 	idt_idtp.base = (unsigned int)&idt;

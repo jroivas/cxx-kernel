@@ -20,10 +20,5 @@ tar xzf $NAME
 rm -f $NAME
 mv $DIRNAME $NEWNAME
 
-cd $NEWNAME && patch -p1 < ../libx86.patch
-#cat >> $NEWNAME/x86-common.h <<EOF
-#define IF_MASK X86_EFLAGS_IF
-#define IOPL_MASK X86_EFLAGS_IOPL
-#define VIF_MASK X86_EFLAGS_VIF
-#define TF_MASK X86_EFLAGS_TF
-#EOF
+cd $NEWNAME && patch -p1 < ../libx86.patch && cd ..
+cp -r inc $NEWNAME/

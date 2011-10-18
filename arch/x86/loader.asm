@@ -20,16 +20,16 @@ STACKSIZE             equ 0x4000
 [section .data]
 ALIGN 4096
 
-boot_page_dir:
-	dd (boot_page_table + KERNEL_PAGE_FLAGS - KERNEL_VIRTUAL)
+__boot_page_dir:
+	dd (__boot_page_table + KERNEL_PAGE_FLAGS - KERNEL_VIRTUAL)
 	times (KERNEL_PAGE - 1) dd 0
-kernel_page:
-	dd (boot_page_table + KERNEL_PAGE_FLAGS - KERNEL_VIRTUAL)
+__kernel_page:
+	dd (__boot_page_table + KERNEL_PAGE_FLAGS - KERNEL_VIRTUAL)
 	times (1024 - KERNEL_PAGE - 2) dd 0
-	dd (boot_page_dir + KERNEL_PAGE_FLAGS - KERNEL_VIRTUAL)
-boot_page_table:
+	dd (__boot_page_dir + KERNEL_PAGE_FLAGS - KERNEL_VIRTUAL)
+__boot_page_table:
 	times (1024) dd 0
-boot_page_end:
+__boot_page_end:
 
 multiboot_data:
 	multiboot_magic_data dd 0
@@ -53,16 +53,16 @@ start:
 	;add ebx, 3
 
 	mov ebx, KERNEL_PAGE_FLAGS
-	mov ecx, (boot_page_table - KERNEL_VIRTUAL)
+	mov ecx, (__boot_page_table - KERNEL_VIRTUAL)
 
 loop:
 	mov [ecx], ebx
 	add ecx, 4 		;32 bit
 	add ebx, 0x1000
-	cmp ecx, (boot_page_end - KERNEL_VIRTUAL)
+	cmp ecx, (__boot_page_end - KERNEL_VIRTUAL)
 	jb loop
 
-	mov ecx, (boot_page_dir - KERNEL_VIRTUAL)
+	mov ecx, (__boot_page_dir - KERNEL_VIRTUAL)
 	mov cr3, ecx
 
 	mov ecx, cr0
@@ -74,13 +74,13 @@ loop:
 	;jmp 0x08:high_half
 	
 high_half:
-	mov dword [boot_page_dir], 0
+	mov dword [__boot_page_dir], 0
 	invlpg [0]
 
 	;mov ax, 0x1742
 	;mov [KERNEL_VIRTUAL+0xB8000],ax
 
-	mov esp, stack+STACKSIZE           ; set up the stack
+	mov esp, __initial_stack+STACKSIZE           ; set up the stack
 
 	; pass Multiboot magic number
 	mov eax, [multiboot_magic_data]
@@ -118,5 +118,5 @@ gdt_flush_exit:
 
 [section .bss]
 ALIGN 4
-stack:
+__initial_stack:
    resb STACKSIZE                     ; reserve 16k stack on a doubleword boundary

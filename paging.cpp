@@ -73,13 +73,24 @@ void Paging::unlock()
 }
 
 /* Allocate pages */
-void *Paging::alloc(size_t cnt)
+void *Paging::alloc(size_t cnt, unsigned int align)
 {
 	/* We need proper locking because _d is a singleton.
 	 * This of course means only one alloc is allowed at time.
 	 */
 	_d->lock();
-	void *tmp = __free_page_address;
+	//void *tmp = __free_page_address;
+
+	if (align==0) {
+		align = PAGE_SIZE;
+	}
+
+	/* Always align to proper boundaries */
+	ptr8_t tmp = (ptr8_t)__free_page_address;
+	while ((ptr32_val_t)tmp & (align - 1)) {
+		tmp++;
+	}
+	__free_page_address = tmp;
 
 	while (cnt>0) {
 		if (_d->map(_d->getPage(), __free_page_address, 0x3)) {
@@ -106,6 +117,33 @@ void Paging::free(void *ptr, size_t cnt)
 		cnt--;
 	}
 	_d->unlock();
+}
+
+/* Map physical page */
+void *Paging::mapPhys(void* phys, unsigned int length)
+{
+	_d->lock();
+	unsigned int cc = length;
+	ptr8_t virt = (ptr8_t)phys;
+	while (cc!=0) {
+		//_d->map(phys, __free_page_address, 0x3);
+		_d->map(virt, virt, 0x3);
+		virt += PAGE_SIZE;
+		//__free_page_address += PAGE_SIZE;
+
+		if (cc>=PAGE_SIZE) cc -= PAGE_SIZE;
+		else break;
+	}
+	_d->unlock();
+	//return virt;
+	return phys;
+}
+
+void Paging::unmapPhys(void* phys, unsigned int length)
+{
+	unsigned int cnt = length/PAGE_SIZE;
+	if (length%length/PAGE_SIZE!=0) cnt++;
+	free(phys, cnt);
 }
 
 PagingPrivate::PagingPrivate()
@@ -172,6 +210,13 @@ void PagingPrivate::freePage(void *ptr)
 	__mem_map[count] |= bit;
 }
 
+void Paging::map(void *phys, void *virt, unsigned int flags)
+{
+	_d->lock();
+	_d->map(phys,virt,flags);
+	_d->unlock();
+}
+
 /* Map physical page to virtual */
 bool PagingPrivate::map(void *phys, void *virt, unsigned int flags)
 {
@@ -180,15 +225,16 @@ bool PagingPrivate::map(void *phys, void *virt, unsigned int flags)
 
 	//unsigned long *pd = (unsigned long *) 0xFFFFF000;
 	ptr32_t pd = __page_directory;
-        if ((pd[pagedir] & 1) != 1)
-        {
+        if ((pd[pagedir] & 1) != 1) {
                 pd[pagedir] = (ptr32_val_t )getPage() | 0x3;
         }
 
-        ptr32_t pt = (ptr32_t )0xFFC00000 + (0x400 * pagedir);
-        if ((pt[pagetable] & 1) == 1) {
-                //printf("System Failure!\n\tPT: 0x%x\t\tnum: 0x%x", pagedir, pagetable);
+        //ptr32_t pt = (ptr32_t )0xFFC00000 + (0x400 * pagedir);
+        //ptr32_t pt = (ptr32_t)((ptr32_val_t)__page_table + (0x400 * pagedir));
+        ptr32_t pt = __page_table + (0x400 * pagedir);
+        if ((pt[pagetable] & 1) == 1) { //TODO Sharing
 		Platform p;
+		p.video()->printf("Paging error HALT!\n");
 		p.state()->seizeInterrupts();
 		p.state()->halt();
 /*
@@ -209,8 +255,12 @@ void *PagingPrivate::unmap(void *ptr)
 	ptr32_val_t pagedir   = (ptr32_val_t)ptr >> 22;
 	ptr32_val_t pagetable = (ptr32_val_t)ptr >> 12 & 0x3FF;
 	
-        ptr32_t pt = (ptr32_t ) 0xFFC00000 + (0x400 * pagedir);
-        if ((pt[pagetable] & 1) == 1) {
+        //ptr32_t pt = (ptr32_t)__page_table + (0x400 * pagedir);
+        //ptr32_t pt = (ptr32_t)((ptr32_val_t)__page_table + (0x400 * pagedir));
+        ptr32_t pt = __page_table + (0x400 * pagedir);
+        if ((pt[pagetable] & 1) == 0) {
+		Platform p;
+		p.video()->printf("Paging error!\n");
 		return NULL;
 	}
 
@@ -256,4 +306,22 @@ void paging_mmap_init(MultibootInfo *info)
 void paging_init(MultibootInfo *info)
 {
 	paging_mmap_init(info);
+}
+
+extern "C" void *mapPhys(void* phys, unsigned int length)
+{
+	Paging p;
+	void *res;
+	p.lock();
+	res = p.mapPhys(phys,length);
+	p.unlock();
+	return res;
+}
+
+extern "C" void unmapPhys(void *phys, unsigned int length)
+{
+	Paging p;
+	p.lock();
+	p.unmapPhys(phys, length);
+	p.unlock();
 }
