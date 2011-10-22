@@ -3,12 +3,16 @@
 #include "port.h"
 //#include "3rdparty/libx86/x86emu/include/libx86.h"
 
+#if 0
 #ifdef __cplusplus
 extern "C" {
 #endif
 #include "x86emu/x86emu.h"
 #ifdef __cplusplus
 }
+#endif
+#else
+#include "x86emu/x86emu.h"
 #endif
 
 #include "string.h"

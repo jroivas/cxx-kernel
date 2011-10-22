@@ -8,6 +8,7 @@
 //#define PAGE_CNT 1024
 //#define LPOS 0x100000
 #define PAGING_START_POS 0x40000000
+//#define PAGING_START_POS 0x40000
 //#define PAGING_START_POS 0x1000
 //#define PAGE_SIZE 4096
 
@@ -95,9 +96,24 @@ void *Paging::alloc(size_t cnt, unsigned int align, Alloc do_map)
 
 	/* Always align to proper boundaries */
 	ptr8_t tmp = __free_page_address;
-	while (((ptr32_val_t)tmp&(align-1))!=0) {
+	while (((ptr32_val_t)tmp & (align-1))!=0) {
 		tmp++;
 	}
+#if 0
+	if (__free_page_address != tmp) {
+		unsigned short *vid = (unsigned short *)(KERNEL_VIRTUAL+0xB8000);
+		*vid = 0x2741; //A
+		for (unsigned long jj=0; jj<0xFFFFFFFF; jj++) { }
+	} else {
+		static short val = 0;
+		unsigned short *vid = (unsigned short *)(KERNEL_VIRTUAL+0xB8000);
+		*vid = 0x5741+val;
+		val++;
+		val %= 20;
+		for (unsigned long jj=0; jj<0xFFFFFFF; jj++) { }
+	}
+#endif
+	static short val = 0;
 	__free_page_address = tmp;
 
 	while (cnt>0) {
@@ -105,6 +121,12 @@ void *Paging::alloc(size_t cnt, unsigned int align, Alloc do_map)
 			__free_page_address += PAGE_SIZE;
 			cnt--;
 		} else {
+			unsigned short *vid = (unsigned short *)(KERNEL_VIRTUAL+0xB8000);
+			*vid = 0x5741+val;
+			val++;
+			val %= 20;
+			for (unsigned long jj=0; jj<0x1FFFFF; jj++) { }
+
 			void *page = _d->getPage();
 			if (page==NULL) return NULL;
 			if (_d->map(page, __free_page_address, PAGING_MAP_R0)) {
@@ -313,6 +335,7 @@ void paging_mmap_init(MultibootInfo *info)
 		mmap = (MemoryMap *)(((ptr32_val_t)mmap) + mmap->size + sizeof(ptr32_val_t));
 	}
 
+#if 1
 	/* Clear the mappings */
 	ptr32_val_t PD_MAX = __mem_size/PAGE_SIZE+1;
 	ptr32_t pd = __page_directory;
@@ -324,6 +347,7 @@ void paging_mmap_init(MultibootInfo *info)
 			pt[m] = 0;
 		}
 	}
+#endif
 }
 
 void paging_init(MultibootInfo *info)

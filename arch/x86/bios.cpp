@@ -4,12 +4,16 @@
 #include "port.h"
 #include "../platform.h"
 
+#if 0
 #ifdef __cplusplus
 extern "C" {
 #endif
 #include "x86emu/x86emu.h"
 #ifdef __cplusplus
 }
+#endif
+#else
+#include "x86emu/x86emu.h"
 #endif
 
 #define BIOS_BDA_BASE           0
@@ -20,6 +24,11 @@ extern "C" {
 #define BIOS_MEM_SIZE           0x8F000
 #define BIOS_STACK_SIZE         0x1000
 
+#if 0
+#ifdef __cplusplus
+extern "C" {
+#endif
+#endif
 static uint8_t x86emu_pio_inb(uint16_t port) {
         return Port::in(port);
 }
@@ -52,11 +61,17 @@ static X86EMU_pioFuncs x86emu_pio_funcs = {
         .inl  = x86emu_pio_inl,
         .outl = x86emu_pio_outl,
 };
+#if 0
+#ifdef __cplusplus
+}
+#endif
+#endif
 
 BIOS::BIOS()
 {
 	Platform::video()->printf("PRE A\n");
 	mem_mapping = MM::instance()->alloc(0x100000, MM::AllocFast);
+	if (mem_mapping==NULL) return;
 
 	Platform::video()->printf("PRE B\n");
 	Paging p;
@@ -70,10 +85,15 @@ BIOS::BIOS()
 	mapMem((ptr_t)BIOS_EBDA_BASE, BIOS_EBDA_BASE, BIOS_EBDA_SIZE);
 	Platform::video()->printf("PRE D3\n");
 
-//	(void)x86emu_pio_funcs;
-//	return;
-	X86EMU_setupPioFuncs(&x86emu_pio_funcs);
+	//X86EMU_setupPioFuncs(&x86emu_pio_funcs);
+	setupX86EMU();
 	Platform::video()->printf("PRE E\n");
+}
+
+void BIOS::setupX86EMU()
+{
+	(void)x86emu_pio_funcs;
+	X86EMU_setupPioFuncs(&x86emu_pio_funcs);
 }
 
 void BIOS::mapMem(ptr_t addr, phys_ptr_t phys, size_t size)

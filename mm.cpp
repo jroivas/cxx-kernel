@@ -81,13 +81,6 @@ void *MM::allocPage(size_t cnt)
 	block = mmap(NULL, block_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 	if (block==(void*)-1) return NULL;
 
-#if 0
-	char *tmp = (char*)block;
-	for (size_t i=0; i<block_size; i++) {
-		*tmp++ = 0;
-	}
-#endif
-
 	return block;
 #else
 	Paging p;
