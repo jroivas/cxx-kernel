@@ -24,7 +24,7 @@ protected:
 	void print_ul(unsigned long val, int radix=10);
         void print_l(long val, int radix=10);
 
-	void setCursor();
+	virtual void setCursor() = 0;
 	unsigned short *m_videomem;
 	unsigned int m_x;
 	unsigned int m_y;

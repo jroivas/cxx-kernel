@@ -30,8 +30,13 @@ class PagingPrivate;
 class Paging
 {
 public:
+	enum Alloc {
+		PagingAllocNormal = 0,
+		PagingAllocDontMap = 1
+	};
+
 	Paging();
-	void *alloc(size_t cnt, unsigned int align=0);
+	void *alloc(size_t cnt, unsigned int align=0, Alloc do_map = PagingAllocNormal);
 	void free(void *ptr, size_t cnt);
 	void lock();
 	void unlock();

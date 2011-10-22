@@ -3,7 +3,7 @@
 #include "types.h"
 #include "string.h"
 //#include "x86.h"
-#include "video.h"
+#include "videox86.h"
 #include "arch/platform.h"
 
 extern "C" void idt_load();
@@ -181,7 +181,7 @@ void IDTX86::initIRQ()
 extern "C" void irq_handler(Regs * r)
 {
 	if (r==NULL) {
-		Video tmp;
+		VideoX86 tmp;
 		tmp.clear();
 		tmp.printf("ERROR! IRQ, regs.\n");
 
@@ -208,7 +208,7 @@ extern "C" void irq_handler(Regs * r)
 extern "C" void isr_handler(Regs * r)
 {
 	if (r==NULL) {
-		Video tmp;
+		VideoX86 tmp;
 		tmp.clear();
 		tmp.printf("ERROR! ISR, regs.\n");
 
@@ -218,7 +218,7 @@ extern "C" void isr_handler(Regs * r)
 	}
 	if (r->int_no < 32) {
 		// Got it
-		Video tmp;
+		VideoX86 tmp;
 		tmp.clear();
 		tmp.printf("ERROR! ISR\n");
 

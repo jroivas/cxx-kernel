@@ -21,6 +21,8 @@ public:
 	static KB *kb();
 	static FB *fb();
 	static int CAS(ptr_val_t volatile *m_ptr, int cmp, int set);
+	static void halt();
+	static void seizeInterrupts();
 
 private:
 	/* Plese extend the platform enums when supported */

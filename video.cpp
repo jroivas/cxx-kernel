@@ -78,18 +78,18 @@ void Video::clear()
 	m_y = 0;
 }
 
+#if 0
 void Video::setCursor()
 {
 	// Dummy function
-#if 0
 	unsigned int pos = m_y*width() + m_x;
 
 	Port::out(PORT, 0x0F);
 	Port::out(PORT+1, pos&0xFF);
 	Port::out(PORT, 0x0E);
 	Port::out(PORT+1, (pos>>8)&0xFF);
-#endif
 }
+#endif
 
 void Video::scroll()
 {

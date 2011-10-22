@@ -8,6 +8,7 @@
 #include "x86/idtx86.h"
 #include "x86/kbx86.h"
 #include "x86/vesa.h"
+#include "x86/x86.h"
 #endif
 
 static Timer *__platform_timer = NULL;
@@ -114,4 +115,18 @@ FB *Platform::fb()
 	}
 	#endif
 	return __platform_fb;
+}
+
+void Platform::halt()
+{
+	#ifdef __i386__
+	hlt();
+	#endif
+}
+
+void Platform::seizeInterrupts()
+{
+	#ifdef __i386__
+	cli();
+	#endif
 }
