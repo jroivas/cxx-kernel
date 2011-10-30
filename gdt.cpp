@@ -16,8 +16,8 @@ struct gdt_ptr_t
 	unsigned int base;
 } __attribute__((packed));
 
-struct gdt_entry_t gdt[6];
-struct gdt_ptr_t gdt_ptr;
+struct gdt_entry_t __gdt[6];
+struct gdt_ptr_t __gdt_ptr;
 
 extern "C" void gdt_flush();
 
@@ -63,38 +63,38 @@ typedef struct tss
         unsigned short iopb;
 } tss_t;
 
-tss_t tss0;
+static tss_t __tss0;
 
 extern "C" unsigned long get_esp();
 
 void gdt_set_gate(int num, unsigned long base, unsigned long limit, unsigned char access, unsigned char gran)
 {
-	gdt[num].base_low = (base & 0xFFFF);
-	gdt[num].base_middle = (base >> 16) & 0xFF;
-	gdt[num].base_high = (base >> 24) & 0xFF;
+	__gdt[num].base_low = (base & 0xFFFF);
+	__gdt[num].base_middle = (base >> 16) & 0xFF;
+	__gdt[num].base_high = (base >> 24) & 0xFF;
  
-	gdt[num].limit_low = (limit & 0xFFFF);
-	gdt[num].granularity = ((limit >> 16) & 0x0F);
+	__gdt[num].limit_low = (limit & 0xFFFF);
+	__gdt[num].granularity = ((limit >> 16) & 0x0F);
  
-	gdt[num].granularity |= (gran & 0xF0);
-	gdt[num].access = access;
+	__gdt[num].granularity |= (gran & 0xF0);
+	__gdt[num].access = access;
 }
 
 void gdt_init()
 {
-	gdt_ptr.limit = (sizeof(struct gdt_entry_t) * 6) - 1;
-	gdt_ptr.base = (unsigned int)&gdt;
+	__gdt_ptr.limit = (sizeof(struct gdt_entry_t) * 6) - 1;
+	__gdt_ptr.base = (unsigned int)&__gdt;
 
-        tss0.ss0 = (unsigned short)0x10;
-        tss0.esp0 = get_esp();
-        tss0.iopb = (unsigned short)sizeof(tss_t) - 1;
+        __tss0.ss0 = (unsigned short)0x10;
+        __tss0.esp0 = get_esp();
+        __tss0.iopb = (unsigned short)sizeof(tss_t) - 1;
  
 	gdt_set_gate(0, 0, 0, 0, 0);
 	gdt_set_gate(1, 0, 0xFFFFFFFF, 0x9A, 0xCF);
 	gdt_set_gate(2, 0, 0xFFFFFFFF, 0x92, 0xCF);
 	gdt_set_gate(3, 0, 0xFFFFFFFF, 0xFA, 0xCF);
 	gdt_set_gate(4, 0, 0xFFFFFFFF, 0xF2, 0xCF);
-        gdt_set_gate(5, (unsigned long) &tss0, sizeof(tss_t) - 1, 0x89, 0x40);
+        gdt_set_gate(5, (unsigned long) &__tss0, sizeof(tss_t) - 1, 0x89, 0x40);
  
 	gdt_flush();
 

@@ -12,7 +12,7 @@ extern "C" {
 }
 #endif
 #else
-#include "x86emu/x86emu.h"
+#include "x86emu.h"
 #endif
 
 #include "string.h"

@@ -2,17 +2,18 @@ include ../config.mk
 CXXFLAGS:=$(CXXFLAGS) -I../
 CXXFLAGSO:=$(CXXFLAGSO) -I../
 
-OBJS=platform.o $(ARCH)/$(ARCH).a
-LIBS=$(ARCH)/$(ARCH).a
+#OBJS=platform.o $(ARCH)/$(ARCH).a
+#LIBS=$(ARCH)/$(ARCH).a
 
-all: arch.a
+#all: arch.a
+#	$(CXX) -c $(CXXFLAGS) -o $@ $< 
 
-arch.a: $(OBJS) compile_arch
-	ar rcs $@ $(OBJS)
-	ranlib $@
+#arch.a: $(OBJS) compile_arch
+#	ar rcs $@ $(OBJS)
+#	ranlib $@
+all: platform.o compile_arch
 
 platform.o: platform.cpp
-	$(CXX) -c $(CXXFLAGS) -o $@ $< 
 
 $(ARCH)/$(ARCH).a:
 compile_arch:
@@ -20,4 +21,4 @@ compile_arch:
 
 clean:
 	rm -rf *.o *.a
-	make -C x86 clean
+	make -C $(ARCH) clean

@@ -46,7 +46,7 @@ int Kernel::run()
 		//delete video;
 	}
 	platform->fb();
-	platform->fb()->query(NULL);
+	//platform->fb()->query(NULL);
 	while(1) {}
 
 	//asm ("int $0x20");

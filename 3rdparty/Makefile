@@ -10,8 +10,10 @@ fetch:
 	./fetch.sh
 
 libx86emu.a:
-	make -C x86emu
-	cp x86emu/libx86emu.a .
+	make -C x86emu2
+	cp x86emu2/libx86emu.a .
+	ranlib libx86emu.a
+	cd a && ar x ../libx86emu.a
 
 #libx86.a: clean
 #	make -C libx86 clean
@@ -41,6 +43,7 @@ libx86_64.a: clean
 
 clean:
 	make -C x86emu clean
+	make -C x86emu2 clean
 	#make -C libx86 clean
 	#rm -f libx86*.a
 	rm -f libx86emu.a

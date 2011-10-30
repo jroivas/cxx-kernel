@@ -1,8 +1,7 @@
 [BITS 32]
-[global start]
+[global loaderstart]
 [extern _main]
 [extern _atexit]
-;[extern main]
 
 MULTIBOOT_ALIGN       equ  1<<0                   ; align loaded modules on page boundaries
 MULTIBOOT_MEMINFO     equ  1<<1                   ; provide memory map
@@ -43,24 +42,19 @@ multiboot_header:
 	dd MULTIBOOT_FLAGS
 	dd MULTIBOOT_CHECKSUM
 
-start:
+loaderstart:
 	mov [multiboot_magic_data - KERNEL_VIRTUAL], eax
 	mov [multiboot_info_data - KERNEL_VIRTUAL], ebx
-	;mov ax, 0x1741
-	;mov [0xB8000],ax
-
-	;xor ebx, ebx
-	;add ebx, 3
 
 	mov ebx, KERNEL_PAGE_FLAGS
 	mov ecx, (__boot_page_table - KERNEL_VIRTUAL)
 
-loop:
+__loop_page:
 	mov [ecx], ebx
 	add ecx, 4 		;32 bit
 	add ebx, 0x1000
 	cmp ecx, (__boot_page_end - KERNEL_VIRTUAL)
-	jb loop
+	jb __loop_page
 
 	mov ecx, (__boot_page_dir - KERNEL_VIRTUAL)
 	mov cr3, ecx
@@ -69,11 +63,10 @@ loop:
 	or ecx, 0x80000000
 	mov cr0, ecx
 
-	lea ecx, [high_half]
+	lea ecx, [__high_half]
 	jmp ecx
-	;jmp 0x08:high_half
 	
-high_half:
+__high_half:
 	mov dword [__boot_page_dir], 0
 	invlpg [0]
 
@@ -91,29 +84,25 @@ high_half:
 	add ebx, KERNEL_VIRTUAL
 	push ebx
 
-	;push eax                           ; pass Multiboot magic number
-	;push ebx                           ; pass Multiboot info structure
-
 	call _main
-;	call main
 	call _atexit
 	cli
 	hlt
 
 
 [global gdt_flush]
-[extern gdt_ptr] 
+[extern __gdt_ptr] 
 gdt_flush:
-	lgdt [gdt_ptr]
+	lgdt [__gdt_ptr]
 	mov ax, 0x10
 	mov ds, ax
 	mov es, ax
 	mov fs, ax
 	mov gs, ax
 	mov ss, ax
-	jmp 0x08:gdt_flush_exit
+	jmp 0x08:__gdt_flush_exit
 
-gdt_flush_exit:
+__gdt_flush_exit:
 	ret
 
 [section .bss]

@@ -113,7 +113,7 @@ void *Paging::alloc(size_t cnt, unsigned int align, Alloc do_map)
 		for (unsigned long jj=0; jj<0xFFFFFFF; jj++) { }
 	}
 #endif
-	static short val = 0;
+//	static short val = 0;
 	__free_page_address = tmp;
 
 	while (cnt>0) {
@@ -121,11 +121,13 @@ void *Paging::alloc(size_t cnt, unsigned int align, Alloc do_map)
 			__free_page_address += PAGE_SIZE;
 			cnt--;
 		} else {
+#if 0
 			unsigned short *vid = (unsigned short *)(KERNEL_VIRTUAL+0xB8000);
 			*vid = 0x5741+val;
 			val++;
 			val %= 20;
 			for (unsigned long jj=0; jj<0x1FFFFF; jj++) { }
+#endif
 
 			void *page = _d->getPage();
 			if (page==NULL) return NULL;
@@ -159,6 +161,7 @@ void Paging::free(void *ptr, size_t cnt)
 /* Map physical page */
 void *Paging::mapPhys(void* phys, unsigned int length)
 {
+#if 0
 	_d->lock();
 	unsigned int cc = length;
 	ptr8_t virt = (ptr8_t)phys;
@@ -174,13 +177,23 @@ void *Paging::mapPhys(void* phys, unsigned int length)
 	_d->unlock();
 	//return virt;
 	return phys;
+#else
+	(void)phys;
+	(void)length;
+	return NULL;
+#endif
 }
 
 void Paging::unmapPhys(void* phys, unsigned int length)
 {
+#if 0
 	unsigned int cnt = length/PAGE_SIZE;
 	if (length%length/PAGE_SIZE!=0) cnt++;
 	free(phys, cnt);
+#else
+	(void)phys;
+	(void)length;
+#endif
 }
 
 PagingPrivate::PagingPrivate()
@@ -335,7 +348,7 @@ void paging_mmap_init(MultibootInfo *info)
 		mmap = (MemoryMap *)(((ptr32_val_t)mmap) + mmap->size + sizeof(ptr32_val_t));
 	}
 
-#if 1
+#if 0
 	/* Clear the mappings */
 	ptr32_val_t PD_MAX = __mem_size/PAGE_SIZE+1;
 	ptr32_t pd = __page_directory;

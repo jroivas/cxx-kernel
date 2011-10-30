@@ -54,8 +54,8 @@ void IDTX86::setGate(unsigned char num, unsigned long base, unsigned short sel, 
 	idt[num].always0 = 0;
 }
 
-#define ISR_GATE_DEF(x) extern "C" void isr##x();
-#define ISR_GATE(x) setGate(x, (unsigned)isr##x, 0x08, 0x8E);
+#define ISR_GATE_DEF(x) extern "C" void __isr##x();
+#define ISR_GATE(x) setGate(x, (unsigned long)__isr##x, 0x08, 0x8E);
 ISR_GATE_DEF(0);
 ISR_GATE_DEF(1);
 ISR_GATE_DEF(2);
@@ -138,8 +138,8 @@ void IDTX86::remapIRQ()
 	Port::out(0xA1, 0x0);
 }
 
-#define IRQ_GATE_DEF(x) extern "C" void irq##x();
-#define IRQ_GATE(x) setGate(x+32, (unsigned)irq##x, 0x08, 0x8E);
+#define IRQ_GATE_DEF(x) extern "C" void __irq##x();
+#define IRQ_GATE(x) setGate(x+32, (unsigned long)__irq##x, 0x08, 0x8E);
 IRQ_GATE_DEF(0);
 IRQ_GATE_DEF(1);
 IRQ_GATE_DEF(2);

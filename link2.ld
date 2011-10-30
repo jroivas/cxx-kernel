@@ -3,7 +3,7 @@
 OUTPUT_FORMAT("elf32-i386")
 OUTPUT_FORMAT("elf32-i386")
 */
-ENTRY(start)
+ENTRY(loaderstart)
 /*
 	phys = 0x100000;
 */
@@ -70,6 +70,11 @@ SECTIONS
 		end_dtors = .;
 
 		*(.rodata*)
+/*
+		*(.shstrtab*)
+		*(.symtab*)
+		*(.strtab*)
+*/
 		*(.gnu.linkonce.r*)
 	}
 	
@@ -106,5 +111,6 @@ SECTIONS
 		*(.comment)
 		*(.eh_frame) /* You should discard this unless you're implementing runtime support for C++ exceptions. */
 		*(.note*)
+		/**(.*debug*)*/
 	 }
 }

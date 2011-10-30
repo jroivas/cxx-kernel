@@ -13,7 +13,7 @@ extern "C" {
 }
 #endif
 #else
-#include "x86emu/x86emu.h"
+#include "x86emu.h"
 #endif
 
 #define BIOS_BDA_BASE           0
@@ -78,6 +78,7 @@ BIOS::BIOS()
 	p.lock();
 	bios_pages = p.alloc(BIOS_MEM_SIZE/PAGE_SIZE+1, 0, Paging::PagingAllocDontMap);
 	p.unlock();
+	return;
 
 	Platform::video()->printf("PRE D\n");
 	mapMem((ptr_t)BIOS_BDA_BASE, BIOS_BDA_BASE, BIOS_BDA_SIZE);

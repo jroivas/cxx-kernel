@@ -1,8 +1,6 @@
 #ifndef MATH_H
 #define MATH_H
 
-#define ABS_STUB(j) if (j<0) j*=-1; return j;
-
 #ifdef __cplusplus
 extern "C" {
 #endif

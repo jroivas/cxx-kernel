@@ -33,8 +33,8 @@
 TARGETLIB = libx86emu.a
 include ../../config.mk
 
-CC=$(CXX)
-CFLAGS=$(CXXFLAGS_CC)
+#CC=$(CXX)
+#CFLAGS=$(CXXFLAGS_CC)
 
 OBJS=\
 debug.o \
@@ -52,7 +52,8 @@ $(TARGETLIB): $(OBJS)
 
 #INCS   = -I. -Ix86emu -I../../include -I../x86emu_include -Iinc
 INCS   = -I. -Ix86emu -Iinc
-CFLAGS := $(CFLAGS) -fPIC -D__DRIVER__ -DFORCE_POST -D_CEXPORT= -DNO_LONG_LONG
+#CFLAGS := $(CFLAGS) -fPIC -D__DRIVER__ -DFORCE_POST -D_CEXPORT= -DNO_LONG_LONG
+CFLAGS := $(CFLAGS) -DNO_LONG_LONG
 
 .c.o:
 	$(CC) -g -O -Wall -c $(CFLAGS) $(INCS) $*.c
