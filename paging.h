@@ -43,6 +43,7 @@ public:
 	void *mapPhys(void* phys, unsigned int length);
 	void unmapPhys(void* phys, unsigned int length);
 	void map(void *phys, void *virt, unsigned int flags);
+	void *getPage();
 	
 private:
 	PagingPrivate *_d;

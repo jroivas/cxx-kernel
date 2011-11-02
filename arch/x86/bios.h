@@ -8,7 +8,7 @@ class BIOS
 {
 public:
 	static BIOS *get();
-	void mapMem(ptr_t addr, phys_ptr_t phys, size_t size);
+	void mapMem(ptr_val_t addr, phys_ptr_t phys, size_t size);
 	void *memMapping() { return mem_mapping; }
 
 private:

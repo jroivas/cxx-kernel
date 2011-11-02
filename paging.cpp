@@ -262,9 +262,29 @@ void PagingPrivate::freePage(void *ptr)
 	__mem_map[count] |= bit;
 }
 
+void *Paging::getPage()
+{
+	_d->lock();
+	void *p = _d->getPage();
+	_d->unlock();
+	return p;
+}
+
 void Paging::map(void *phys, void *virt, unsigned int flags)
 {
 	_d->lock();
+
+#if 0
+	ptr32_val_t pagedir   = (ptr32_val_t)virt >> 22;
+	ptr32_val_t pagetable = (ptr32_val_t)virt >> 12 & 0x3FF;
+	bool do_map = false;
+
+        if ((pd[pagedir] & 1) != 1)  do_map = true;
+        ptr32_t pt = __page_table + (0x400 * pagedir);
+        if ((pt[pagetable] & 1) == 1) do_map = true;
+
+	if (do_map) _d->map(phys,virt,flags);
+#endif
 	_d->map(phys,virt,flags);
 	_d->unlock();
 }
