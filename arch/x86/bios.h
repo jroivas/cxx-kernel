@@ -7,13 +7,16 @@
 class BIOS
 {
 public:
-	BIOS();
+	static BIOS *get();
 	void mapMem(ptr_t addr, phys_ptr_t phys, size_t size);
+	void *memMapping() { return mem_mapping; }
 
 private:
+	BIOS();
 	void setupX86EMU();
 	void *mem_mapping;
 	void *bios_pages;
+	//void *machine;
 };
 
 #endif

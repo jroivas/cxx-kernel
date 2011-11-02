@@ -216,11 +216,21 @@ extern "C" void isr_handler(Regs * r)
 		p.state()->seizeInterrupts();
 		p.state()->halt();
 	}
+	if (r->int_no == 14) {
+		VideoX86 tmp;
+		//tmp.clear();
+		tmp.printf("\nERROR! Page fault!\n");
+		//p.video()->printf("ERROR! Page fault!\n");
+		Platform p;
+		//Platform p;
+		p.state()->seizeInterrupts();
+		p.state()->halt();
+	}
 	if (r->int_no < 32) {
 		// Got it
 		VideoX86 tmp;
 		tmp.clear();
-		tmp.printf("ERROR! ISR\n");
+		tmp.printf("ERROR! ISR %d\n",r->int_no);
 
 		Platform p;
 		p.state()->seizeInterrupts();

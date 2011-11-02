@@ -81,6 +81,7 @@ void Paging::unlock()
 	m.unlock();
 }
 
+#include "arch/x86/videox86.h"
 /* Allocate pages */
 void *Paging::alloc(size_t cnt, unsigned int align, Alloc do_map)
 {
@@ -100,6 +101,7 @@ void *Paging::alloc(size_t cnt, unsigned int align, Alloc do_map)
 		tmp++;
 	}
 #if 0
+	static short val = 0;
 	if (__free_page_address != tmp) {
 		unsigned short *vid = (unsigned short *)(KERNEL_VIRTUAL+0xB8000);
 		*vid = 0x2741; //A
@@ -113,7 +115,6 @@ void *Paging::alloc(size_t cnt, unsigned int align, Alloc do_map)
 		for (unsigned long jj=0; jj<0xFFFFFFF; jj++) { }
 	}
 #endif
-//	static short val = 0;
 	__free_page_address = tmp;
 
 	while (cnt>0) {
@@ -231,7 +232,8 @@ void *PagingPrivate::getPage()
 				i++;
 				t--;
 			}
-			return (void *)(((count*8)+i)*PAGE_SIZE);
+			//return (void *)(((count*8)+i)*PAGE_SIZE);
+			return (void *)(((count<<3)+i)*PAGE_SIZE);
 		}
 
 		// Last bit, start all over
@@ -274,9 +276,14 @@ bool PagingPrivate::map(void *phys, void *virt, unsigned int flags)
 	ptr32_val_t pagetable = (ptr32_val_t)virt >> 12 & 0x3FF;
 
 	//unsigned long *pd = (unsigned long *) 0xFFFFF000;
+	//unsigned short *vid = (unsigned short *)(KERNEL_VIRTUAL+0xB8000);
+	//*vid = 0x4741; //A
 	ptr32_t pd = __page_directory;
+	//VideoX86 v;
+	//v.printf("\n\n\n\n\n\nMAP: %x [%x]\n",pd,pagedir);
         if ((pd[pagedir] & 1) != 1) {
-                pd[pagedir] = (ptr32_val_t )getPage() | PAGING_MAP_R0;
+		void *page = getPage();
+                pd[pagedir] = ((ptr32_val_t)page) | PAGING_MAP_R0;
         }
 
         //ptr32_t pt = (ptr32_t )0xFFC00000 + (0x400 * pagedir);
@@ -351,6 +358,7 @@ void paging_mmap_init(MultibootInfo *info)
 #if 0
 	/* Clear the mappings */
 	ptr32_val_t PD_MAX = __mem_size/PAGE_SIZE+1;
+	//PD_MAX = 1024;
 	ptr32_t pd = __page_directory;
 	for (ptr32_val_t n=0; n<PD_MAX; n++) {
 		pd[n] = 0;

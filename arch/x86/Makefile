@@ -1,9 +1,9 @@
 include ../../config.mk
 #CXXFLAGS:=$(CXXFLAGS) -I../../ -I../../3rdparty/libx86/x86emu/x86emu/ -I../../3rdparty/libx86/ -I../../3rdparty/libx86/x86emu/include
-CXXFLAGS:=$(CXXFLAGS) -I../../ -I../../3rdparty/x86emu2/
+CXXFLAGS:=$(CXXFLAGS) -I../../ -I../../3rdparty/fb/
 
 #OBJS=loader.o idt_handlers.o statesx86.o x86.o port.o timerx86.o videox86.o idtx86.o kbx86.o
-OBJS=idt_handlers.o statesx86.o x86.o port.o timerx86.o videox86.o idtx86.o kbx86.o vesa.o bios.o
+OBJS=idt_handlers.o statesx86.o x86.o port.o timerx86.o videox86.o idtx86.o kbx86.o vesa.o bios.o setjmp.o
 #OBJS=statesx86.o x86.o port.o timerx86.o videox86.o idtx86.o kbx86.o vesa.o
 
 all: x86.a loader.o
@@ -17,6 +17,9 @@ loader.o: loader.asm
 	mv loader.o ../
 
 idt_handlers.o: idt_handlers.asm
+	nasm -f elf32 -o $@ $<
+
+setjmp.o: setjmp.asm
 	nasm -f elf32 -o $@ $<
 
 statesx86.o: statesx86.cpp

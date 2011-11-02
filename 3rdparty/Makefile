@@ -4,7 +4,12 @@
 OBJS=libx86.a
 #libx86emu.a
 
-all: libx86emu.a
+#all: libx86emu.a
+all: da
+
+da:
+	make -C fb clean
+	make -C fb
 
 fetch:
 	./fetch.sh
@@ -42,6 +47,7 @@ libx86_64.a: clean
 	ranlib libx86_64.a
 
 clean:
+	make -C fb clean
 	make -C x86emu clean
 	make -C x86emu2 clean
 	#make -C libx86 clean

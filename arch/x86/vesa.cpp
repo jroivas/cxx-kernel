@@ -99,7 +99,9 @@ Vesa::Vesa() : FB()
 	vbe_info_t *info = NULL;
 	(void)info;
 	Platform::video()->printf("PRE bIOS\n");
-	BIOS tmp;
+	//BIOS tmp;
+	BIOS *bios = BIOS::get();
+	(void)bios;
 	Platform::video()->printf("bIOS\n");
 	//mmap(sizeof(vbe_info_t), MM_SLEEP);
 }

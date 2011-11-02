@@ -61,7 +61,9 @@ int Platform::CAS(ptr_val_t volatile *m_ptr, int cmp, int set)
 
 	return res;
 	#endif
+
 	//if (*m_ptr==cmp)
+
 	*m_ptr=set;
 	return 1;
 }

@@ -21,11 +21,16 @@ ALIGN 4096
 
 __boot_page_dir:
 	dd (__boot_page_table + KERNEL_PAGE_FLAGS - KERNEL_VIRTUAL)
+
+	; Empty pages before kernel
 	times (KERNEL_PAGE - 1) dd 0
+	; Kernel page
 __kernel_page:
 	dd (__boot_page_table + KERNEL_PAGE_FLAGS - KERNEL_VIRTUAL)
+	; Rest of the pages
 	times (1024 - KERNEL_PAGE - 2) dd 0
 	dd (__boot_page_dir + KERNEL_PAGE_FLAGS - KERNEL_VIRTUAL)
+
 __boot_page_table:
 	times (1024) dd 0
 __boot_page_end:
@@ -46,7 +51,9 @@ loaderstart:
 	mov [multiboot_magic_data - KERNEL_VIRTUAL], eax
 	mov [multiboot_info_data - KERNEL_VIRTUAL], ebx
 
-	mov ebx, KERNEL_PAGE_FLAGS
+	;mov ebx, KERNEL_PAGE_FLAGS
+	xor ebx, ebx
+	add ebx, KERNEL_PAGE_FLAGS
 	mov ecx, (__boot_page_table - KERNEL_VIRTUAL)
 
 __loop_page:
@@ -56,6 +63,7 @@ __loop_page:
 	cmp ecx, (__boot_page_end - KERNEL_VIRTUAL)
 	jb __loop_page
 
+	; Setup paging
 	mov ecx, (__boot_page_dir - KERNEL_VIRTUAL)
 	mov cr3, ecx
 
@@ -67,8 +75,9 @@ __loop_page:
 	jmp ecx
 	
 __high_half:
-	mov dword [__boot_page_dir], 0
-	invlpg [0]
+	; Unmap
+	;mov dword [__boot_page_dir], 0
+	;invlpg [0]
 
 	;mov ax, 0x1742
 	;mov [KERNEL_VIRTUAL+0xB8000],ax
@@ -107,5 +116,6 @@ __gdt_flush_exit:
 
 [section .bss]
 ALIGN 4
+;ALIGN 32
 __initial_stack:
    resb STACKSIZE                     ; reserve 16k stack on a doubleword boundary

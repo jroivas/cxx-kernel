@@ -2,13 +2,15 @@
 #include "mm.h"
 #include "paging.h"
 #include "port.h"
+#include "string.h"
 #include "../platform.h"
 
 #if 0
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include "x86emu/x86emu.h"
+//#include "x86emu/x86emu.h"
+#include "x86emu.h"
 #ifdef __cplusplus
 }
 #endif
@@ -24,64 +26,109 @@ extern "C" {
 #define BIOS_MEM_SIZE           0x8F000
 #define BIOS_STACK_SIZE         0x1000
 
+#if 1
 #if 0
 #ifdef __cplusplus
 extern "C" {
 #endif
 #endif
-static uint8_t x86emu_pio_inb(uint16_t port) {
+static uint8_t bios_x86emu_pio_inb(struct x86emu *, uint16_t port) {
         return Port::in(port);
 }
 
-static uint16_t x86emu_pio_inw(uint16_t port) {
+static uint16_t bios_x86emu_pio_inw(struct x86emu *, uint16_t port) {
         return Port::inw(port);
 }
 
-static uint32_t x86emu_pio_inl(uint16_t port) {
+static uint32_t bios_x86emu_pio_inl(struct x86emu *, uint16_t port) {
         return Port::inl(port);
 }
 
-static void x86emu_pio_outb(uint16_t port, uint8_t data) {
+static void bios_x86emu_pio_outb(struct x86emu *, uint16_t port, uint8_t data) {
         Port::out(port, data);
 }
 
-static void x86emu_pio_outw(uint16_t port, uint16_t data) {
+static void bios_x86emu_pio_outw(struct x86emu *, uint16_t port, uint16_t data) {
         Port::outw(port, data);
 }
 
-static void x86emu_pio_outl(uint16_t port, uint32_t data) {
+static void bios_x86emu_pio_outl(struct x86emu *, uint16_t port, uint32_t data) {
         Port::outl(port, data);
 }
 
-static X86EMU_pioFuncs x86emu_pio_funcs = {
-        .inb  = x86emu_pio_inb,
-        .outb = x86emu_pio_outb,
-        .inw  = x86emu_pio_inw,
-        .outw = x86emu_pio_outw,
-        .inl  = x86emu_pio_inl,
-        .outl = x86emu_pio_outl,
+static uint8_t bios_x86emu_mem_rdb(struct x86emu *, uint32_t addr) {
+        return *(uint8_t *)((ptr_t)(addr + (ptr_val_t)BIOS::get()->memMapping()));
+}
+
+static void bios_x86emu_mem_wrb(struct x86emu *, uint32_t addr, uint8_t val) {
+        *(uint8_t *)((ptr_t)(addr + (ptr_val_t)BIOS::get()->memMapping())) = val;
+}
+
+static uint16_t bios_x86emu_mem_rdw(struct x86emu *, uint32_t addr) {
+        return *(uint16_t *)((ptr_t)(addr + (ptr_val_t)BIOS::get()->memMapping()));
+}
+
+static void bios_x86emu_mem_wrw(struct x86emu *, uint32_t addr, uint16_t val) {
+        *(uint16_t *)((ptr_t)(addr + (ptr_val_t)BIOS::get()->memMapping())) = val;
+}
+
+static uint32_t bios_x86emu_mem_rdl(struct x86emu *, uint32_t addr) {
+        return *(uint32_t *)((ptr_t)(addr + (ptr_val_t)BIOS::get()->memMapping()));
+}
+
+static void bios_x86emu_mem_wrl(struct x86emu *, uint32_t addr, uint32_t val) {
+        *(uint32_t *)((ptr_t)(addr + (ptr_val_t)BIOS::get()->memMapping())) = val;
+}
+
+
+/*
+static X86EMU_pioFuncs bios_x86emu_pio_funcs = {
+        .inb  = bios_x86emu_pio_inb,
+        .outb = bios_x86emu_pio_outb,
+        .inw  = bios_x86emu_pio_inw,
+        .outw = bios_x86emu_pio_outw,
+        .inl  = bios_x86emu_pio_inl,
+        .outl = bios_x86emu_pio_outl,
 };
+*/
 #if 0
 #ifdef __cplusplus
 }
 #endif
 #endif
+#endif
+
+static BIOS *__static_bios = NULL;
+
+BIOS *BIOS::get()
+{
+	if (__static_bios==NULL) {
+		__static_bios = new BIOS();
+	}
+	return __static_bios;
+}
 
 BIOS::BIOS()
 {
 	Platform::video()->printf("PRE A\n");
 	mem_mapping = MM::instance()->alloc(0x100000, MM::AllocFast);
+	//mem_mapping = MM::instance()->alloc(0x100000);
+	//mem_mapping = MM::instance()->alloc(5001, MM::AllocFast);
+	Platform::video()->printf("POST A: %x\n",mem_mapping);
 	if (mem_mapping==NULL) return;
+	//return;
 
+#if 0
 	Platform::video()->printf("PRE B\n");
 	Paging p;
 	p.lock();
 	bios_pages = p.alloc(BIOS_MEM_SIZE/PAGE_SIZE+1, 0, Paging::PagingAllocDontMap);
 	p.unlock();
-	return;
+#endif
 
 	Platform::video()->printf("PRE D\n");
 	mapMem((ptr_t)BIOS_BDA_BASE, BIOS_BDA_BASE, BIOS_BDA_SIZE);
+	//mapMem((ptr_t)BIOS_MEM_BASE, (phys_ptr_t)bios_pages, BIOS_MEM_SIZE);
 	mapMem((ptr_t)BIOS_MEM_BASE, (phys_ptr_t)bios_pages, BIOS_MEM_SIZE);
 	mapMem((ptr_t)BIOS_EBDA_BASE, BIOS_EBDA_BASE, BIOS_EBDA_SIZE);
 	Platform::video()->printf("PRE D3\n");
@@ -93,8 +140,43 @@ BIOS::BIOS()
 
 void BIOS::setupX86EMU()
 {
-	(void)x86emu_pio_funcs;
-	X86EMU_setupPioFuncs(&x86emu_pio_funcs);
+#if 1
+#if 0
+#if 0
+	(void)bios_x86emu_pio_funcs;
+#else
+	X86EMU_setupPioFuncs(&bios_x86emu_pio_funcs);
+#endif
+#else
+	/* Filling up the struct */
+	x86emu mach;
+
+	//x86emu_init_default(&mach);
+
+	mach.emu_inb = bios_x86emu_pio_inb;
+	mach.emu_inw = bios_x86emu_pio_inw;
+	mach.emu_inl = bios_x86emu_pio_inl;
+	mach.emu_outb = bios_x86emu_pio_outb;
+	mach.emu_outw = bios_x86emu_pio_outw;
+	mach.emu_outl = bios_x86emu_pio_outl;
+
+	mach.emu_rdb = bios_x86emu_mem_rdb;
+	mach.emu_rdw = bios_x86emu_mem_rdw;
+	mach.emu_rdl = bios_x86emu_mem_rdl;
+	mach.emu_wrb = bios_x86emu_mem_wrb;
+	mach.emu_wrw = bios_x86emu_mem_wrw;
+	mach.emu_wrl = bios_x86emu_mem_wrl;
+
+	mach.mem_base = (char*)mem_mapping;
+	mach.mem_size = 0x100000;
+	Mem::set(&mach.x86, 0, sizeof(struct x86emu_regs));
+	mach.x86.register_flags = (1<<9) | (1<<1);
+
+	mach.x86.register_a.I16_reg.x_reg = 0x4F03;
+
+	//x86emu_exec_intr(&mach, 0x10);
+#endif
+#endif
 }
 
 void BIOS::mapMem(ptr_t addr, phys_ptr_t phys, size_t size)

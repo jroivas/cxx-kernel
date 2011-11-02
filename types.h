@@ -15,9 +15,14 @@ typedef unsigned long* ptr_t;
 typedef unsigned long phys_ptr_t;
 typedef unsigned long ptr_val_t;
 typedef int off_t;
+typedef char  int8_t;
 typedef unsigned char  uint8_t;
+typedef short int16_t;
 typedef unsigned short uint16_t;
+typedef int  int32_t;
 typedef unsigned int  uint32_t;
+typedef long long int int64_t;
+typedef unsigned long long int uint64_t;
 
 #define PAGE_CNT 1024
 #define PAGING_SIZE (sizeof(ptr32_t)*PAGE_CNT) // A little bit more portable

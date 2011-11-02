@@ -3,11 +3,12 @@ CXXFLAGS:=$(CXXFLAGS) -I.
 CXXFLAGSO:=$(CXXFLAGSO) -I.
 #OBJS=loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o idt.o idt_handlers.o timer.o kb.o
 #OBJS=arch/$(ARCH)/loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o idt.o timer.o kb.o fb.o math.o states.o
-OBJS=arch/loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o idt.o timer.o kb.o fb.o math.o states.o
+OBJS=arch/loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o idt.o timer.o kb.o fb.o math.o states.o setjmp.o
 #OBJS=kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o idt.o timer.o kb.o fb.o math.o states.o
 #THIRDPARTY=3rdparty/libx86emu.a
 #THIRDPARTY=3rdparty/libx86.a
-THIRDPARTY=3rdparty/a/*.o
+#THIRDPARTY=3rdparty/a/*.o
+THIRDPARTY=3rdparty/fb/x86emu.o
 
 #LIBS=-Larch/ -larch
 LIBS=arch/arch.a arch/$(ARCH)/$(ARCH).a
@@ -22,6 +23,7 @@ run_qemu: kernel
 kernel: link2.ld build_arch $(OBJS) $(LIBS) 3rdparty/libx86emu.a
 	#$(LD) -m elf_i386 -nostdlib -T link2.ld -o kernel $(OBJS) $(LIBS) $(THIRDPARTY)
 	$(LD) -m elf_i386 -nostdlib -T link2.ld -o kernel $(OBJS) arch/platform.o arch/$(ARCH)/*.o $(THIRDPARTY)
+	#$(LD) -m elf_i386 -nostdlib -T link2.ld -o kernel $(OBJS) arch/platform.o arch/$(ARCH)/*.o
 	#$(LD) -m elf_i386 -nostdlib -T link2.ld -o kernel $(OBJS) $(LIBS) $(THIRDPARTY)
 
 kernel.iso: kernel menu.lst stage2_eltorito
@@ -32,7 +34,8 @@ kernel.iso: kernel menu.lst stage2_eltorito
 	genisoimage -R -b boot/grub/stage2_eltorito -no-emul-boot -quiet -boot-load-size 4 -boot-info-table -o kernel.iso ./isofiles
 
 run_iso: kernel.iso
-	qemu -no-kvm -cdrom kernel.iso
+	#qemu -no-kvm -cdrom kernel.iso
+	qemu -cdrom kernel.iso
 
 3rdparty/libx86emu.a:
 	make -C 3rdparty
@@ -81,6 +84,8 @@ states.o: states.cpp states.h
 
 math.o: math.cpp math.h
 
+setjmp.o: setjmp.cpp setjmp.h
+
 arch/$(ARCH)/loader.o:
 arch/$(ARCH)/$(ARCH).a:
 arch/arch.a:
@@ -90,4 +95,4 @@ build_arch:
 clean:
 	make -C arch clean
 	make -C 3rdparty clean
-	rm -f kernel kernel.iso *.o
+	rm -f kernel kernel.iso *.o *.a
