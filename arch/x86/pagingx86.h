@@ -2,8 +2,18 @@
 #define PAGING_x86_H
 
 #include "types.h"
+#include "paging.h"
 
 #define PAGES_PER_TABLE 1024
+#define PAGE_CNT 1024
+#define PAGING_SIZE (sizeof(ptr32_t)*PAGE_CNT) // A little bit more portable
+#define PAGE_SIZE PAGING_SIZE
+
+#define PAGING_MAP_USED    (1<<0)
+#define PAGING_MAP_KERNEL  (1<<1)
+#define PAGING_MAP_R0      (PAGING_MAP_USED|PAGING_MAP_KERNEL)
+/* These need to be more than 0xFFF ie. at least 2^12*/
+#define PAGING_MAP_SHARED  (1<<14)
 
 class Page
 {
@@ -46,5 +56,8 @@ class PageTable
 private:
 	Page pages[PAGES_PER_TABLE];
 };
+
+
+void paging_mmap_init(MultibootInfo *info);
 
 #endif

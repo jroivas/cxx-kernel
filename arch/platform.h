@@ -9,6 +9,10 @@
 #include "fb.h"
 #include "types.h"
 
+#ifdef __i386__
+#include "x86/pagingx86.h"
+#endif
+
 class Platform
 {
 public:
