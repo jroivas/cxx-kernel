@@ -3,7 +3,7 @@ include ../../config.mk
 CXXFLAGS:=$(CXXFLAGS) -I../../ -I../../3rdparty/fb/
 
 #OBJS=loader.o idt_handlers.o statesx86.o x86.o port.o timerx86.o videox86.o idtx86.o kbx86.o
-OBJS=idt_handlers.o statesx86.o x86.o port.o timerx86.o videox86.o idtx86.o kbx86.o vesa.o bios.o setjmp.o
+OBJS=idt_handlers.o statesx86.o x86.o port.o timerx86.o videox86.o idtx86.o kbx86.o vesa.o bios.o setjmp.o pagingx86.o pages.o
 #OBJS=statesx86.o x86.o port.o timerx86.o videox86.o idtx86.o kbx86.o vesa.o
 
 all: x86.a loader.o
@@ -21,6 +21,12 @@ idt_handlers.o: idt_handlers.asm
 
 setjmp.o: setjmp.asm
 	nasm -f elf32 -o $@ $<
+
+pages.o: pages.asm
+	nasm -f elf32 -o $@ $<
+
+.cpp.o:
+	$(CXX) -c $(CXXFLAGS) -o $@ $< 
 
 statesx86.o: statesx86.cpp
 	$(CXX) -c $(CXXFLAGS) -o $@ $< 
