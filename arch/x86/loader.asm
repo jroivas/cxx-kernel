@@ -42,10 +42,19 @@ multiboot_data:
 [section .text]
 ALIGN 4
 
+[extern code]
+[extern bss]
+[extern kernel_end]
 multiboot_header:
+	dd 0
 	dd MULTIBOOT_MAGIC
 	dd MULTIBOOT_FLAGS
 	dd MULTIBOOT_CHECKSUM
+	dd multiboot_header
+	dd code
+	dd bss
+	dd kernel_end
+	dd loaderstart
 
 loaderstart:
 	mov [multiboot_magic_data - KERNEL_VIRTUAL], eax

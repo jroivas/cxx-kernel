@@ -5,13 +5,16 @@
 #include "paging.h"
 
 #define PAGES_PER_TABLE 1024
+#define TABLES_PER_DIRECTORY 1024
 #define PAGE_CNT 1024
 #define PAGING_SIZE (sizeof(ptr32_t)*PAGE_CNT) // A little bit more portable
 #define PAGE_SIZE PAGING_SIZE
 
 #define PAGING_MAP_USED    (1<<0)
 #define PAGING_MAP_KERNEL  (1<<1)
+#define PAGING_MAP_USER    (1<<3)
 #define PAGING_MAP_R0      (PAGING_MAP_USED|PAGING_MAP_KERNEL)
+#define PAGING_MAP_R2      (PAGING_MAP_USED|PAGING_MAP_USER)
 /* These need to be more than 0xFFF ie. at least 2^12*/
 #define PAGING_MAP_SHARED  (1<<14)
 
@@ -49,6 +52,7 @@ private:
 
 class PageTable
 {
+public:
 	PageTable();
 	Page *get(uint32_t i);
 	bool copyTo(PageTable *table);
@@ -57,6 +61,26 @@ private:
 	Page pages[PAGES_PER_TABLE];
 };
 
+class PageDir
+{
+public:
+	enum PageReserve {
+		PageDontReserve = 0,
+		PageDoReserve
+	};
+	PageDir();
+	ptr_t getPhys() { return phys; }
+
+	PageTable *getTable(uint32_t i);
+	Page *getPage(ptr_val_t addr, PageReserve reserve=PageDoReserve);
+	void copyTo(PageDir *dir);
+	//void *reserveStatic(size_t size, ptr_t phys);
+
+private:
+	PageTable *tables[TABLES_PER_DIRECTORY];
+	uint32_t tablesPhys[TABLES_PER_DIRECTORY];
+	ptr_t phys;
+};
 
 void paging_mmap_init(MultibootInfo *info);
 

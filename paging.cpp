@@ -26,6 +26,13 @@ void Paging::unlock()
 	m.unlock();
 }
 
+void Paging::init()
+{
+	_d->lock();
+	_d->init();
+	_d->unlock();
+}
+
 /* Allocate pages */
 void *Paging::alloc(size_t cnt, unsigned int align, Alloc do_map)
 {
@@ -38,16 +45,11 @@ void *Paging::alloc(size_t cnt, unsigned int align, Alloc do_map)
 		align = PAGE_SIZE;
 	}
 
-	/* Always align to proper boundaries */
-	ptr8_t tmp = _d->freePageAddress();
-	while (((ptr32_val_t)tmp & (align-1))!=0) {
-		tmp++;
-		_d->incFreePageAddress(1);
-	}
+	_d->pageAlign(align);
+	void *tmp = _d->freePageAddress();
 
 	while (cnt>0) {
 		if (do_map == PagingAllocDontMap) {
-			//__free_page_address += PAGE_SIZE;
 			_d->incFreePageAddress(PAGE_SIZE);
 			cnt--;
 		} else {
@@ -65,6 +67,20 @@ void *Paging::alloc(size_t cnt, unsigned int align, Alloc do_map)
 
 	_d->unlock();
 	return tmp;
+}
+
+void *Paging::allocStatic(size_t size, ptr_t phys)
+{
+	_d->lock();
+
+	_d->pageAlign(PAGE_SIZE);
+
+	ptr_val_t tmp = (ptr_val_t)_d->freePageAddress();
+	if (phys!=NULL) *phys = tmp;
+	_d->incFreePageAddress(size);
+
+	_d->unlock();
+	return (void*)tmp;
 }
 
 /* Free allocated pages */

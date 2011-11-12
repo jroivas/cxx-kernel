@@ -113,4 +113,7 @@ SECTIONS
 		*(.note*)
 		/**(.*debug*)*/
 	 }
+
+	end = .; _end = .; __end = .; kernel_end = .;
+
 }

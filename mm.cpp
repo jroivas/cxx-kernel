@@ -6,6 +6,7 @@
 #include <sys/time.h>
 #else
 #include "paging.h"
+#include "arch/platform.h"
 #endif
        
 

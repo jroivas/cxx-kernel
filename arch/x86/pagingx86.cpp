@@ -1,9 +1,19 @@
 #include "pagingx86.h"
 #include "types.h"
 #include "x86.h"
+#include "bits.h"
 
 #define PAGING_START_POS 0x40000000
 //#define PAGE_SIZE PAGING_SIZE
+#define PDIR(x) ((PageDir*)x)
+#define BITS(x) ((Bits*)x)
+
+#define HEAP_START         0xC0000000
+#define HEAP_INITIAL_SIZE  0x100000
+#define HEAP_END           0xCFFFFFFF
+#define USER_HEAP_START    0xD0000000
+#define USER_HEAP_INITIAL_SIZE 0x100000
+#define USER_HEAP_END      0xDFFFFFFF
 
 ptr32_t __page_directory    = (ptr32_t)0xFFFFF000; //TODO
 ptr32_t __page_table        = (ptr32_t)0xFFC00000;
@@ -68,7 +78,7 @@ bool PageTable::copyTo(PageTable *table)
 {
 	if (table==NULL) return false;
 
-	Paging p;
+	//Paging p;
 	for (int i=0; i<PAGES_PER_TABLE; i++) {
 		if (pages[i].isAvail()) {
 			table->pages[i].alloc();
@@ -80,9 +90,37 @@ bool PageTable::copyTo(PageTable *table)
 	return true;
 }
 
+extern uint32_t kernel_end;
 PagingPrivate::PagingPrivate()
 {
 	m = Mutex(&__page_mapping_mutex);
+	data = NULL;
+	pageCnt = 0;
+	__free_page_address = (ptr8_t)kernel_end;
+}
+
+void PagingPrivate::init()
+{
+	if (data!=NULL) return;
+
+	ptr_val_t mem_end_page = (ptr_val_t)__mem_size;
+	pageCnt = mem_end_page/PAGE_SIZE;
+	data = (void*)new Bits(pageCnt);
+
+	directory = (void*)new PageDir();
+	for (uint32_t i=HEAP_START; i<HEAP_END; i++) {
+		PDIR(directory)->getPage(i, PageDir::PageDoReserve);
+	}
+
+	for (uint32_t i=USER_HEAP_START; i<USER_HEAP_END; i++) {
+		PDIR(directory)->getPage(i, PageDir::PageDoReserve);
+	}
+
+	uint32_t i = 0;
+	while (i<(ptr_val_t)__free_page_address) {
+		mapFrame(PDIR(directory)->getPage(i, PageDir::PageDoReserve), MapPageKernel, MapPageRW);
+		i += PAGE_SIZE;
+	}
 }
 
 void PagingPrivate::lock()
@@ -96,6 +134,34 @@ void PagingPrivate::unlock()
 {
 	m.unlock();
 	//sti();
+}
+
+void PagingPrivate::mapFrame(Page *p, MapType type, MapPermissions perms)
+{
+	if (p==NULL) return;
+
+	//Already mapped
+	if (!p->isAvail()) {
+		return;
+	} else {
+		bool ok = false;
+		uint32_t i = BITS(data)->findUnset(&ok);
+		if (!ok) {
+			//TODO handle out of pages/memory
+			return;
+		}
+
+		BITS(data)->set(i);
+		p->setPresent(true);
+
+		if (perms==MapPageRW) p->setRw(true);
+		else p->setRw(false);
+
+		if (type==MapPageKernel) p->setUserspace(false);
+		else p->setUserspace(true);
+
+		p->setAddress(i*PAGE_SIZE);
+	}
 }
 
 /* Get a free physical page */
@@ -195,6 +261,8 @@ bool PagingPrivate::map(void *phys, void *virt, unsigned int flags)
         if ((pt[pagetable] & 1) == 1) {
 		unsigned short *vid = (unsigned short *)(KERNEL_VIRTUAL+0xB8000);
 		*vid = 0x4745; //E
+		*(++vid) = 0x4752; //R
+		*(++vid) = 0x4752; //R
 		cli();
 		hlt();
 		//Platform::seizeInterrupts();
@@ -235,12 +303,78 @@ ptr8_t PagingPrivate::freePageAddress()
 
 void PagingPrivate::incFreePageAddress(ptr_val_t size)
 {
-	__free_page_address+=size;
+	__free_page_address += size;
+}
+
+void PagingPrivate::pageAlign(ptr_val_t align)
+{
+	/* Always align to proper boundaries */
+	ptr8_t tmp = freePageAddress();
+	while (((ptr32_val_t)tmp & (align-1))!=0) {
+		tmp++;
+		incFreePageAddress(1);
+	}
 }
 
 ptr_val_t PagingPrivate::memSize()
 {
 	return __mem_size;
+}
+
+PageDir::PageDir()
+{
+	for (int i=0; i<TABLES_PER_DIRECTORY; i++) {
+		tables[i] = NULL;
+		tablesPhys[i] = 0;
+	}
+	phys = (ptr_t)tablesPhys;
+}
+
+PageTable *PageDir::getTable(uint32_t i)
+{
+	if (i<TABLES_PER_DIRECTORY) {
+		return tables[i];
+	}
+	return NULL;
+}
+
+Page *PageDir::getPage(ptr_val_t addr, PageReserve reserve)
+{
+	uint32_t index;
+	addr /= PAGE_SIZE;
+	index = addr / TABLES_PER_DIRECTORY;
+
+	//We already have the table
+	if (tables[index]!=0) {
+		return tables[index]->get(addr%TABLES_PER_DIRECTORY);
+	}
+	else if (reserve==PageDoReserve) {
+		ptr_val_t physPtr = 0 ;
+		//tables[index] = (PageTable*)reserveStatic(sizeof(PageTable),&physPtr);
+		tables[index] = new(&physPtr) PageTable();
+		tablesPhys[index] = physPtr | PAGING_MAP_R2;
+		return tables[index]->get(addr%TABLES_PER_DIRECTORY);
+	}
+	return NULL;
+}
+
+void PageDir::copyTo(PageDir *dir)
+{
+	ptr_t offs = (ptr_t)((ptr_val_t)dir->tablesPhys - (ptr_val_t)dir);
+	dir->phys = (ptr_val_t)phys + offs;
+	for (int i=0; i<TABLES_PER_DIRECTORY; i++) {
+		if (tables[i]!=NULL) {
+			if (1) {
+				dir->tables[i] = tables[i];
+				dir->tablesPhys[i] = tablesPhys[i];
+			} else {
+				ptr_val_t tmp;
+				dir->tables[i] = new (&tmp) PageTable();
+				dir->tablesPhys[i] = tmp | PAGING_MAP_R2;
+				tables[i]->copyTo(dir->tables[i]);
+			}
+		}
+	}
 }
 
 #if 0
@@ -283,6 +417,9 @@ void paging_mmap_init(MultibootInfo *info)
 		}
 		mmap = (MemoryMap *)(((ptr32_val_t)mmap) + mmap->size + sizeof(ptr32_val_t));
 	}
+
+	Paging p;
+	p.init();
 
 #if 0
 	/* Clear the mappings */

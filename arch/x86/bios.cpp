@@ -27,7 +27,7 @@ extern "C" {
 #define BIOS_MEM_SIZE           0x8F000
 #define BIOS_STACK_SIZE         0x1000
 
-#if 1
+#if 0
 #if 0
 #ifdef __cplusplus
 extern "C" {
@@ -133,6 +133,7 @@ BIOS *BIOS::get()
 BIOS::BIOS()
 {
 	Platform::video()->printf("PRE A\n");
+	//return;
 	mem_mapping = MM::instance()->alloc(0x100000, MM::AllocFast);
 	//mem_mapping = MM::instance()->alloc(0x100000);
 	//mem_mapping = MM::instance()->alloc(5001, MM::AllocFast);
@@ -186,7 +187,7 @@ void BIOS::mapMem(ptr_val_t addr, phys_ptr_t phys, size_t size)
 extern "C" unsigned int get_esp();
 void BIOS::setupX86EMU()
 {
-#if 1
+#if 0
 #if 0
 #if 0
 	(void)bios_x86emu_pio_funcs;
@@ -225,7 +226,7 @@ void BIOS::setupX86EMU()
 		mach._x86emu_intrTab[i] = NULL;
 	}
 
-	x86emu_exec_intr(&mach, 0x10);
+	//x86emu_exec_intr(&mach, 0x10);
 #endif
 #endif
 }

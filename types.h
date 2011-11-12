@@ -26,5 +26,4 @@ typedef unsigned long long int uint64_t;
 
 #include "operators.h"
 
-
 #endif
