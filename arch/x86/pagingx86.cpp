@@ -15,11 +15,11 @@
 #define USER_HEAP_INITIAL_SIZE 0x100000
 #define USER_HEAP_END      0xDFFFFFFF
 
-ptr32_t __page_directory    = (ptr32_t)0xFFFFF000; //TODO
-ptr32_t __page_table        = (ptr32_t)0xFFC00000;
-ptr8_t  __free_page_address = (ptr8_t)PAGING_START_POS;
-ptr8_t      __mem_map       = (ptr8_t)(KERNEL_VIRTUAL+0x500);
-ptr32_val_t __mem_size      = 0;
+static ptr32_t __page_directory    = (ptr32_t)0xFFFFF000; //TODO
+static ptr32_t __page_table        = (ptr32_t)0xFFC00000;
+static ptr8_t  __free_page_address = (ptr8_t)PAGING_START_POS;
+static ptr8_t      __mem_map       = (ptr8_t)(KERNEL_VIRTUAL+0x500);
+static ptr32_val_t __mem_size      = 0;
 
 /* Memory mapping structure */
 struct MemoryMap
@@ -33,8 +33,13 @@ struct MemoryMap
 };
 
 
+extern "C" void pagingEnable();
+extern "C" void pagingDisable();
+extern "C" void pagingDirectoryChange(ptr_t a);
+
 //Mutex for locking mapping and prevent theading/SMP problems
 ptr32_val_t __page_mapping_mutex       = 0;
+ptr32_val_t __page_mapping_static_mutex       = 0;
 
 extern "C" void copyPhysicalPage(ptr_val_t a, ptr_val_t b);
 
@@ -63,9 +68,15 @@ void Page::alloc(PageType type)
 
 PageTable::PageTable()
 {
-	for (int i=0; i<PAGES_PER_TABLE; i++) {
+#if 0
+	for (unsigned int i=0; i<PAGES_PER_TABLE; i++) {
 		pages[i] = Page();
 	}
+#endif
+	static unsigned short a = 0;
+	unsigned short *tmp = (unsigned short *)(0xB8002);
+	*tmp = 0x1741+a;
+	(++a)%=22;
 }
 
 Page *PageTable::get(uint32_t i)
@@ -93,34 +104,156 @@ bool PageTable::copyTo(PageTable *table)
 extern uint32_t kernel_end;
 PagingPrivate::PagingPrivate()
 {
-	m = Mutex(&__page_mapping_mutex);
+	m.assign(&__page_mapping_mutex);
+	m_static.assign(&__page_mapping_static_mutex);
 	data = NULL;
 	pageCnt = 0;
+	is_ok = false;
+
+	// Map free space after kernel
 	__free_page_address = (ptr8_t)kernel_end;
 }
 
-void PagingPrivate::init()
+PagingPrivate::~PagingPrivate()
 {
-	if (data!=NULL) return;
+}
 
+bool PagingPrivate::init(void *platformData)
+{
+	if (data!=NULL) return false;
+	is_ok = false;
+
+	cli();
+	pagingDisable(); //Safety
+
+	(void)platformData;
+	unsigned short *tmp = (unsigned short *)(0xB8000);
+	*tmp = 0x1744; //D
+	data = (void*)new Bits(pageCnt);
+	BITS(data)->clearAll();
+	*tmp = 0x1745; //E
+
+	if (platformData!=NULL) {
+		MultibootInfo *info = (MultibootInfo*)platformData;
+		MemoryMap *mmap = (MemoryMap*)(info->mmap_addr + KERNEL_VIRTUAL);
+		ptr32_val_t  info_end = info->mmap_addr + info->mmap_length + KERNEL_VIRTUAL;
+		while ((ptr32_val_t )(mmap) + mmap->size < info_end) {
+			if ((mmap->base_addr_low + mmap->length_low) > __mem_size) {
+				__mem_size = mmap->base_addr_low + mmap->length_low;
+			}
+
+			unsigned long addr = mmap->base_addr_low / 0x1000;
+			unsigned long limit = mmap->length_low / 0x1000;
+
+			while (addr<0x120 && limit>0) {
+				addr++;
+				limit--;
+			}
+
+			if (mmap->type == 1) {
+				while (limit>0) {
+					//__mem_map[addr/8] |= 1 << addr % 8;
+					BITS(data)->set(addr/8);
+					addr++;
+					limit--;
+				}
+			}
+			else if (mmap->type == 2 || mmap->type == 3) {
+				//Skip
+			}
+			else {
+				break;
+			}
+			mmap = (MemoryMap *)(((ptr32_val_t)mmap) + mmap->size + sizeof(ptr32_val_t));
+		}
+	}
+	*tmp = 0x1746; //F
+#if 0
+	/* handle data */
+	if (platformData!=NULL) {
+		MultibootInfo *info = (MultibootInfo*)platformData;
+		MemoryMap *mmap = (MemoryMap*)(info->mmap_addr + KERNEL_VIRTUAL);
+		ptr32_val_t  info_end = info->mmap_addr + info->mmap_length + KERNEL_VIRTUAL;
+
+		while ((ptr32_val_t )(mmap) + mmap->size < info_end) {
+			if ((mmap->base_addr_low + mmap->length_low) > __mem_size) {
+				__mem_size = mmap->base_addr_low + mmap->length_low;
+			}
+
+			unsigned long addr = mmap->base_addr_low / 0x1000;
+			unsigned long limit = mmap->length_low / 0x1000;
+
+			while (addr<0x120 && limit>0) {
+				addr++;
+				limit--;
+			}
+
+			if (mmap->type == 1) {
+				while (limit>0) {
+					__mem_map[addr/8] |= 1 << addr % 8;
+					//BITS(data)->set(addr/8);
+					addr++;
+					limit--;
+				}
+			}
+			else if (mmap->type == 2 || mmap->type == 3) {
+				//Skip
+			}
+			else {
+				break;
+			}
+			mmap = (MemoryMap *)(((ptr32_val_t)mmap) + mmap->size + sizeof(ptr32_val_t));
+		}
+	}
+#endif
+
+	*tmp = 0x1747; //G
 	ptr_val_t mem_end_page = (ptr_val_t)__mem_size;
 	pageCnt = mem_end_page/PAGE_SIZE;
-	data = (void*)new Bits(pageCnt);
-
+	*tmp = 0x1748; //H
+	BITS(data)->copyFrom((uint32_t*)__mem_map);
 	directory = (void*)new PageDir();
-	for (uint32_t i=HEAP_START; i<HEAP_END; i++) {
+	*tmp = 0x1749; //I
+
+#if 1
+	//for (uint32_t i=HEAP_START; i<HEAP_END; i+=PAGE_SIZE) {
+	for (uint32_t i=HEAP_START; i<HEAP_START+HEAP_INITIAL_SIZE; i+=PAGE_SIZE) {
 		PDIR(directory)->getPage(i, PageDir::PageDoReserve);
 	}
+	*tmp = 0x2149; //I
 
-	for (uint32_t i=USER_HEAP_START; i<USER_HEAP_END; i++) {
+	//for (uint32_t i=USER_HEAP_START; i<USER_HEAP_END; i+=PAGE_SIZE) {
+	for (uint32_t i=USER_HEAP_START; i<USER_HEAP_START+USER_HEAP_INITIAL_SIZE; i+=PAGE_SIZE) {
 		PDIR(directory)->getPage(i, PageDir::PageDoReserve);
 	}
+#endif
 
+	*tmp = 0x174a; //J
+	// Identify mapping
 	uint32_t i = 0;
 	while (i<(ptr_val_t)__free_page_address) {
 		mapFrame(PDIR(directory)->getPage(i, PageDir::PageDoReserve), MapPageKernel, MapPageRW);
 		i += PAGE_SIZE;
 	}
+	*tmp = 0x274a; //J
+
+	for (uint32_t i=HEAP_START; i<HEAP_START+HEAP_INITIAL_SIZE; i+=PAGE_SIZE) {
+		mapFrame(PDIR(directory)->getPage(i, PageDir::PageDoReserve), MapPageUser, MapPageReadOnly);
+	}
+	*tmp = 0x374a; //J
+
+	for (uint32_t i=USER_HEAP_START; i<USER_HEAP_START+USER_HEAP_INITIAL_SIZE; i+=PAGE_SIZE) {
+		mapFrame(PDIR(directory)->getPage(i, PageDir::PageDoReserve), MapPageUser, MapPageRW);
+	}
+	*tmp = 0x174b; //K
+
+	pagingDirectoryChange(PDIR(directory)->getPhys());
+	*tmp = 0x174c; //L
+	pagingEnable();
+
+	*tmp = 0x174d; //M
+	is_ok = true;
+	return true;
 }
 
 void PagingPrivate::lock()
@@ -134,6 +267,16 @@ void PagingPrivate::unlock()
 {
 	m.unlock();
 	//sti();
+}
+
+void PagingPrivate::lockStatic()
+{
+	m_static.lock();
+}
+
+void PagingPrivate::unlockStatic()
+{
+	m_static.unlock();
 }
 
 void PagingPrivate::mapFrame(Page *p, MapType type, MapPermissions perms)
@@ -167,6 +310,22 @@ void PagingPrivate::mapFrame(Page *p, MapType type, MapPermissions perms)
 /* Get a free physical page */
 void *PagingPrivate::getPage()
 {
+	//mapFrame(PDIR(directory)->getPage(i, PageDir::PageDoReserve), MapPageUser, MapPageRW);
+	bool ok = false;
+	uint32_t i = BITS(data)->findUnset(&ok);
+	if (!ok) {
+		//TODO handle out of pages/memory
+		return NULL;
+	}
+
+	BITS(data)->set(i);
+	return (void*)(i*PAGE_SIZE);
+#if 0
+	bool ok;
+	BITS(data)->findUnused(&ok);
+	uint32_t i 
+#endif
+#if 0
 	static unsigned int count = 0;
 	unsigned char t = 0;
 
@@ -200,15 +359,21 @@ void *PagingPrivate::getPage()
 	}
 
 	return NULL;
+#endif
 }
 
 /* Free physical page corresponding to given virtuall address */
 void PagingPrivate::freePage(void *ptr)
 {
+	ptr_val_t i = (ptr_val_t)ptr;
+	i/=PAGE_SIZE;
+	BITS(data)->clear(i);
+#if 0
 	ptr32_val_t count = (((ptr32_val_t)ptr) / 0x8000);
         ptr8_val_t  bit   = ((((ptr32_val_t)ptr) / 0x1000) % 8);
 
 	__mem_map[count] |= bit;
+#endif
 }
 
 void *Paging::getPage()
@@ -308,12 +473,21 @@ void PagingPrivate::incFreePageAddress(ptr_val_t size)
 
 void PagingPrivate::pageAlign(ptr_val_t align)
 {
-	/* Always align to proper boundaries */
+	/* Align to proper boundaries */
+#if 1
+	//ptr8_t tmp = freePageAddress();
+	while (((ptr32_val_t)__free_page_address & (align-1))!=0) {
+		//tmp++;
+		__free_page_address++;
+		//incFreePageAddress(1);
+	}
+#else
 	ptr8_t tmp = freePageAddress();
 	while (((ptr32_val_t)tmp & (align-1))!=0) {
 		tmp++;
 		incFreePageAddress(1);
 	}
+#endif
 }
 
 ptr_val_t PagingPrivate::memSize()
@@ -342,18 +516,21 @@ Page *PageDir::getPage(ptr_val_t addr, PageReserve reserve)
 {
 	uint32_t index;
 	addr /= PAGE_SIZE;
-	index = addr / TABLES_PER_DIRECTORY;
+	index = addr / PAGES_PER_TABLE;
 
 	//We already have the table
-	if (tables[index]!=0) {
-		return tables[index]->get(addr%TABLES_PER_DIRECTORY);
+	if (tables[index]!=NULL) {
+		return tables[index]->get(addr%PAGES_PER_TABLE);
 	}
 	else if (reserve==PageDoReserve) {
 		ptr_val_t physPtr = 0 ;
 		//tables[index] = (PageTable*)reserveStatic(sizeof(PageTable),&physPtr);
-		tables[index] = new(&physPtr) PageTable();
+		//new(&physPtr) PageTable();
+		tables[index] = new ((ptr_t)&physPtr) PageTable();
+		//tables[index] = new PageTable();
+		physPtr = (ptr_val_t)tables[index];
 		tablesPhys[index] = physPtr | PAGING_MAP_R2;
-		return tables[index]->get(addr%TABLES_PER_DIRECTORY);
+		return tables[index]->get(addr%PAGES_PER_TABLE);
 	}
 	return NULL;
 }
@@ -386,6 +563,43 @@ void PagingPrivate::setFreePageAddress(ptr8_t pos)
 
 void paging_mmap_init(MultibootInfo *info)
 {
+#if 0
+	MemoryMap *mmap = (MemoryMap*)(info->mmap_addr);
+	ptr32_val_t  info_end = info->mmap_addr + info->mmap_length;
+
+	unsigned short *tmp = (unsigned short *)(0xB8000);
+	*tmp = 0x1744; //D
+	while ((ptr32_val_t )(mmap) + mmap->size < info_end) {
+		if ((mmap->base_addr_low + mmap->length_low) > __mem_size) {
+			__mem_size = mmap->base_addr_low + mmap->length_low;
+		}
+
+		unsigned long addr = mmap->base_addr_low / 0x1000;
+		unsigned long limit = mmap->length_low / 0x1000;
+
+		while (addr<0x120 && limit>0) {
+			addr++;
+			limit--;
+		}
+
+		if (mmap->type == 1) {
+			while (limit>0) {
+				__mem_map[addr/8] |= 1 << addr % 8;
+				addr++;
+				limit--;
+			}
+		}
+		else if (mmap->type == 2 || mmap->type == 3) {
+			//Skip
+		}
+		else {
+			break;
+		}
+		mmap = (MemoryMap *)(((ptr32_val_t)mmap) + mmap->size + sizeof(ptr32_val_t));
+	}
+	*tmp = 0x1745; //E
+#endif
+#if 0
 	MemoryMap *mmap = (MemoryMap*)(info->mmap_addr + KERNEL_VIRTUAL);
 	ptr32_val_t  info_end = info->mmap_addr + info->mmap_length + KERNEL_VIRTUAL;
 
@@ -413,14 +627,14 @@ void paging_mmap_init(MultibootInfo *info)
 			//Skip
 		}
 		else {
-			return;
+			break;
 		}
 		mmap = (MemoryMap *)(((ptr32_val_t)mmap) + mmap->size + sizeof(ptr32_val_t));
 	}
-
+#endif
+	/* Initialize paging */
 	Paging p;
-	p.init();
-
+	p.init((void*)info);
 #if 0
 	/* Clear the mappings */
 	ptr32_val_t PD_MAX = __mem_size/PAGE_SIZE+1;

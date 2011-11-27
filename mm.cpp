@@ -61,7 +61,7 @@ struct PtrInfo
 
 MM::MM()
 {
-	m = Mutex(&__mm_mutex);
+	m.assign(&__mm_mutex);
 	m_lastPage = NULL;
 	m_freeTop = NULL;
 	m_freeMax = NULL;

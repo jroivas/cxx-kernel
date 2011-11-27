@@ -6,8 +6,9 @@ OUTPUT_FORMAT("elf32-i386")
 ENTRY(loaderstart)
 /*
 	phys = 0x100000;
-*/
 phys = 0xC0000000;
+*/
+phys = 0x0;
 SECTIONS
 {
 /*
@@ -38,9 +39,9 @@ SECTIONS
 /*
 	.text : AT(ADDR(.text) - phys)
 	. += 0xC0000000;
-*/
 	. += 0xC0000000;
-	.text : AT(ADDR(.text) - 0xC0000000)
+*/
+	.text : AT(ADDR(.text) - phys)
 	{
 		code = .;
 		*(.text*)
@@ -106,14 +107,15 @@ SECTIONS
 		*(.gnu.linkonce.b*)
 	}
 	
-	 /DISCARD/ :
-	 {
+	/DISCARD/ :
+	{
 		*(.comment)
 		*(.eh_frame) /* You should discard this unless you're implementing runtime support for C++ exceptions. */
 		*(.note*)
 		/**(.*debug*)*/
-	 }
+	}
 
 	end = .; _end = .; __end = .; kernel_end = .;
+
 
 }

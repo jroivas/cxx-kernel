@@ -16,6 +16,16 @@ pagingDisable:
 
 	ret
 
+[global pagingDirectoryChange]
+pagingDirectoryChange:
+	push ebp
+	mov ebp, esp
+	mov eax, [ebp+8]
+	mov cr3, eax
+	pop ebp
+
+	ret
+
 [GLOBAL copyPhysicalPage]
 copyPhysicalPage:
 	push ebx

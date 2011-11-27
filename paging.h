@@ -43,7 +43,8 @@ public:
 		MapPageRW,
 	};
 	PagingPrivate();
-	void init();
+	~PagingPrivate();
+	bool init(void *platformData);
 
 	void mapFrame(Page *p, MapType type, MapPermissions perms);
 	bool map(void *phys, void *virt, unsigned int flags);
@@ -53,16 +54,21 @@ public:
 	void freePage(void *ptr);
 	void lock();
 	void unlock();
+	void lockStatic();
+	void unlockStatic();
 	ptr8_t freePageAddress();
 	void incFreePageAddress(ptr_val_t size);
 	ptr_val_t memSize();
 	void pageAlign(ptr_val_t align);
+	bool isOk() { return is_ok; }
 
 private:
 	Mutex m;
+	Mutex m_static;
 	void *data;
 	void *directory;
 	uint32_t pageCnt;
+	bool is_ok;
 };
 
 class Paging
@@ -74,7 +80,8 @@ public:
 	};
 
 	Paging();
-	void init();
+	~Paging() { }
+	void init(void *platformData);
 	void *alloc(size_t cnt, unsigned int align=0, Alloc do_map = PagingAllocNormal);
 	void free(void *ptr, size_t cnt);
 	void lock();
@@ -86,12 +93,11 @@ public:
 #endif
 	void map(void *phys, void *virt, unsigned int flags);
 	void *getPage();
-	bool isOk() { return is_ok; }
+	bool isOk();
 	
 private:
 	PagingPrivate *_d;
 	Mutex m;
-	bool is_ok;
 };
 
 

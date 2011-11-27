@@ -12,7 +12,8 @@ extern "C" void _main(unsigned long multiboot, unsigned long magic)
 	}
 
 #if 0
-	unsigned short *tmp = (unsigned short *)(KERNEL_VIRTUAL+0xB8000);
+	//unsigned short *tmp = (unsigned short *)(KERNEL_VIRTUAL+0xB8000);
+	unsigned short *tmp = (unsigned short *)(0xB8000);
 	*tmp = 0x1744; //D
 #endif
 

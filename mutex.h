@@ -8,9 +8,9 @@ class Mutex
 {
 public:
 	Mutex();
-	Mutex(ptr_val_t volatile *ptr);
 	~Mutex();
 
+	void assign(ptr_val_t volatile *ptr);
 	void lock();
 	bool isLocked();
 	void unlock();
@@ -18,6 +18,7 @@ public:
 	void abort();
 
 private:
+	Mutex(ptr_val_t volatile *ptr);
 	int CAS(int cmp, int set);
 	ptr_val_t volatile *m_ptr;
 };

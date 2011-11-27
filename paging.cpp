@@ -11,7 +11,7 @@ PagingPrivate __paging_private;
 Paging::Paging()
 {
 	_d = &__paging_private;
-	m = Mutex(&__page_mapping_alloc_mutex);
+	m.assign(&__page_mapping_alloc_mutex);
 }
 
 /* User lock, do not use internally */
@@ -26,10 +26,15 @@ void Paging::unlock()
 	m.unlock();
 }
 
-void Paging::init()
+bool Paging::isOk()
+{
+	return _d->isOk();
+}
+
+void Paging::init(void *platformData)
 {
 	_d->lock();
-	_d->init();
+	_d->init(platformData);
 	_d->unlock();
 }
 
@@ -71,15 +76,31 @@ void *Paging::alloc(size_t cnt, unsigned int align, Alloc do_map)
 
 void *Paging::allocStatic(size_t size, ptr_t phys)
 {
-	_d->lock();
+/*
+	unsigned short *atmp = (unsigned short *)(0xB8000);
+	atmp+=1;
+*/
+	//*atmp = 0x1256; //V
+	_d->lockStatic();
+	//*atmp = 0x1257; //W
 
 	_d->pageAlign(PAGE_SIZE);
+	//*atmp = 0x1258; //X
 
 	ptr_val_t tmp = (ptr_val_t)_d->freePageAddress();
+	//*atmp = 0x1259; //Y
+/*
+	if (tmp==0) {
+		*atmp = 0x1259; //Y
+	}
+*/
 	if (phys!=NULL) *phys = tmp;
+	//*atmp = 0x3759; //Y
 	_d->incFreePageAddress(size);
+	//*atmp = 0x125a; //Z
 
-	_d->unlock();
+	_d->unlockStatic();
+	//*atmp = 0x375a; //Z
 	return (void*)tmp;
 }
 

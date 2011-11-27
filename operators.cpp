@@ -2,38 +2,63 @@
 #include "mm.h"
 #include "paging.h"
 
+static Paging __operator_paging;
+//Paging __operator_paging;
+
 void *operator new(size_t size)
 {
-	Paging p;
-	if (p.isOk()) {
+	if (__operator_paging.isOk()) {
 		return MM::instance()->alloc(size);
 	} else {
-		return p.allocStatic(size, NULL);
+		//return __operator_paging.allocStatic(size, NULL);
+		__operator_paging.lock();
+		void *res = __operator_paging.allocStatic(size, NULL);
+		__operator_paging.unlock();
+		return res;
 	}
 }
 
 void *operator new[](size_t size)
 {
-	Paging p;
-	if (p.isOk()) {
+	if (__operator_paging.isOk()) {
 		return MM::instance()->alloc(size);
 	} else {
-		return p.allocStatic(size, NULL);
+		//return __operator_paging.allocStatic(size, NULL);
+		__operator_paging.lock();
+		void *res = __operator_paging.allocStatic(size, NULL);
+		__operator_paging.unlock();
+		return res;
 	}
 }
 
-void operator delete(void *p)
+void operator delete(void *ptr)
 {
-	MM::instance()->free(p);
+	if (__operator_paging.isOk()) {
+		MM::instance()->free(ptr);
+	}
 }
  
-void operator delete[](void *p)
+void operator delete[](void *ptr)
 {
-	MM::instance()->free(p);
+	if (__operator_paging.isOk()) {
+		MM::instance()->free(ptr);
+	}
 }
 
 void *operator new(size_t size, ptr_t addr)
 {
-	Paging p;
-	return p.allocStatic(size, addr);
+	__operator_paging.lock();
+#if 0
+	if (__operator_paging.isOk()) {
+		void *tmp = MM::instance()->alloc(size);
+		*addr = (ptr_val_t)tmp;
+		return tmp;
+	} else {
+		return __operator_paging.allocStatic(size, addr);
+	}
+#else
+	void *res = __operator_paging.allocStatic(size, addr);
+	__operator_paging.unlock();
+	return res;
+#endif
 }

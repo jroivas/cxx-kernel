@@ -17,6 +17,11 @@ Mutex::~Mutex()
 	m_ptr = NULL;
 }
 
+void Mutex::assign(ptr_val_t volatile *ptr)
+{
+	m_ptr = ptr;
+}
+
 int Mutex::CAS(int cmp, int set)
 {
 	return Platform::CAS(m_ptr,cmp,set);

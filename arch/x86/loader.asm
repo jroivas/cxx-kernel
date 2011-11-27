@@ -57,8 +57,11 @@ multiboot_header:
 	dd loaderstart
 
 loaderstart:
-	mov [multiboot_magic_data - KERNEL_VIRTUAL], eax
-	mov [multiboot_info_data - KERNEL_VIRTUAL], ebx
+	;mov [multiboot_magic_data - KERNEL_VIRTUAL], eax
+	;mov [multiboot_info_data - KERNEL_VIRTUAL], ebx
+	mov [multiboot_magic_data], eax
+	mov [multiboot_info_data], ebx
+	jmp __call_kernel
 
 	;mov ebx, KERNEL_PAGE_FLAGS
 	xor ebx, ebx
@@ -107,6 +110,21 @@ __high_half:
 	cli
 	hlt
 
+__call_kernel:
+	mov esp, __initial_stack+STACKSIZE           ; set up the stack
+
+	; pass Multiboot magic number
+	mov eax, [multiboot_magic_data]
+	push eax
+
+	; pass Multiboot info structure
+	mov ebx, [multiboot_info_data]
+	push ebx
+
+	call _main
+	call _atexit
+	cli
+	hlt
 
 [global gdt_flush]
 [extern __gdt_ptr] 
