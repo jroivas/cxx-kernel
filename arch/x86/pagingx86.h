@@ -10,13 +10,13 @@
 #define PAGING_SIZE (sizeof(ptr32_t)*PAGE_CNT) // A little bit more portable
 #define PAGE_SIZE PAGING_SIZE
 
-#define PAGING_MAP_USED    (1<<0)
-#define PAGING_MAP_KERNEL  (1<<1)
-#define PAGING_MAP_USER    (1<<3)
-#define PAGING_MAP_R0      (PAGING_MAP_USED|PAGING_MAP_KERNEL)
-#define PAGING_MAP_R2      (PAGING_MAP_USED|PAGING_MAP_USER)
+#define PAGING_MAP_USED    (1)
+#define PAGING_MAP_RW      (1<<1)
+#define PAGING_MAP_USER    (1<<2)
+#define PAGING_MAP_R0      (PAGING_MAP_USED|PAGING_MAP_RW)
+#define PAGING_MAP_R2      (PAGING_MAP_USED|PAGING_MAP_RW|PAGING_MAP_USER)
 /* These need to be more than 0xFFF ie. at least 2^12*/
-#define PAGING_MAP_SHARED  (1<<14)
+//#define PAGING_MAP_SHARED  (1<<14)
 
 class Page
 {
@@ -26,7 +26,7 @@ public:
 		UserPage = 1
 	};
 	Page() : val(0) {}
-	bool getPresent()       { return val & 1; }
+	bool getPresent()       { return (val & 1); }
 	bool getRw()            { return (val>>1) & 1; }
 	bool getUserspace()     { return (val>>2) & 1; }
 	bool getAccessed()      { return (val>>3) & 1; }
@@ -38,7 +38,8 @@ public:
 	void setUserspace(bool is)    { if (is) val |= (1<<2); else val &= ~(1<<2); }
 	void setAccessed(bool is)     { if (is) val |= (1<<3); else val &= ~(1<<3); }
 	void setDirty(bool is)        { if (is) val |= (1<<4); else val &= ~(1<<4); }
-	void setAddress(uint32_t adr) { adr &= 0xFFFFF000; adr |= val&0xFFF; val=adr; }
+//	void setAddress(uint32_t adr) { adr>>=12; adr &= 0xFFFFF000; adr <<= 12; adr |= val&0xFFF; val = adr; }
+	void setAddress(uint32_t adr) { adr &= 0xFFFFF000; adr |= val&0xFFF; val = adr; }
 
 	bool isAvail() { return val==0; }
 	bool copyTo(Page *p) { if (p==NULL) return false; p->val = val; return true; }
@@ -47,7 +48,7 @@ public:
 	void copyPhys(Page p);
 
 private:
-	uint32_t val;
+	volatile uint32_t val;
 };
 
 class PageTable

@@ -45,6 +45,7 @@ ALIGN 4
 [extern code]
 [extern bss]
 [extern kernel_end]
+[global my_kernel_end]
 multiboot_header:
 	dd 0
 	dd MULTIBOOT_MAGIC
@@ -53,6 +54,7 @@ multiboot_header:
 	dd multiboot_header
 	dd code
 	dd bss
+my_kernel_end:
 	dd kernel_end
 	dd loaderstart
 
@@ -141,6 +143,8 @@ gdt_flush:
 __gdt_flush_exit:
 	ret
 
+[global __initial_stack]
+	
 [section .bss]
 ALIGN 4
 ;ALIGN 32

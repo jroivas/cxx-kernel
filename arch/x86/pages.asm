@@ -1,10 +1,45 @@
+STACKSIZE             equ 0x4000
+KERNEL_VIRTUAL        equ 0xC0000000
+[extern __initial_stack]
 [global pagingEnable]
 pagingEnable:
-	; Enable paging
-	mov edx, cr0
-	and edx, 0x80000000
-	mov cr0, edx
+	push ebp
 
+	mov ax, 0x1741
+	mov [0xB8004],ax
+
+	; Enable paging
+	mov ebp, esp
+	mov eax, [ebp+8]
+
+	;mov edx, cr0
+	;and edx, 0x80000000
+	mov ax, 0x1742
+	mov [0xB8004],ax
+
+	mov ecx, cr0
+	or ecx, 0x80000000
+	mov cr0, ecx
+	jmp $
+
+	pop ebp
+
+
+	ret
+
+	;mov cr0, edx
+
+	mov ax, 0x1743
+	mov [0xB8004],ax
+	lea ecx, [__reloadStack]
+	jmp ecx
+	
+__reloadStack:
+	mov ax, 0x1744
+	mov [0xB8004],ax
+	mov esp, __initial_stack+STACKSIZE           ; set up the stack
+	mov ax, 0x1745
+	mov [0xB8004],ax
 	ret
 
 [global pagingDisable]

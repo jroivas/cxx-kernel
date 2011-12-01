@@ -22,9 +22,11 @@ run_qemu: kernel
 
 kernel: link2.ld build_arch $(OBJS) $(LIBS) 3rdparty/libx86emu.a
 	#$(LD) -m elf_i386 -nostdlib -T link2.ld -o kernel $(OBJS) $(LIBS) $(THIRDPARTY)
-	$(LD) -m elf_i386 -nostdlib -T link2.ld -o kernel $(OBJS) arch/platform.o arch/$(ARCH)/*.o $(THIRDPARTY)
+	#$(LD) -m elf_i386 -nostdlib -T link2.ld -o kernel $(OBJS) arch/platform.o arch/$(ARCH)/*.o $(THIRDPARTY)
+	#$(LD) -m elf_i386 -nostdlib -T link2.ld -o kernel $(OBJS) arch/platform.o arch/$(ARCH)/*.o $(THIRDPARTY)
 	#$(LD) -m elf_i386 -nostdlib -T link2.ld -o kernel $(OBJS) arch/platform.o arch/$(ARCH)/*.o
 	#$(LD) -m elf_i386 -nostdlib -T link2.ld -o kernel $(OBJS) $(LIBS) $(THIRDPARTY)
+	$(CXX) -m32 -Xlinker -T -Xlinker link2.ld -ffreestanding -fno-builtin -nostdlib -s  -o  kernel $(OBJS) arch/platform.o arch/$(ARCH)/*.o $(THIRDPARTY)
 
 kernel.iso: kernel menu.lst stage2_eltorito
 	mkdir -p isofiles/boot/grub

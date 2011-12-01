@@ -11,22 +11,28 @@ extern "C" void _main(unsigned long multiboot, unsigned long magic)
 		return;
 	}
 
-#if 0
+#if 1
 	//unsigned short *tmp = (unsigned short *)(KERNEL_VIRTUAL+0xB8000);
 	unsigned short *tmp = (unsigned short *)(0xB8000);
 	*tmp = 0x1744; //D
 #endif
-
 	gdt_init();
-	paging_init((MultibootInfo *)multiboot);
+
+	*tmp = 0x1745; //E
 
 	extern void (* start_ctors)();
 	extern void (* end_ctors)();
 	void (**constructor)() = & start_ctors;
 	while (constructor<&end_ctors) {
+		//*(tmp) = 0x2730+((unsigned int)constructor%10);
 		((void (*) (void)) (*constructor)) ();
 		constructor++;
 	}
+
+	*tmp = 0x1746; //F
+	paging_init((MultibootInfo *)multiboot);
+	while(1) ;
+	*tmp = 0x1747; //G
 
 	/* Run the kernel */
 	Kernel *k = new Kernel();

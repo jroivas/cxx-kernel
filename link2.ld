@@ -18,14 +18,16 @@ SECTIONS
 	{
 		*(.mb*)
 	}
+	. = 0x100000;
 */
 
-	. = 0x100000;
 
+/*
 	.setup :
 	{
 		*(.setup)
 	}
+*/
 
 /*
 	. = 0xC0100000;
@@ -40,12 +42,14 @@ SECTIONS
 	.text : AT(ADDR(.text) - phys)
 	. += 0xC0000000;
 	. += 0xC0000000;
-*/
 	.text : AT(ADDR(.text) - phys)
+*/
+	.text 0x100000 : 
 	{
 		code = .;
 		*(.text*)
 		*(.gnu.linkonce.t*)
+		. = ALIGN(4096);
 /*
 		. = ALIGN(4096);
 */
@@ -57,8 +61,9 @@ SECTIONS
 	.rodata ALIGN(4096) :
 	.rodata : AT(phys + (rodata - code))
 		. = ALIGN(4096);
-*/
 	.rodata : AT(ADDR(.rodata) - phys)
+*/
+	.rodata :
 	{
 		rodata = .;
 
@@ -77,6 +82,7 @@ SECTIONS
 		*(.strtab*)
 */
 		*(.gnu.linkonce.r*)
+		. = ALIGN(4096);
 	}
 	
 /*
@@ -85,12 +91,14 @@ SECTIONS
 	.data : AT(phys + (data - code))
 	.data : AT(phys + (data - code))
 		. = ALIGN(4096);
-*/
 	.data ALIGN(4096) : AT(ADDR(.data) - phys)
+*/
+	.data :
 	{
 		data = .;
 		*(.data*)
 		*(.gnu.linkonce.d*)
+		. = ALIGN(4096);
 	}
 
 /*
@@ -98,13 +106,15 @@ SECTIONS
 	.bss ALIGN(4096) :
 	.bss : AT(phys + (bss - code))
 		. = ALIGN(4096);
-*/
 	.bss : AT(ADDR(.bss) - phys)
+*/
+	.bss :
 	{
 		bss = .;
 		*(.COMMON*)
 		*(.bss*)
 		*(.gnu.linkonce.b*)
+		. = ALIGN(4096);
 	}
 	
 	/DISCARD/ :
@@ -116,6 +126,5 @@ SECTIONS
 	}
 
 	end = .; _end = .; __end = .; kernel_end = .;
-
 
 }
