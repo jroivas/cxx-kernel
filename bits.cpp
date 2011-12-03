@@ -1,12 +1,14 @@
 #include "bits.h"
+#define BIT_CONVERT (8*4)
 
 Bits::Bits(uint32_t cnt)
 {
 	m_cnt = cnt;
-	m_len = cnt/(8*4);
-	if (cnt%(8*4)!=0) m_len++;
+	m_len = cnt/BIT_CONVERT;
+	if (cnt%BIT_CONVERT!=0) m_len++;
 	bits = new uint32_t[m_len];
 	m_last = 0;
+	clearAll();
 }
 
 void Bits::clearAll()
@@ -20,8 +22,8 @@ bool Bits::set(uint32_t i)
 {
 	if (i>=m_cnt) return false;
 
-	uint32_t n = i/(8*4);
-	uint32_t m = i%(8*4);
+	uint32_t n = i/BIT_CONVERT;
+	uint32_t m = i%BIT_CONVERT;
 
 	bits[n] |= (1<<m);
 
@@ -32,8 +34,8 @@ bool Bits::clear(uint32_t i)
 {
 	if (i>=m_cnt) return false;
 
-	uint32_t n = i/(8*4);
-	uint32_t m = i%(8*4);
+	uint32_t n = i/BIT_CONVERT;
+	uint32_t m = i%BIT_CONVERT;
 
 	bits[n] &= ~(1<<m);
 	m_last = 0;
@@ -45,8 +47,8 @@ bool Bits::isSet(uint32_t i)
 {
 	if (i>=m_cnt) return false;
 
-	uint32_t n = i/(8*4);
-	uint32_t m = i%(8*4);
+	uint32_t n = i/BIT_CONVERT;
+	uint32_t m = i%BIT_CONVERT;
 
 	if (bits[n] & (1<<m)) return true;
 	return false;
@@ -58,13 +60,19 @@ uint32_t Bits::findUnset(bool *ok)
 		// Check if we have unset bits
 		if (~bits[i] != 0) {
 			for (uint32_t j=0; j<32; j++) {
-				if (!bits[i] & (1<<j)) {
+				if ((bits[i] & (1<<j))==0) {
 					if (ok!=NULL) *ok = true;
 					m_last = i;
-					return i*4*8*j;
+					return i*BIT_CONVERT+j;
 				}
 			}
 		}
+#if 0
+		if (m_last>0 && i>=m_len) {
+			m_last = 0;
+			i = 0;
+		}
+#endif
 	}
 	if (ok!=NULL) *ok = false;
 	return 0;

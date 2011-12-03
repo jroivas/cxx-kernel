@@ -151,8 +151,8 @@ bool PagingPrivate::init(void *platformData)
 
 	if (platformData!=NULL) {
 		MultibootInfo *info = (MultibootInfo*)platformData;
-		MemoryMap *mmap = (MemoryMap*)(info->mmap_addr + KERNEL_VIRTUAL);
-		ptr32_val_t  info_end = info->mmap_addr + info->mmap_length + KERNEL_VIRTUAL;
+		MemoryMap *mmap = (MemoryMap*)(info->mmap_addr);
+		ptr32_val_t  info_end = info->mmap_addr + info->mmap_length;
 		while ((ptr32_val_t )(mmap) + mmap->size < info_end) {
 			if ((mmap->base_addr_low + mmap->length_low) > __mem_size) {
 				__mem_size = mmap->base_addr_low + mmap->length_low;
@@ -183,13 +183,36 @@ bool PagingPrivate::init(void *platformData)
 	ptr_val_t mem_end_page = (ptr_val_t)__mem_size;
 	pageCnt = mem_end_page/PAGE_SIZE;
 
+	tmp = (unsigned short *)(0xB8080);
+	//*tmp = 0x1744; //D
+	uint32_t t = (uint32_t)__mem_size;
+	*(tmp++) = 0x4749;
+	tmp++;
+	if (t==0) {
+		*(tmp++) = 0x5730;
+	}
+	while (t>0) {
+		*(tmp++) = 0x5730+(t%10);
+		t/=10;
+	}
+
+	tmp = (unsigned short *)(0xB8000);
 	data = (void*)new Bits(pageCnt);
+#if 0
+	if (data==NULL) {
+		*tmp++ = 0x1745; //E
+		*tmp++ = 0x1753; //R
+		*tmp++ = 0x1753; //R
+		*tmp++ = 0x174d; //M
+		return false;
+	}
+#endif
 	BITS(data)->clearAll();
 
 	if (platformData!=NULL) {
 		MultibootInfo *info = (MultibootInfo*)platformData;
-		MemoryMap *mmap = (MemoryMap*)(info->mmap_addr + KERNEL_VIRTUAL);
-		ptr32_val_t  info_end = info->mmap_addr + info->mmap_length + KERNEL_VIRTUAL;
+		MemoryMap *mmap = (MemoryMap*)(info->mmap_addr);
+		ptr32_val_t  info_end = info->mmap_addr + info->mmap_length;
 		while ((ptr32_val_t )(mmap) + mmap->size < info_end) {
 			if ((mmap->base_addr_low + mmap->length_low) > __mem_size) {
 				__mem_size = mmap->base_addr_low + mmap->length_low;
@@ -303,9 +326,30 @@ bool PagingPrivate::init(void *platformData)
 	*tmp = 0x174b; //K
 
 	pagingDirectoryChange(PDIR(directory)->getPhys());
+	tmp = (unsigned short *)(0xB8150);
+	//*tmp = 0x1744; //D
+	t = (uint32_t)PDIR(directory)->getPhys();
+	*(tmp++) = 0x4741;
+	tmp++;
+	while (t>0) {
+		*(tmp++) = 0x5730+(t%10);
+		t/=10;
+	}
+	tmp = (unsigned short *)(0xB8170);
+	//*tmp = 0x1744; //D
+	t = (uint32_t)my_kernel_end;
+	*(tmp++) = 0x4741;
+	tmp++;
+	while (t>0) {
+		*(tmp++) = 0x5730+(t%10);
+		t/=10;
+	}
+
+	tmp = (unsigned short *)(0xB8000);
 	*tmp = 0x174c; //L
-	while(1) ;
+
 	pagingEnable();
+	while(1) ;
 
 	*tmp = 0x174d; //M
 	is_ok = true;
@@ -346,7 +390,11 @@ void PagingPrivate::mapFrame(Page *p, MapType type, MapPermissions perms)
 		bool ok = false;
 		uint32_t i = BITS(data)->findUnset(&ok);
 		if (!ok) {
+			//while(1) {}
 			//TODO handle out of pages/memory
+			unsigned short *tmp = (unsigned short *)(0xB8200);
+			static int n = 0;
+			*tmp = 0x1741+(n++%20); //L
 			return;
 		}
 

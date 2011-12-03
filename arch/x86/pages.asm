@@ -4,6 +4,7 @@ KERNEL_VIRTUAL        equ 0xC0000000
 [global pagingEnable]
 pagingEnable:
 	push ebp
+	push esp
 
 	mov ax, 0x1741
 	mov [0xB8004],ax
@@ -20,10 +21,14 @@ pagingEnable:
 	mov ecx, cr0
 	or ecx, 0x80000000
 	mov cr0, ecx
-	jmp $
 
+	pop esp
 	pop ebp
 
+	mov ax, 0x1743
+	mov [0xB8004],ax
+
+	jmp $
 
 	ret
 
