@@ -46,9 +46,9 @@ public:
 	~PagingPrivate();
 	bool init(void *platformData);
 
-	void mapFrame(Page *p, MapType type, MapPermissions perms);
+	bool mapFrame(Page *p, MapType type, MapPermissions perms);
 	void identityMapFrame(Page *p, ptr_val_t addr, MapType type, MapPermissions perms);
-	bool map(void *phys, void *virt, unsigned int flags);
+	bool map(void *phys, ptr_t virt, unsigned int flags);
 
 	void *unmap(void *ptr);
 	void *getPage();

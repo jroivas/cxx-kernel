@@ -10,7 +10,13 @@ Kernel::Kernel()
 	platform = new Platform();
 	video = Video::get();
 
+	if (IDT::get()==NULL) {
+		unsigned short *tmp = (unsigned short *)(0xB8006);
+		*tmp = 0x9745; //E
+		while(1) ;
+	}
 	IDT::get()->initISR();
+	//while(1);
 	IDT::get()->initIRQ();
 
         Timer::get()->setFrequency(KERNEL_FREQUENCY);
@@ -45,7 +51,7 @@ int Kernel::run()
 
 		//delete video;
 	}
-	platform->fb();
+	//platform->fb();
 	//platform->fb()->query(NULL);
 	while(1) {}
 

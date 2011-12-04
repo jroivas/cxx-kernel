@@ -11,14 +11,13 @@ extern "C" void _main(unsigned long multiboot, unsigned long magic)
 		return;
 	}
 
-#if 1
+#if 0
 	//unsigned short *tmp = (unsigned short *)(KERNEL_VIRTUAL+0xB8000);
 	unsigned short *tmp = (unsigned short *)(0xB8000);
 	*tmp = 0x1744; //D
 #endif
 	gdt_init();
 
-	*tmp = 0x1745; //E
 
 	extern void (* start_ctors)();
 	extern void (* end_ctors)();
@@ -29,10 +28,7 @@ extern "C" void _main(unsigned long multiboot, unsigned long magic)
 		constructor++;
 	}
 
-	*tmp = 0x1746; //F
 	paging_init((MultibootInfo *)multiboot);
-	*tmp = 0x1747; //G
-	while(1) ;
 
 	/* Run the kernel */
 	Kernel *k = new Kernel();

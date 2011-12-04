@@ -2,7 +2,7 @@
 #include "types.h"
 #include "arch/platform.h"
 
-static IDT *__global_idt = NULL;;
+static IDT *__global_idt = NULL;
 
 IDT *IDT::get()
 {
@@ -14,6 +14,7 @@ IDT *IDT::get()
 
 routine_t IDT::routine(unsigned int i)
 {
+	if (get()==NULL) return NULL;
 	return get()->getRoutine(i);
 }
 

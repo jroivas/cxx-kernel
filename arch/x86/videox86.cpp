@@ -1,7 +1,8 @@
 #include "videox86.h"
 #include "port.h"
 
-#define VIDEO_MEMORY_LOCATION 0xC00B8000
+//#define VIDEO_MEMORY_LOCATION 0xC00B8000
+#define VIDEO_MEMORY_LOCATION 0xB8000
 #define PORT 0x3D4
 
 VideoX86::VideoX86() : Video()

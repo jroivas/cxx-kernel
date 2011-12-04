@@ -46,6 +46,7 @@ void *Paging::alloc(size_t cnt, unsigned int align, Alloc do_map)
 	 */
 	_d->lock();
 
+#if 0
 	if (align==0) {
 		align = PAGE_SIZE;
 	}
@@ -69,8 +70,58 @@ void *Paging::alloc(size_t cnt, unsigned int align, Alloc do_map)
 			}
 		}
 	}
+	while (cnt>0) {
+		if (do_map == PagingAllocDontMap) {
+			_d->incFreePageAddress(PAGE_SIZE);
+			cnt--;
+		} else {
+			void *page = _d->getPage();
+			if (page==NULL) return NULL;
+			if (_d->map(page, _d->freePageAddress(), PAGING_MAP_R0)) {
+				_d->incFreePageAddress(PAGE_SIZE);
+				cnt--;
+			} else {
+				_d->unlock();
+				return NULL;
+			}
+		}
+	}
+#endif
+	(void)align;
+	(void)do_map;
+	void *tmp = NULL;
+	//VideoX86 v;
+	ptr_val_t pos = 0;
+	while (cnt>0) {
+		pos = 0;
+		if (_d->map(NULL, &pos, PAGING_MAP_R0)) {
+			cnt--;
+			//v.printf("Mem reserve: %x   \n",pos);
+			if (tmp==NULL && pos!=0) tmp=(void*)pos;
+		} else {
+			tmp = NULL;
+			break;
+		}
+	}
+#if 0
+	unsigned short *atmp = (unsigned short *)(0xB82B0);
+	//*tmp = 0x1744; //D
+	uint32_t t = (uint32_t)tmp;
+	*(atmp++) = 0x4741;
+	atmp++;
+	if (t==0) {
+		*(atmp++) = 0x5730;
+	}
+	while (t>0) {
+		*(atmp++) = 0x5730+(t%10);
+		t/=10;
+	}
+#endif
+
+	//while(1);
 
 	_d->unlock();
+
 	return tmp;
 }
 
@@ -114,6 +165,15 @@ void Paging::free(void *ptr, size_t cnt)
 		//ptr += PAGE_SIZE;
 		cnt--;
 	}
+	_d->unlock();
+}
+
+void Paging::map(void *phys, void *virt, unsigned int flags)
+{
+	_d->lock();
+	(void)phys;
+	(void)virt;
+	(void)flags;
 	_d->unlock();
 }
 
