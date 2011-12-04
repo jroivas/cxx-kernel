@@ -98,5 +98,5 @@ void gdt_init()
  
 	gdt_flush();
 
-        //asm volatile("ltr %%ax": : "a" (0x28));
+        asm volatile("ltr %%ax": : "a" (0x28));
 }

@@ -59,16 +59,17 @@ my_kernel_end:
 	dd loaderstart
 
 loaderstart:
-	;mov [multiboot_magic_data - KERNEL_VIRTUAL], eax
-	;mov [multiboot_info_data - KERNEL_VIRTUAL], ebx
 	mov [multiboot_magic_data], eax
 	mov [multiboot_info_data], ebx
 	jmp __call_kernel
 
+	;; DEPR***
+	;mov [multiboot_magic_data - KERNEL_VIRTUAL], eax
+	;mov [multiboot_info_data - KERNEL_VIRTUAL], ebx
 	;mov ebx, KERNEL_PAGE_FLAGS
 	xor ebx, ebx
 	add ebx, KERNEL_PAGE_FLAGS
-	mov ecx, (__boot_page_table - KERNEL_VIRTUAL)
+	;mov ecx, (__boot_page_table - KERNEL_VIRTUAL)
 
 __loop_page:
 	mov [ecx], ebx

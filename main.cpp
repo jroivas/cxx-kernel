@@ -31,8 +31,8 @@ extern "C" void _main(unsigned long multiboot, unsigned long magic)
 
 	*tmp = 0x1746; //F
 	paging_init((MultibootInfo *)multiboot);
-	while(1) ;
 	*tmp = 0x1747; //G
+	while(1) ;
 
 	/* Run the kernel */
 	Kernel *k = new Kernel();

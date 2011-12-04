@@ -196,6 +196,8 @@ bool PagingPrivate::init(void *platformData)
 		t/=10;
 	}
 
+	//while(1) ;
+
 	tmp = (unsigned short *)(0xB8000);
 	data = (void*)new Bits(pageCnt);
 #if 0
@@ -308,9 +310,10 @@ bool PagingPrivate::init(void *platformData)
 
 	*tmp = 0x174a; //J
 	// Identify mapping
+//FIXME
 	uint32_t i = 0;
 	while (i<(ptr_val_t)__free_page_address) {
-		mapFrame(PDIR(directory)->getPage(i, PageDir::PageDoReserve), MapPageKernel, MapPageRW);
+		identityMapFrame(PDIR(directory)->getPage(i, PageDir::PageDoReserve), i, MapPageKernel, MapPageRW);
 		i += PAGE_SIZE;
 	}
 	*tmp = 0x274a; //J
@@ -326,6 +329,7 @@ bool PagingPrivate::init(void *platformData)
 	*tmp = 0x174b; //K
 
 	pagingDirectoryChange(PDIR(directory)->getPhys());
+#if 0
 	tmp = (unsigned short *)(0xB8150);
 	//*tmp = 0x1744; //D
 	t = (uint32_t)PDIR(directory)->getPhys();
@@ -345,13 +349,15 @@ bool PagingPrivate::init(void *platformData)
 		t/=10;
 	}
 
+#endif
 	tmp = (unsigned short *)(0xB8000);
 	*tmp = 0x174c; //L
 
 	pagingEnable();
-	while(1) ;
+
 
 	*tmp = 0x174d; //M
+	//while(1) ;
 	is_ok = true;
 	return true;
 }
@@ -379,6 +385,24 @@ void PagingPrivate::unlockStatic()
 	m_static.unlock();
 }
 
+void PagingPrivate::identityMapFrame(Page *p, ptr_val_t addr, MapType type, MapPermissions perms)
+{
+	if (p==NULL) return;
+
+	uint32_t i = addr/PAGE_SIZE;
+	BITS(data)->set(i);
+
+	p->setPresent(true);
+
+	if (perms==MapPageRW) p->setRw(true);
+	else p->setRw(false);
+
+	if (type==MapPageKernel) p->setUserspace(false);
+	else p->setUserspace(true);
+
+	p->setAddress(addr);
+}
+
 void PagingPrivate::mapFrame(Page *p, MapType type, MapPermissions perms)
 {
 	if (p==NULL) return;
@@ -399,6 +423,7 @@ void PagingPrivate::mapFrame(Page *p, MapType type, MapPermissions perms)
 		}
 
 		BITS(data)->set(i);
+
 		p->setPresent(true);
 
 		if (perms==MapPageRW) p->setRw(true);
