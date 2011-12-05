@@ -78,27 +78,14 @@ void Video::clear()
 	m_y = 0;
 }
 
-#if 0
-void Video::setCursor()
-{
-	// Dummy function
-	unsigned int pos = m_y*width() + m_x;
-
-	Port::out(PORT, 0x0F);
-	Port::out(PORT+1, pos&0xFF);
-	Port::out(PORT, 0x0E);
-	Port::out(PORT+1, (pos>>8)&0xFF);
-}
-#endif
-
 void Video::scroll()
 {
 	if (m_videomem==NULL) return;
 	if (m_y>=height()) {
-		unsigned int size = (height()-1)*width();
-		Mem::copy(m_videomem, m_videomem + SCROLL_SIZE*width(), size);
-		Mem::setw(m_videomem + size, ' '|VIDEO_COLOR_MASK, width());
-		m_y = height()-1;
+		unsigned int ss = (height()-2)*width();
+		Mem::copy(m_videomem, m_videomem + SCROLL_SIZE*width()*2, ss*2);
+		Mem::setw(m_videomem + ss, ' '|VIDEO_COLOR_MASK, width());
+		m_y = height()-2;
 	}
 }
 
@@ -148,7 +135,7 @@ void Video::print_l(long val, int radix)
                 val *= -1;
                 n = true;
         }
-        unsigned int l = 0;
+        int l = 0;
         int tmp = val;
         while (tmp>0) { tmp/=radix; l++; }
         if (n) l++;
@@ -159,19 +146,21 @@ void Video::print_l(long val, int radix)
         if (n) s[0]='-';
         s[l]=0;
         l--;
-        while (l>0) {
+        while (l>=0) {
                 char t = val%radix;
                 if (t<10) s[l]='0'+t;
                 else s[l]='A'+t-10;
                 val/=radix;
                 l--;
         } 
+#if 0
         if (val>0) {
                 //s[l]='0'+val%radix;
                 char t = val%radix;
                 if (t<10) s[l]='0'+t;
                 else s[l]='A'+t-10;
         }
+#endif
         print(s);
         //free(s);
 }
@@ -183,26 +172,29 @@ void Video::print_ul(unsigned long val, int radix)
                 return;
         }
         int l = 0;
-        int tmp = val;
+        unsigned int long tmp = val;
         while (tmp>0) { tmp/=radix; l++; }
         if (l==0) l=1;
 
         char s[256];
         //char *s = (char*)calloc(1,l+1);
         s[l]=0;
+        s[l+1]=0;
         l--;
-        while (l>0) {
+        while (l>=0) {
                 char t = val%radix;
                 if (t<10) s[l]='0'+t;
                 else s[l]='A'+(t-10);
                 val/=radix;
                 l--;
         } 
+#if 0
         if (val>0) {
                 char t = val%radix;
                 if (t<10) s[l]='0'+t;
                 else s[l]='A'+t-10;
         }
+#endif
         print(s);
         //free(s);
 }
@@ -242,6 +234,10 @@ void Video::printf(const char *fmt, ...)
                                 print_ul(va_arg(al, unsigned int), 16);
                                 f = false;
                         }
+                        else if (*ch=='c') {
+				putCh(va_arg(al, unsigned char));
+                                f = false;
+			}
                         else if (*ch=='d') {
                                 if (!s_signed) {
                                         print_ul(va_arg(al, unsigned int));
@@ -302,15 +298,13 @@ void Video::putCh(char c)
 		m_y++;
 	}
 
+	scroll();
 	unsigned int offset = m_y*width() + m_x; 
-	if (offset>=size()) {
-		scroll();
-	}
+
 
 	m_videomem[offset] = c | VIDEO_COLOR_MASK;
 	m_x++;
 
-	scroll();
 	setCursor();
 
 #if 0

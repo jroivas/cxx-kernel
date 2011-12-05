@@ -14,6 +14,8 @@ public:
 		unsigned char gsize;
 		unsigned char bsize;
 		unsigned char asize;
+		unsigned char *base;
+		unsigned int id;
 	};
 
 	FB();

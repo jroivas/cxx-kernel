@@ -8,7 +8,8 @@ OBJS=arch/loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.
 #THIRDPARTY=3rdparty/libx86emu.a
 #THIRDPARTY=3rdparty/libx86.a
 #THIRDPARTY=3rdparty/a/*.o
-THIRDPARTY=3rdparty/fb/x86emu.o
+#THIRDPARTY=3rdparty/fb/x86emu.o
+THIRDPARTY=3rdparty/my_x86emu/x86emu.o
 
 #LIBS=-Larch/ -larch
 LIBS=arch/arch.a arch/$(ARCH)/$(ARCH).a

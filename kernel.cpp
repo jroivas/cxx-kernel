@@ -34,6 +34,8 @@ int Kernel::run()
 	platform->state()->startInterrupts();
 	if (video!=NULL) {
 		video->clear();
+		video->printf("self: %x\n",(ptr_val_t)this);
+		video->printf("vid: %x\n",(ptr_val_t)video);
 		video->printf("Ticks: %lu!\n",Timer::get()->getTicks());
 		video->printf("Hello world!\n");
 		video->printf("\nC++ kernel.\n");
@@ -51,8 +53,9 @@ int Kernel::run()
 
 		//delete video;
 	}
-	//platform->fb();
-	//platform->fb()->query(NULL);
+	platform->fb();
+	platform->fb()->query(NULL);
+	//platform->fb()->configure(platform->fb()->query(NULL));
 	while(1) {}
 
 	//asm ("int $0x20");

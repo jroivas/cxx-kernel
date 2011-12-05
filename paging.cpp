@@ -90,7 +90,6 @@ void *Paging::alloc(size_t cnt, unsigned int align, Alloc do_map)
 	(void)align;
 	(void)do_map;
 	void *tmp = NULL;
-	//VideoX86 v;
 	ptr_val_t pos = 0;
 	while (cnt>0) {
 		pos = 0;
@@ -99,6 +98,9 @@ void *Paging::alloc(size_t cnt, unsigned int align, Alloc do_map)
 			//v.printf("Mem reserve: %x   \n",pos);
 			if (tmp==NULL && pos!=0) tmp=(void*)pos;
 		} else {
+			unsigned short *atmp = (unsigned short *)(0xB82B0);
+			*atmp = 0x1745;
+			while(1);
 			tmp = NULL;
 			break;
 		}
@@ -127,31 +129,15 @@ void *Paging::alloc(size_t cnt, unsigned int align, Alloc do_map)
 
 void *Paging::allocStatic(size_t size, ptr_t phys)
 {
-/*
-	unsigned short *atmp = (unsigned short *)(0xB8000);
-	atmp+=1;
-*/
-	//*atmp = 0x1256; //V
 	_d->lockStatic();
-	//*atmp = 0x1257; //W
 
 	_d->pageAlign(PAGE_SIZE);
-	//*atmp = 0x1258; //X
 
 	ptr_val_t tmp = (ptr_val_t)_d->freePageAddress();
-	//*atmp = 0x1259; //Y
-/*
-	if (tmp==0) {
-		*atmp = 0x1259; //Y
-	}
-*/
 	if (phys!=NULL) *phys = tmp;
-	//*atmp = 0x3759; //Y
 	_d->incFreePageAddress(size);
-	//*atmp = 0x125a; //Z
 
 	_d->unlockStatic();
-	//*atmp = 0x375a; //Z
 	return (void*)tmp;
 }
 
@@ -177,67 +163,15 @@ void Paging::map(void *phys, void *virt, unsigned int flags)
 	_d->unlock();
 }
 
-#if 0
-/* Map physical page */
-void *Paging::mapPhys(void* phys, unsigned int length)
+void *Paging::getPage()
 {
-#if 0
 	_d->lock();
-	unsigned int cc = length;
-	ptr8_t virt = (ptr8_t)phys;
-	while (cc!=0) {
-		//_d->map(phys, __free_page_address, PAGING_MAP_R0);
-		_d->map(virt, virt, PAGING_MAP_R0);
-		virt += PAGE_SIZE;
-		//__free_page_address += PAGE_SIZE;
-
-		if (cc>=PAGE_SIZE) cc -= PAGE_SIZE;
-		else break;
-	}
+	void *p = _d->getPage();
 	_d->unlock();
-	//return virt;
-	return phys;
-#else
-	(void)phys;
-	(void)length;
-	return NULL;
-#endif
+	return p;
 }
-
-void Paging::unmapPhys(void* phys, unsigned int length)
-{
-#if 0
-	unsigned int cnt = length/PAGE_SIZE;
-	if (length%length/PAGE_SIZE!=0) cnt++;
-	free(phys, cnt);
-#else
-	(void)phys;
-	(void)length;
-#endif
-}
-#endif
 
 void paging_init(MultibootInfo *info)
 {
 	paging_mmap_init(info);
 }
-
-#if 0
-extern "C" void *mapPhys(void* phys, unsigned int length)
-{
-	Paging p;
-	void *res;
-	p.lock();
-	res = p.mapPhys(phys,length);
-	p.unlock();
-	return res;
-}
-
-extern "C" void unmapPhys(void *phys, unsigned int length)
-{
-	Paging p;
-	p.lock();
-	p.unmapPhys(phys, length);
-	p.unlock();
-}
-#endif

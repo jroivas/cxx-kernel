@@ -16,7 +16,7 @@
 #define USER_HEAP_END      0xDFFFFFFF
 
 //static ptr32_t __page_directory    = (ptr32_t)0xFFFFF000; //TODO
-static ptr32_t __page_table        = (ptr32_t)0xFFC00000;
+//static ptr32_t __page_table        = (ptr32_t)0xFFC00000;
 static ptr8_t  __free_page_address = (ptr8_t)PAGING_START_POS;
 static ptr8_t  __heap_address      = (ptr8_t)HEAP_START;
 static ptr8_t  __user_heap_address = (ptr8_t)USER_HEAP_START;
@@ -497,23 +497,17 @@ void *PagingPrivate::getPage()
 /* Free physical page corresponding to given virtuall address */
 void PagingPrivate::freePage(void *ptr)
 {
+#if 1
 	ptr_val_t i = (ptr_val_t)ptr;
 	i/=PAGE_SIZE;
 	BITS(data)->clear(i);
+#endif
 #if 0
 	ptr32_val_t count = (((ptr32_val_t)ptr) / 0x8000);
         ptr8_val_t  bit   = ((((ptr32_val_t)ptr) / 0x1000) % 8);
 
 	__mem_map[count] |= bit;
 #endif
-}
-
-void *Paging::getPage()
-{
-	_d->lock();
-	void *p = _d->getPage();
-	_d->unlock();
-	return p;
 }
 
 #if 0
@@ -537,7 +531,6 @@ void Paging::map(void *phys, void *virt, unsigned int flags)
 }
 #endif
 
-#include "videox86.h"
 /* Map physical page to virtual */
 bool PagingPrivate::map(void *phys, ptr_t virt, unsigned int flags)
 {
@@ -577,9 +570,11 @@ bool PagingPrivate::map(void *phys, ptr_t virt, unsigned int flags)
 	(void) phys;
 	ptr_val_t i = 0;
 	if (flags&PAGING_MAP_USER) {
+		while ((ptr_val_t)__user_heap_address%PAGE_SIZE!=0) __user_heap_address++;
 		i = (ptr_val_t)__user_heap_address;
 		__user_heap_address+=PAGE_SIZE;
 	} else {
+		while ((ptr_val_t)__heap_address%PAGE_SIZE!=0) __heap_address++;
 		i = (ptr_val_t)__heap_address;
 		__heap_address+=PAGE_SIZE;
 	}
@@ -631,6 +626,9 @@ bool PagingPrivate::map(void *phys, ptr_t virt, unsigned int flags)
 /* Unmap memory at ptr */
 void *PagingPrivate::unmap(void *ptr)
 {
+	(void)ptr;
+	return NULL;
+#if 0
 	ptr32_val_t pagedir   = (ptr32_val_t)ptr >> 22;
 	ptr32_val_t pagetable = (ptr32_val_t)ptr >> 12 & 0x3FF;
 	
@@ -647,6 +645,7 @@ void *PagingPrivate::unmap(void *ptr)
 
 	pt[pagetable] &= 0xFFFFFFFE;
 	return (void *) (pt[pagetable] & 0xFFFFF000);
+#endif
 }
 
 ptr8_t PagingPrivate::freePageAddress()

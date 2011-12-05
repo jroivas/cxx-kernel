@@ -31,33 +31,33 @@
 #############################################################################
 
 TARGETLIB = libx86emu.a
+include ../../config.mk
 
-OBJS=\
-debug.o \
-decode.o \
-fpu.o \
-ops.o \
-ops2.o \
-prim_ops.o \
-sys.o
+#CC=$(CXX)
+#CFLAGS=$(CXXFLAGS_CC)
+#CFLAGS=$(CXXFLAGS)
 
-all: $(TARGETLIB)
+OBJS=x86emu.o
+
+#all: $(TARGETLIB)
+all: $(OBJS)
 
 $(TARGETLIB): $(OBJS)
 	ar rv $(TARGETLIB) $(OBJS)
 
-INCS   = -I. -Ix86emu -I../../include -I../x86emu_include
-CFLAGS += -fPIC -D__DRIVER__ -DFORCE_POST -D_CEXPORT= -DNO_LONG_LONG -DDEBUG
+#INCS   = -I. -Ix86emu -I../../include -I../x86emu_include -Iinc
+INCS   = -I.
+CFLAGS := $(CFLAGS) -Wno-unused-parameter -DNO_LONG_LONG -DNO_SYS_HEADERS
 
 .c.o:
-	gcc -g -O -Wall -c $(CFLAGS) $(INCS) $*.c
+	$(CC) -Wall -c $(CFLAGS) $(INCS) $*.c
 
 .cpp.o:
-	gcc -c $(CFLAGS) $(INCS) $*.cpp
+	$(CXX) -c $(CXXFLAGS) $(INCS) $*.cpp
 
 distclean: clean
 
 clean:
-	rm -f *.a *.o
+	rm -f *.a *.o *~
 
 install:
