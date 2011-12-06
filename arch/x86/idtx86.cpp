@@ -182,8 +182,8 @@ extern "C" void irq_handler(Regs * r)
 {
 	if (r==NULL) {
 		VideoX86 tmp;
-		tmp.clear();
-		tmp.printf("ERROR! IRQ, regs.\n");
+		//tmp.clear();
+		tmp.printf("ERROR! IRQ, regs. \n");
 
 		Platform p;
 		p.state()->seizeInterrupts();
@@ -205,12 +205,13 @@ extern "C" void irq_handler(Regs * r)
 	Port::out(0x20, 0x20);
 }
 
+extern uint32_t debug_ptr;
 extern "C" void isr_handler(Regs * r)
 {
 	if (r==NULL) {
 		VideoX86 tmp;
 		tmp.clear();
-		tmp.printf("ERROR! ISR, regs.\n");
+		tmp.printf("ERROR! ISR, regs. \n");
 
 		Platform p;
 		p.state()->seizeInterrupts();
@@ -218,18 +219,22 @@ extern "C" void isr_handler(Regs * r)
 	}
 	if (r->int_no == 14) {
 		VideoX86 tmp;
-		//tmp.clear();
-		tmp.printf("\nERROR! Page fault!\n");
-		//p.video()->printf("ERROR! Page fault!\n");
+		tmp.printf("\nERROR! Page fault! \n");
 		Platform p;
-		//Platform p;
+		p.state()->seizeInterrupts();
+		p.state()->halt();
+	}
+	if (r->int_no == 6) {
+		VideoX86 tmp;
+		tmp.printf("\nERROR! Invalid instruction: %x\n",debug_ptr);
+		Platform p;
 		p.state()->seizeInterrupts();
 		p.state()->halt();
 	}
 	if (r->int_no < 32) {
 		// Got it
 		VideoX86 tmp;
-		tmp.clear();
+		//tmp.clear();
 		tmp.printf("ERROR! ISR %d\n",r->int_no);
 
 		Platform p;

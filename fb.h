@@ -37,7 +37,9 @@ protected:
 	unsigned char *backbuffer;
 	bool double_buffer;
 	ModeConfig *current;
+/*
 	int tmp_w;
 	int tmp_h;
+*/
 };
 #endif

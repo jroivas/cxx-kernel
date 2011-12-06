@@ -12,9 +12,10 @@ public:
 	FB::ModeConfig *query(FB::ModeConfig *prefer);
 	virtual bool configure(ModeConfig *mode);
 	void blit();
+	//void putPixel(int x, int y, unsigned char r, unsigned char g, unsigned char b, unsigned char a=0xff);
 
 private:
-	ptr_t getVESA();
+	bool getVESA(void *ptr);
 	void setMode(ModeConfig *mode);
 	int modeDiff(FB::ModeConfig *conf, FB::ModeConfig *cmp);
 	void copyMode(FB::ModeConfig *dest, FB::ModeConfig *src);

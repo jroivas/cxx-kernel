@@ -405,9 +405,23 @@ void *MM::allocMemClear(size_t size)
 	if (ptr==NULL) return NULL;
 
 	// This always ensures that the memory is cleared
-	while (tmp<ptr+size) {
+	for (uint32_t i=0; i<size; i++) {
+		*(tmp+i) = 0;
+	}
+/*
+	unsigned char *target=ptr+size;
+	while (tmp<target) {
 		*tmp++ = 0;
 	}
+*/
+#if 0
+	uint32_t cnt = size;
+	while (cnt>0) {
+		*tmp = 0;
+		tmp++;
+		cnt--;
+	}
+#endif
 
 	return (void*)ptr;
 }

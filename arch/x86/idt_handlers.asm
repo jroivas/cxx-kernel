@@ -3,6 +3,10 @@ KERNEL_SPACE equ 0x10
 [extern irq_handler]
 [extern isr_handler]
 
+[global debug_ptr]
+debug_ptr:
+	dd 0
+
 [global get_esp]
 get_esp:
         mov eax, esp
@@ -115,6 +119,20 @@ __isr%1:
 	jmp __isr_common
 %endmacro
 
+%macro __isr_init_dbg 1
+
+[global __isr%1]
+
+__isr%1:
+	cli
+	pop eax
+	mov [debug_ptr],eax
+	push byte 0
+	push byte %1
+	jmp __isr_common
+	jmp $
+%endmacro
+
 %macro __isr_init_err 1
 
 [global __isr%1]
@@ -131,7 +149,7 @@ __isr_init 2
 __isr_init 3
 __isr_init 4
 __isr_init 5
-__isr_init 6
+__isr_init_dbg 6
 __isr_init 7
 __isr_init_err 8
 __isr_init 9
