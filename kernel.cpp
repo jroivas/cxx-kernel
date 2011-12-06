@@ -74,8 +74,6 @@ int Kernel::run()
 		}
 		platform->fb()->swap();
 		platform->fb()->blit();
-		platform->fb()->swap();
-		platform->fb()->blit();
 #if 1
 		for (int j=100; j<120; j++) {
 			for (int i=100; i<200; i++) {

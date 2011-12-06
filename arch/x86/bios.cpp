@@ -8,20 +8,10 @@
 #include "x86emu.h"
 #include "x86emu_regs.h"
 
-#define BIOS_BDA_BASE           0
-#define BIOS_BDA_SIZE           0x1000
-#define BIOS_EBDA_BASE          0x90000
-#define BIOS_EBDA_SIZE          0x70000
 #define BIOS_MEM_BASE           0x1000
 #define BIOS_MEM_SIZE           0x8F000
 #define BIOS_STACK_SIZE         0x1000
 
-#if 1
-#if 0
-#ifdef __cplusplus
-extern "C" {
-#endif
-#endif
 static uint8_t bios_x86emu_pio_inb(struct x86emu *, uint16_t port) {
         return Port::in(port);
 }
@@ -91,7 +81,6 @@ static void bios_x86emu_mem_wrl(struct x86emu *emu, uint32_t addr, uint32_t val)
 	*((uint32_t *)(emu->mem_base + addr)) = val;
 }
 
-#endif
 
 static BIOS *__static_bios = NULL;
 static ptr_val_t __bios_mutex = 0;
@@ -106,36 +95,6 @@ BIOS *BIOS::get()
 
 BIOS::BIOS()
 {
-	//return;
-	//mem_mapping = MM::instance()->alloc(0x100000, MM::AllocFast);
-	//mem_mapping = MM::instance()->alloc(0x100000);
-	//mem_mapping = MM::instance()->alloc(5001, MM::AllocFast);
-	//Platform::video()->printf("POST A: %x\n",mem_mapping);
-	//if (mem_mapping==NULL) return;
-	//return;
-
-#if 0
-	Platform::video()->printf("PRE B\n");
-	Paging p;
-	p.lock();
-	//bios_pages = p.alloc(BIOS_MEM_SIZE/PAGE_SIZE+1, 0, Paging::PagingAllocDontMap);
-	p.unlock();
-#endif
-
-	//Platform::video()->printf("PRE D\n");
-	//mapMem((ptr_t)BIOS_MEM_BASE, (phys_ptr_t)bios_pages, BIOS_MEM_SIZE);
-	//mapMem((ptr_t)BIOS_MEM_BASE, (phys_ptr_t)bios_pages, BIOS_MEM_SIZE);
-/*
-	mapMem((ptr_t)BIOS_BDA_BASE, BIOS_BDA_BASE, BIOS_BDA_SIZE);
-	mapMem((ptr_t)BIOS_MEM_BASE, (phys_ptr_t)-1, BIOS_MEM_SIZE);
-	mapMem((ptr_t)BIOS_EBDA_BASE, BIOS_EBDA_BASE, BIOS_EBDA_SIZE);
-*/
-#if 0
-	mapMem(BIOS_BDA_BASE, BIOS_BDA_BASE, BIOS_BDA_SIZE);
-	mapMem(BIOS_MEM_BASE, (phys_ptr_t)-1, BIOS_MEM_SIZE);
-	mapMem(BIOS_EBDA_BASE, BIOS_EBDA_BASE, BIOS_EBDA_SIZE);
-#endif
-	//mapMem(BIOS_MEM_BASE, (phys_ptr_t)-1, BIOS_MEM_SIZE);
 	m_bios.assign(&__bios_mutex);
 	free_base = BIOS_MEM_BASE;
 
@@ -144,41 +103,12 @@ BIOS::BIOS()
 	if (bios_stack!=NULL && bios_halt!=NULL) {
 		*(uint8_t*)bios_halt = 0xF4;
 	}
-	
-	//x86emu mach;
-	//setupX86EMU(&mach);
-
-	//Platform::video()->printf("PRE D3\n");
-
-	//X86EMU_setupPioFuncs(&x86emu_pio_funcs);
-	//setupX86EMU();
-	//Platform::video()->printf("PRE E\n");
 }
-
-#if 0
-void BIOS::mapMem(ptr_val_t addr, phys_ptr_t phys, size_t size)
-{
-	Paging p;
-	p.lock();
-	for (size_t i=0; i<size; i+=PAGE_SIZE) {
-		//p.map((ptr_t)((ptr_val_t)mem_mapping + addr + i), (ptr_t)((ptr_val_t)phys + i), 0x3); //FIXME
-		if (phys==(phys_ptr_t)-1) {
-			p.map(p.getPage(), (ptr_t)((ptr_val_t)mem_mapping + addr + i), 0x3); //FIXME
-		} else {
-			//p.map((ptr_t)((ptr_val_t)phys + i), (ptr_t)((ptr_val_t)mem_mapping + addr + i), 0x3); //FIXME
-			p.map((ptr_t)(phys + i), (ptr_t)((ptr_val_t)mem_mapping + addr + i), 0x3); //FIXME
-		}
-	}
-	p.unlock();
-}
-#endif
 
 extern "C" unsigned int get_esp();
 void BIOS::setupX86EMU(void *ptr)
 {
-#if 1
 	/* Filling up the struct */
-	//x86emu mach;
 	x86emu *mach = (x86emu*)ptr;
 
 	//x86emu_init_default(&mach);
@@ -204,13 +134,7 @@ void BIOS::setupX86EMU(void *ptr)
 	Mem::set(&mach->x86, 0, sizeof(struct x86emu_regs));
 	//mach->x86.R_EFLG = (1<<9) | (1<<1);
 	mach->x86.R_EFLG = F_IF;
-/*
-	mach->x86.R_CS = 0x8;
-	mach->x86.R_DS = 0x10;
-	mach->x86.R_SS = 0x10;
-*/
 
-	//mach->x86.R_ESP = get_esp();
 #if 0
 	for (size_t i=0; i<BIOS_STACK_SIZE; i++) {
 		((unsigned char*)bios_stack)[i]=0;
@@ -219,32 +143,21 @@ void BIOS::setupX86EMU(void *ptr)
 	mach->x86.R_ESP = ((uint32_t)bios_stack)+BIOS_STACK_SIZE;
 	*(uint8_t*)bios_halt = 0xF4;
 	mach->x86.R_EIP = (uint32_t)bios_halt;
-#if 0
-	for (int i=0; i<256; i++) {
-		mach->_x86emu_intrTab[i] = NULL;
-	}
-	mach.x86.R_EAX = 0x4F03;
-	for (int i=0; i<256; i++) {
-		mach._x86emu_intrTab[i] = NULL;
-	}
-
-	x86emu_exec_intr(&mach, 0x10);
-
-	if (mach.x86.R_AX==0x4f) {
-		Platform::video()->printf("Got VBE 0x4f\n");
-	} else {
-		Platform::video()->printf("FAILED to get VBE 0x4f\n");
-	}
-#endif
-#endif
 }
 
 void *BIOS::alloc(uint32_t size)
 {
+
 	if (free_base<BIOS_MEM_BASE+BIOS_MEM_SIZE) {
+		m_bios.lock();
+#ifdef ALIGN_BIOS
 		while (free_base%PAGE_SIZE!=0) free_base++;
+#endif
 		void *tmp = (void*)free_base;
 		free_base += size;
+
+		m_bios.unlock();
+
 		return tmp;
 	}
 	return NULL;

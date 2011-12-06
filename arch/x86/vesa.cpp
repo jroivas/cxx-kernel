@@ -24,8 +24,11 @@ int Vesa::modeDiff(FB::ModeConfig *conf, FB::ModeConfig *cmp)
 	int diff=0;
 
 	if (conf->width!=cmp->width) diff++;
+	if (conf->width>cmp->width) diff++;
 	if (conf->height!=cmp->height) diff++;
+	if (conf->height>cmp->height) diff++;
 	if (conf->depth!=cmp->depth) diff++;
+	if (conf->depth>cmp->depth) diff++;
 	if (conf->bytes_per_line!=cmp->bytes_per_line) diff++;
 
 	return diff;
@@ -157,11 +160,6 @@ FB::ModeConfig *Vesa::query(FB::ModeConfig *prefer)
 				continue;
 		}
 
-/*
-		limit--;
-		if (limit==0) break;
-*/
-
 		Platform::video()->printf("%d: %dx%d BPP: %d\n",loc[i],modeinfo->x_resolution, modeinfo->y_resolution, modeinfo->bits_per_pixel);
 		conf->width = modeinfo->x_resolution;
 		conf->height = modeinfo->y_resolution;
@@ -175,12 +173,10 @@ FB::ModeConfig *Vesa::query(FB::ModeConfig *prefer)
 				bestdiff=0;
 				copyMode(res, conf);
 			} else {
-#if 1
 				if (res->width<=conf->width && res->height<=conf->height && res->depth<=conf->depth) {
 				//if (res->width<conf->width || res->height<conf->height || res->depth<conf->depth) {
 					copyMode(res, conf);
 				}
-#endif
 			}
 		} else {
 			int rdiff = modeDiff(prefer, conf);
@@ -193,50 +189,30 @@ FB::ModeConfig *Vesa::query(FB::ModeConfig *prefer)
 			}
 		}
 	}
-#if 0
-	struct LRMI_regs r;
-	r.eax = 0x4f00;
-	r.es = (unsigned int)vbe.info >> 4;
-	r.edi = 0;
-	Mem::copy(vbe.info->vbe_signature, (void*)"VBE2", 4);
-	if (!LRMI_int(0x10, &r)) {
-		Platform::video()->printf("=== VBE2 Init failure\n");
-		return NULL;
-	}
-	Platform::video()->printf("VBE2 got: %d %d\n",(int)(vbe.info->vbe_version >> 8) & 0xff,(int)vbe.info->vbe_version & 0xff);
-	Platform::video()->printf("%s\n", (char *)(vbe.info->oem_string_seg * 16 + vbe.info->oem_string_off));
-#endif
 
-#if 1
 	MM::instance()->free(conf);
 	if (bestdiff==-1) {
 		MM::instance()->free(res);
 		return NULL;
 	}
-	//res->base = physMap(res->base);
+
+	// TODO make this cleaner
 	Paging p;
 	ptr_val_t newbase;
-	//p.map(res->base, &newbase, res->bytes_per_line*(res->height+1));
 	uint32_t s = res->bytes_per_line*(res->height+1);
 	p.map(res->base, &newbase, 0x3);
 	for (uint32_t i=PAGE_SIZE; i<=s; i+=PAGE_SIZE) {
 		ptr_val_t tmpbase;
 		p.map(res->base+i, &tmpbase, 0x3);
-//		Platform::video()->printf("%x %x\n",newbase,tmpbase);
-		//for (int i=0; i<0xfffffff; i++) ;
 	}
 	res->base = (unsigned char*)newbase;
 
 	Platform::video()->printf("%d: %dx%d BPP: %d  BPL: %d  Base: %x %x  %d\n",res->id,res->width, res->height, res->depth, res->bytes_per_line, res->base, newbase, bestdiff);
 	for (int i=0; i<0xfffff; i++) {
-		for (int j=0; j<0x5ff; j++) ;
+		for (int j=0; j<0x2ff; j++) ;
 	}
 
 	return res;
-#else
-	return NULL;
-#endif
-
 }
 
 void Vesa::setMode(ModeConfig *mode)
@@ -280,48 +256,6 @@ void Vesa::putPixel(int x, int y, unsigned char r, unsigned char g, unsigned cha
 
 void Vesa::blit()
 {
-//	return;
-	//Platform::video()->printf("%x %x\n",current->base,buffer);
-	uint32_t cnt = (current->height)*current->bytes_per_line;
-#if 0
-	for (uint32_t i=0; i<cnt; i++) {
-		if (*(backbuffer+i)!=0) {
-			Platform::video()->printf("Nonzero: %d\n",i);
-		}
-	}
-	return;
-#endif
-	//Mem::copy(current->base, buffer, cnt);
-/*
-	uint32_t *d = (uint32_t*)current->base;
-	uint32_t *s = (uint32_t*)buffer;
-*/
-	for (uint32_t i=0; i<cnt; i++) {
-		*(current->base+i) = *(backbuffer+i);
-	}
-#if 0 
-	uint32_t cnt2 = cnt/3;
-	for (uint32_t i=0; i<cnt2; i++) {
-		//*d++=*s++;
-		*(uint32_t*)(current->base+i*4) = *(uint32_t*)(backbuffer+i*4);
-		//*(current->base+i*4) = 0xff;
-	}
-#endif
-/*
-	(void)cnt;
-	for (int i=0; i<0xfffff; i++);
-*/
-
-//	Platform::video()->printf("%x\n",current);
-#if 1
-	for (uint32_t i=0; i<1000; i++)
-		*(current->base+i)=0xff;
-#endif
-	for (int i=0; i<0xfffffff; i++);
-#if 0
-	for (int y=0; y<current->width(); y++) {
-		for (int x=0; x<current->width(); x++) {
-		}
-	}
-#endif
+	if (direct) return;
+	Mem::copy(current->base, buffer, size);
 }

@@ -2,7 +2,7 @@
 
 CXX=clang++
 CC=clang
-TUNE=-mtune=pentium -mno-mmx 
+TUNE=-mtune=pentium-mmx -mno-sse -mmmx
 #CC=gcc
 #CXX=g++
 #CFLAGS=-D__FREESTAND__ -DNO_LONG_LONG -m32 -ffreestanding -fno-builtin -fno-exceptions -Wall -Werror -Wextra -fomit-frame-pointer -finline-functions -nostdlib
