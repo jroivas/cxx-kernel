@@ -3,6 +3,7 @@
 #include "types.h"
 #include "mm.h"
 #include "arch/platform.h"
+#include "memcopy.h"
 
 FB::FB()
 {
@@ -79,7 +80,7 @@ void FB::swap()
 	}
 
 	if (!direct) {
-		Mem::copy(buffer, backbuffer, size);
+		memcpy_opt(buffer, backbuffer, size);
 	}
 }
 

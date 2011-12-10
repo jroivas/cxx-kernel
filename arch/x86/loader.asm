@@ -61,57 +61,6 @@ my_kernel_end:
 loaderstart:
 	mov [multiboot_magic_data], eax
 	mov [multiboot_info_data], ebx
-	jmp __call_kernel
-
-	;; DEPR***
-	;mov [multiboot_magic_data - KERNEL_VIRTUAL], eax
-	;mov [multiboot_info_data - KERNEL_VIRTUAL], ebx
-	;mov ebx, KERNEL_PAGE_FLAGS
-	xor ebx, ebx
-	add ebx, KERNEL_PAGE_FLAGS
-	;mov ecx, (__boot_page_table - KERNEL_VIRTUAL)
-
-__loop_page:
-	mov [ecx], ebx
-	add ecx, 4 		;32 bit
-	add ebx, 0x1000
-	cmp ecx, (__boot_page_end - KERNEL_VIRTUAL)
-	jb __loop_page
-
-	; Setup paging
-	mov ecx, (__boot_page_dir - KERNEL_VIRTUAL)
-	mov cr3, ecx
-
-	mov ecx, cr0
-	or ecx, 0x80000000
-	mov cr0, ecx
-
-	lea ecx, [__high_half]
-	jmp ecx
-	
-__high_half:
-	; Unmap
-	;mov dword [__boot_page_dir], 0
-	;invlpg [0]
-
-	;mov ax, 0x1742
-	;mov [KERNEL_VIRTUAL+0xB8000],ax
-
-	mov esp, __initial_stack+STACKSIZE           ; set up the stack
-
-	; pass Multiboot magic number
-	mov eax, [multiboot_magic_data]
-	push eax
-
-	; pass Multiboot info structure
-	mov ebx, [multiboot_info_data]
-	add ebx, KERNEL_VIRTUAL
-	push ebx
-
-	call _main
-	call _atexit
-	cli
-	hlt
 
 __call_kernel:
 	mov esp, __initial_stack+STACKSIZE           ; set up the stack
@@ -128,21 +77,6 @@ __call_kernel:
 	call _atexit
 	cli
 	hlt
-
-[global gdt_flush]
-[extern __gdt_ptr] 
-gdt_flush:
-	lgdt [__gdt_ptr]
-	mov ax, 0x10
-	mov ds, ax
-	mov es, ax
-	mov fs, ax
-	mov gs, ax
-	mov ss, ax
-	jmp 0x08:__gdt_flush_exit
-
-__gdt_flush_exit:
-	ret
 
 [global __initial_stack]
 	

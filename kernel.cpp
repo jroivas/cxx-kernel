@@ -77,8 +77,8 @@ int Kernel::run()
 #if 1
 		for (int j=100; j<120; j++) {
 			for (int i=100; i<200; i++) {
-				platform->fb()->putPixel(i,j,255,255,255);
-				platform->fb()->putPixel(j,i,255,255,255);
+				platform->fb()->putPixel(i,j,255,0,0);
+				platform->fb()->putPixel(j,i,0,0,255);
 			}
 			platform->fb()->swap();
 			platform->fb()->blit();

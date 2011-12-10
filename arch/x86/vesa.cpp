@@ -2,6 +2,7 @@
 #include "types.h"
 #include "port.h"
 #include "mm.h"
+#include "memcpy.h"
 
 
 #include "string.h"
@@ -97,6 +98,8 @@ FB::ModeConfig *Vesa::query(FB::ModeConfig *prefer)
 	uint16_t *loc = (uint16_t*)VBE_Ptr((uint32_t)info->video_mode_ptr);
 	Platform::video()->printf("=== VBE2 %d %x %x\n",(loc<(uint16_t*)(info+sizeof(info))),loc,info+sizeof(info));
 	if (loc==NULL) return NULL;
+
+	Platform::video()->printf("=== Has MMX? %s\n",mmx_has()?"YES":"NO");
 
 	/* Reserve structures */
 	vbe_mode_info_t *modeinfo = (vbe_mode_info_t *)bios->alloc(sizeof(vbe_mode_info_t));
@@ -209,7 +212,7 @@ FB::ModeConfig *Vesa::query(FB::ModeConfig *prefer)
 
 	Platform::video()->printf("%d: %dx%d BPP: %d  BPL: %d  Base: %x %x  %d\n",res->id,res->width, res->height, res->depth, res->bytes_per_line, res->base, newbase, bestdiff);
 	for (int i=0; i<0xfffff; i++) {
-		for (int j=0; j<0x2ff; j++) ;
+		for (int j=0; j<0x4ff; j++) ;
 	}
 
 	return res;
@@ -237,25 +240,9 @@ bool Vesa::configure(ModeConfig *mode)
 	return FB::configure(mode);
 }
 
-#if 0
-void Vesa::putPixel(int x, int y, unsigned char r, unsigned char g, unsigned char b, unsigned char a)
-{
-	(void)a;
-#if 0
-	*(current->base+(y*current->bytes_per_line + x*3))=r;
-	*(current->base+(y*current->bytes_per_line + x*3+1))=g;
-	*(current->base+(y*current->bytes_per_line + x*3+2))=b;
-#else
-	unsigned char *pos = (unsigned char*)(current->base+(y*current->bytes_per_line + x*3));
-	*pos++ = r&0xff;
-	*pos++ = g&0xff;
-	*pos = b&0xff;
-#endif
-}
-#endif
-
 void Vesa::blit()
 {
 	if (direct) return;
-	Mem::copy(current->base, buffer, size);
+
+	memcpy_opt(current->base,backbuffer,size);
 }

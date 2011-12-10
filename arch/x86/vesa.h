@@ -12,7 +12,6 @@ public:
 	FB::ModeConfig *query(FB::ModeConfig *prefer);
 	virtual bool configure(ModeConfig *mode);
 	void blit();
-	//void putPixel(int x, int y, unsigned char r, unsigned char g, unsigned char b, unsigned char a=0xff);
 
 private:
 	bool getVESA(void *ptr);
