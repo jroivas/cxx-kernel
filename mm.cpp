@@ -33,7 +33,6 @@ double diffTiming(struct timeval *start, struct timeval *end)
 #else
 #define TIME_START()
 #define TIME_END()
-//#define mprintf(...)
 void printf(...) {}
 #endif
 
@@ -408,20 +407,6 @@ void *MM::allocMemClear(size_t size)
 	for (uint32_t i=0; i<size; i++) {
 		*(tmp+i) = 0;
 	}
-/*
-	unsigned char *target=ptr+size;
-	while (tmp<target) {
-		*tmp++ = 0;
-	}
-*/
-#if 0
-	uint32_t cnt = size;
-	while (cnt>0) {
-		*tmp = 0;
-		tmp++;
-		cnt--;
-	}
-#endif
 
 	return (void*)ptr;
 }
@@ -578,3 +563,4 @@ void free(void *ptr)
 	MM::instance()->free(ptr);
 	TIME_END();
 }
+#undef printf

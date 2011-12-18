@@ -56,6 +56,7 @@ bool Bits::isSet(uint32_t i)
 
 uint32_t Bits::findUnset(bool *ok)
 {
+	uint32_t cc = 0;
 	for (uint32_t i=m_last; i<m_len; i++) {
 		// Check if we have unset bits
 		if (~bits[i] != 0) {
@@ -67,10 +68,12 @@ uint32_t Bits::findUnset(bool *ok)
 				}
 			}
 		}
-#if 0
+#if 1
+		if (cc>0) break;
 		if (m_last>0 && i>=m_len) {
 			m_last = 0;
 			i = 0;
+			++cc;
 		}
 #endif
 	}

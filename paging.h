@@ -47,7 +47,7 @@ public:
 	bool init(void *platformData);
 
 	bool mapFrame(Page *p, MapType type, MapPermissions perms);
-	void identityMapFrame(Page *p, ptr_val_t addr, MapType type, MapPermissions perms);
+	bool identityMapFrame(Page *p, ptr_val_t addr, MapType type, MapPermissions perms);
 	bool map(ptr_t virt, unsigned int flags);
 	bool mapPhys(void *phys, ptr_t virt, unsigned int flags);
 

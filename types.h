@@ -1,7 +1,7 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-#define KERNEL_VIRTUAL 0xC0000000
+//#define KERNEL_VIRTUAL 0xC0000000
 
 #ifndef NULL
 #define NULL 0

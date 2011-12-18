@@ -3,7 +3,8 @@ CXXFLAGS:=$(CXXFLAGS) -I.
 CXXFLAGSO:=-O2 $(CXXFLAGSO) -I.
 #OBJS=loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o idt.o idt_handlers.o timer.o kb.o
 #OBJS=arch/$(ARCH)/loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o idt.o timer.o kb.o fb.o math.o states.o
-OBJS=arch/loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o idt.o timer.o kb.o fb.o math.o states.o setjmp.o bits.o
+OBJS=arch/loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o idt.o timer.o kb.o fb.o math.o states.o setjmp.o bits.o 3rdparty/font/boot_font.o font.o
+#OBJS=arch/loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o idt.o timer.o kb.o fb.o math.o states.o setjmp.o bits.o font.o
 #OBJS=kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o idt.o timer.o kb.o fb.o math.o states.o
 #THIRDPARTY=3rdparty/libx86emu.a
 #THIRDPARTY=3rdparty/libx86.a
@@ -14,7 +15,7 @@ THIRDPARTY=3rdparty/my_x86emu/x86emu.o
 #LIBS=-Larch/ -larch
 LIBS=arch/arch.a arch/$(ARCH)/$(ARCH).a
 
-all: kernel
+all: kernel kernel.iso
 
 run: run_iso
 
@@ -38,13 +39,20 @@ kernel.iso: kernel menu.lst stage2_eltorito
 
 run_iso: kernel.iso
 	#qemu -no-kvm -cdrom kernel.iso
-	qemu -cdrom kernel.iso
+	qemu -serial mon:stdio -cdrom kernel.iso
 
 3rdparty/libx86emu.a:
 	make -C 3rdparty
 
+#boot_font.o:
+#	#3rdparty/font/boot_font.o:
+#	$(CXX) -c $(CXXFLAGSO) -o $@ 3rdparty/font/boot_font.cpp
+
 .cpp.o:
 	$(CXX) -c $(CXXFLAGS) -o $@ $< 
+
+.c.o:
+	$(CC) -c $(CXXFLAGS) -o $@ $< 
 
 main.o: main.cpp
 
@@ -99,3 +107,4 @@ clean:
 	make -C arch clean
 	make -C 3rdparty clean
 	rm -f kernel kernel.iso *.o *.a
+	rm -f 3drparty/font/*.o 

@@ -12,6 +12,7 @@ FB::FB()
 	backbuffer = NULL;
 	double_buffer = true;
 	direct = false;
+	configured = false;
 }
 
 FB::~FB()
@@ -24,21 +25,42 @@ void FB::setSingleBuffer()
 	double_buffer = false;
 }
 
+void FB::setDirect()
+{
+	if (backbuffer!=NULL) {
+		MM::instance()->free(backbuffer);
+		direct = true;
+		backbuffer = current->base;
+	}
+	if (buffer!=NULL) {
+		MM::instance()->free(buffer);
+	}
+}
+
 void FB::allocBuffers()
 {
 	size = current->bytes_per_line*(current->height);
-	backbuffer = (unsigned char*)MM::instance()->alloc(size);
+	backbuffer = (unsigned char*)MM::instance()->alloc(size, MM::AllocClear);
 	if (backbuffer!=NULL) {
 		backbuffer[0] = 0xfe;
-		if (backbuffer[0] != 0xfe) {
+		if (backbuffer==NULL || backbuffer[0] != 0xfe) {
 			direct = true;
-			backbuffer = current->base;
 			MM::instance()->free(backbuffer);
+			backbuffer = current->base;
 		} else {
-			buffer = (unsigned char*)MM::instance()->alloc(size);
+			backbuffer[0] = 0;
+			buffer = (unsigned char*)MM::instance()->alloc(size, MM::AllocClear);
+			buffer[0] = 0xef;
+			if (buffer==NULL || buffer[0] != 0xef) {
+				double_buffer = false;
+				MM::instance()->free(buffer);
+				buffer = NULL;
+			} else {
+				buffer[0] = 0;
+			}
 		}
 	}
-	//Platform::video()->printf("Allocbuffers: %x %x sizes: %d\n",buffer,backbuffer,current->bytes_per_line*(current->height));
+	Platform::video()->printf("Allocbuffers: %x %x %x sizes: %d\n",current->base,buffer,backbuffer,current->bytes_per_line*(current->height));
 }
 
 void FB::freeBuffers()
@@ -61,6 +83,7 @@ bool FB::configure(ModeConfig *mode)
 
 	allocBuffers();
 
+	configured = true;
 	return true;
 }
 
@@ -72,15 +95,16 @@ unsigned char *FB::data()
 
 void FB::swap()
 {
-	if (buffer == NULL) return;
+	//if (buffer == NULL) return;
 	if (backbuffer == NULL) return;
 	if (!double_buffer) {
 		buffer = backbuffer;
 		return;
 	}
 
-	if (!direct) {
+	if (buffer!=NULL && !direct) {
 		memcpy_opt(buffer, backbuffer, size);
+		//Mem::copy(buffer, backbuffer, size);
 	}
 }
 

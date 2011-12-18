@@ -32,14 +32,19 @@
 #ifndef _FB_GFB_H_
 #define _FB_GFB_H_
 
-struct gfb_font {
-	int width;
-	int height;
-#if 0
-	const u_char data[];
-#else
-	const unsigned char data[];
+#include "types.h"
+#ifdef __cplusplus
+extern "C" {
 #endif
+
+struct raw_font {
+	uint8_t width;
+	uint8_t height;
+	unsigned char data[];
 };
+struct raw_font *fontGetDefault();
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _FB_GFB_H_ */

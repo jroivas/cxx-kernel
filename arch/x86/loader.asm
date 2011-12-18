@@ -9,31 +9,11 @@ MULTIBOOT_FLAGS       equ  MULTIBOOT_ALIGN | MULTIBOOT_MEMINFO  ; this is the Mu
 MULTIBOOT_MAGIC       equ  0x1BADB002           ; 'magic number' lets bootloader find the header
 MULTIBOOT_CHECKSUM    equ -(MULTIBOOT_MAGIC + MULTIBOOT_FLAGS)        ; checksum required
 
-KERNEL_VIRTUAL        equ 0xC0000000
-KERNEL_PAGE           equ (KERNEL_VIRTUAL>>22)
-KERNEL_PAGE_FLAGS     equ 0x3
-
 STACKSIZE             equ 0x4000
 
 
 [section .data]
 ALIGN 4096
-
-__boot_page_dir:
-	dd (__boot_page_table + KERNEL_PAGE_FLAGS - KERNEL_VIRTUAL)
-
-	; Empty pages before kernel
-	times (KERNEL_PAGE - 1) dd 0
-	; Kernel page
-__kernel_page:
-	dd (__boot_page_table + KERNEL_PAGE_FLAGS - KERNEL_VIRTUAL)
-	; Rest of the pages
-	times (1024 - KERNEL_PAGE - 2) dd 0
-	dd (__boot_page_dir + KERNEL_PAGE_FLAGS - KERNEL_VIRTUAL)
-
-__boot_page_table:
-	times (1024) dd 0
-__boot_page_end:
 
 multiboot_data:
 	multiboot_magic_data dd 0

@@ -5,6 +5,7 @@ class State
 {
 public:
 	State() { m_state = HWStateNormal; }
+	virtual ~State() { }
 	virtual void halt() = 0;
 	virtual void seizeInterrupts() = 0;
 	virtual void startInterrupts() = 0;

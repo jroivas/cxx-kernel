@@ -8,9 +8,11 @@ class Vesa : public FB
 {
 public:
 	Vesa();
+	virtual ~Vesa();
 
 	FB::ModeConfig *query(FB::ModeConfig *prefer);
 	virtual bool configure(ModeConfig *mode);
+	virtual void clear();
 	void blit();
 
 private:

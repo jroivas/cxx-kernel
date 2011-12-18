@@ -19,6 +19,11 @@ Vesa::Vesa() : FB()
 	//
 }
 
+Vesa::~Vesa()
+{
+	FB::~FB();
+}
+
 int Vesa::modeDiff(FB::ModeConfig *conf, FB::ModeConfig *cmp)
 {
 	if (conf==NULL || cmp==NULL) return -1;
@@ -61,13 +66,12 @@ bool Vesa::getVESA(void *ptr)
 	info->vbe_signature[3]='2';
 
 	Regs r;
-	//Mem::set(&r, 0, sizeof(Regs));
 	r.eax = 0x4f00;
 	r.es = VBE_realSeg(info);
 	r.edi = VBE_realOff(info);
-	//r.edi = (ptr_val_t)info;
 	//Platform::video()->printf("=== bios ptr %x\n",(ptr_val_t)bios);
-	Platform::video()->printf("=== VBE2 ptr %x\n",(ptr_val_t)info);
+	//Platform::video()->printf("=== VBE2 ptr %x\n",(ptr_val_t)info);
+	Platform::video()->printf("=== VBE2 ptr %x %x %x\n",r.es,r.edi,(ptr_val_t)info);
 	bios->runInt(0x10, &r);
 
 	if ((r.eax&0xFF)==0x4f && (r.eax&0xFF00)==0) {
@@ -96,10 +100,10 @@ FB::ModeConfig *Vesa::query(FB::ModeConfig *prefer)
 	if (!getVESA(info)) return NULL;
 
 	uint16_t *loc = (uint16_t*)VBE_Ptr((uint32_t)info->video_mode_ptr);
-	Platform::video()->printf("=== VBE2 %d %x %x\n",(loc<(uint16_t*)(info+sizeof(info))),loc,info+sizeof(info));
+	//Platform::video()->printf("=== VBE2 %d %x %x\n",(loc<(uint16_t*)(info+sizeof(info))),loc,info+sizeof(info));
 	if (loc==NULL) return NULL;
 
-	Platform::video()->printf("=== Has MMX? %s\n",mmx_has()?"YES":"NO");
+	//Platform::video()->printf("=== Has MMX? %s\n",mmx_has()?"YES":"NO");
 
 	/* Reserve structures */
 	vbe_mode_info_t *modeinfo = (vbe_mode_info_t *)bios->alloc(sizeof(vbe_mode_info_t));
@@ -116,7 +120,6 @@ FB::ModeConfig *Vesa::query(FB::ModeConfig *prefer)
 		Mem::set(modeinfo, 0, sizeof(vbe_mode_info_t));
 		r.es = VBE_realSeg(modeinfo);
 		r.edi = VBE_realOff(modeinfo);
-		//r.edi = (ptr_val_t)modeinfo;
 
 		bios->runInt(0x10, &r);
 		if ((r.eax&0xFF)!=0x4f) {
@@ -125,7 +128,6 @@ FB::ModeConfig *Vesa::query(FB::ModeConfig *prefer)
 		}
 		if ((r.eax&0xFF00)!=0) {
 			Platform::video()->printf("=== VBE2 mode info failed %d %d\n",i,loc[i]);
-			//Platform::video()->printf("=== VBE2 mode info failed %d\n",*loc);
 			return NULL;
 		}
 		if (modeinfo->memory_model!=4 && modeinfo->memory_model!=6) {
@@ -163,7 +165,7 @@ FB::ModeConfig *Vesa::query(FB::ModeConfig *prefer)
 				continue;
 		}
 
-		Platform::video()->printf("%d: %dx%d BPP: %d\n",loc[i],modeinfo->x_resolution, modeinfo->y_resolution, modeinfo->bits_per_pixel);
+		//Platform::video()->printf("%d: %dx%d BPP: %d\n",loc[i],modeinfo->x_resolution, modeinfo->y_resolution, modeinfo->bits_per_pixel);
 		conf->width = modeinfo->x_resolution;
 		conf->height = modeinfo->y_resolution;
 		conf->depth = modeinfo->bits_per_pixel;
@@ -201,19 +203,33 @@ FB::ModeConfig *Vesa::query(FB::ModeConfig *prefer)
 
 	// TODO make this cleaner
 	Paging p;
+	p.lock();
 	ptr_val_t newbase;
-	uint32_t s = res->bytes_per_line*(res->height+1);
+	uint32_t s = res->bytes_per_line*(res->height);
 	p.map(res->base, &newbase, 0x3);
+	ptr_val_t prev = newbase;
 	for (uint32_t i=PAGE_SIZE; i<=s; i+=PAGE_SIZE) {
 		ptr_val_t tmpbase;
 		p.map(res->base+i, &tmpbase, 0x3);
+		if (prev+PAGE_SIZE != tmpbase) {
+			Platform::video()->printf("Discontinuation: %x\n",tmpbase);
+			for (int j=0; j<0xffffff; j++) ;
+		}
+		prev = tmpbase;
 	}
-	res->base = (unsigned char*)newbase;
+	p.unlock();
 
-	Platform::video()->printf("%d: %dx%d BPP: %d  BPL: %d  Base: %x %x  %d\n",res->id,res->width, res->height, res->depth, res->bytes_per_line, res->base, newbase, bestdiff);
+	Platform::video()->printf("%d: %dx%d BPP: %d  BPL: %d  Base: %x -> %x  %d\n",res->id,res->width, res->height, res->depth, res->bytes_per_line, res->base, newbase, bestdiff);
+	//p.lock();
+	//void *tt = p.alloc(1);
+	//p.unlock();
+	void *tt = malloc(PAGE_SIZE-1);
+	Platform::video()->printf("%x\n",(ptr_val_t)tt);
+	res->base = (unsigned char*)newbase;
 	for (int i=0; i<0xfffff; i++) {
-		for (int j=0; j<0x4ff; j++) ;
+		for (int j=0; j<0x1ff; j++) ;
 	}
+	//setDirect();
 
 	return res;
 }
@@ -230,6 +246,7 @@ void Vesa::setMode(ModeConfig *mode)
 	bios->runInt(0x10, &r);
 	if ((r.eax&0xFF00)!=0) {
 		Platform::video()->printf("=== VBE2 mode set failed\n");
+		//while(1);
 	}
 #endif
 }
@@ -237,12 +254,23 @@ void Vesa::setMode(ModeConfig *mode)
 bool Vesa::configure(ModeConfig *mode)
 {
 	setMode(mode);
-	return FB::configure(mode);
+	if (FB::configure(mode)) {
+		clear();
+		return true;
+	}
+	return false;
+}
+
+void Vesa::clear()
+{
+	//Platform::video()->printf("clear base: %x\n",(ptr_val_t)current->base);
+	Mem::set(current->base, 0, size);
 }
 
 void Vesa::blit()
 {
 	if (direct) return;
 
-	memcpy_opt(current->base,backbuffer,size);
+	memcpy_opt(current->base,buffer,size);
+	//Mem::copy(current->base,buffer,size);
 }

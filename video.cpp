@@ -2,25 +2,22 @@
 #include "string.h"
 //#include "port.h"
 #include "mm.h"
+#include "font.h"
 #include "arch/platform.h"
 #include <stdarg.h>
 
-//#define VIDEO_MEMORY_LOCATION 0xB8000
-//#define VIDEO_MEMORY_LOCATION 0xC00B8000
 #define VIDEO_COLOR_MASK 0x0700
 #define CHAR_LF 0x0A
 #define CHAR_CR 0x0D
 #define CHAR_EMPTY ' '
 #define TAB_SIZE 8
 #define SCROLL_SIZE 1
-//#define PORT 0x3D4
 
 static Video *__global_video = NULL;
 
 Video *Video::get()
 {
 	if (__global_video==NULL) {
-		//__global_video = new Video();
 		__global_video = Platform::video();
 	}
 	return __global_video;
@@ -35,7 +32,7 @@ Video::Video()
 	m_height = 25;
 
 	m_videomem = NULL;
-	//m_videomem = (unsigned short *)VIDEO_MEMORY_LOCATION;
+	m_font = NULL;
 }
 
 Video::~Video()
@@ -67,26 +64,35 @@ void Video::resize(int width, int height)
 
 void Video::clear()
 {
-	if (m_videomem==NULL) return;
-	unsigned int i = 0;
+	if (Platform::fb()->isConfigured()) {
+	} else {
+		if (m_videomem==NULL) return;
+		unsigned int i = 0;
+		unsigned int csize = size();
 
-	while (i<size()) {
-		m_videomem[i++] = CHAR_EMPTY | VIDEO_COLOR_MASK;
+		while (i<csize) {
+			m_videomem[i++] = CHAR_EMPTY | VIDEO_COLOR_MASK;
+		}
 	}
-
 	m_x = 0;
 	m_y = 0;
 }
 
 void Video::scroll()
 {
-	if (m_videomem==NULL) return;
-	if (m_y>=height()) {
-		unsigned int ss = (height()-2)*width();
-		Mem::copy(m_videomem, m_videomem + SCROLL_SIZE*width()*2, ss*2);
-		Mem::setw(m_videomem + ss, ' '|VIDEO_COLOR_MASK, width());
-		m_y = height()-2;
+	if (Platform::fb()->isConfigured()) {
+	} else {
+		if (m_videomem==NULL) return;
+		if (m_y>=height()) {
+			unsigned int ss = (height()-2)*width();
+			Mem::copy(m_videomem, m_videomem + SCROLL_SIZE*width()*2, ss*2);
+			Mem::setw(m_videomem + ss, 0, width());
+			//Mem::setw(m_videomem + ss-width(), ' '|VIDEO_COLOR_MASK, width());
+			m_y = height()-2;
+		}
 	}
+	if (m_x>=width()) m_x=0;
+	if (m_y>height()) m_y=height()-2;
 }
 
 void Video::print(const char *cp)
@@ -95,33 +101,6 @@ void Video::print(const char *cp)
 	const char *ch;
 
 	for (ch = str; *ch; ch++) putCh(*ch);
-#if 0
-	for (ch = str; *ch; ch++) {
-		if (*ch=='\r') {
-			m_x = 0;
-		}
-		else if (*ch=='\n') {
-			m_x = 0;
-			m_y++;
-		}
-		else if (*ch=='\b') {
-			if (m_x==0 && m_y>0) {
-				m_y--;
-				m_x = width()-1;
-			} else if (m_y==0 && m_x==0) {
-				//Do nothing
-			} else {
-				m_x--;
-			}
-		}
-		else if (*ch=='\t') {
-			//for (int i=0; i<TAB_SIZE; i++) putCh(' ');
-			m_x += TAB_SIZE;
-		} else {
-			putCh(*ch);
-		}
-	}
-#endif
 }
 
 void Video::print_l(long val, int radix)
@@ -235,7 +214,7 @@ void Video::printf(const char *fmt, ...)
                                 f = false;
                         }
                         else if (*ch=='c') {
-				putCh(va_arg(al, unsigned char));
+				putCh(va_arg(al, unsigned int));
                                 f = false;
 			}
                         else if (*ch=='d') {
@@ -270,6 +249,7 @@ void Video::printf(const char *fmt, ...)
 		else if (*ch=='\n') {
 			m_x = 0;
 			m_y++;
+			putCh(*ch);
 		}
 		else if (*ch=='\b') {
 			if (m_x==0 && m_y>0) {
@@ -292,20 +272,32 @@ void Video::printf(const char *fmt, ...)
 
 void Video::putCh(char c)
 {
-	if (m_videomem==NULL) return;
+	if (c=='\n') return;
 	if (m_x>=width()) {
 		m_x -= width();
 		m_y++;
 	}
 
 	scroll();
-	unsigned int offset = m_y*width() + m_x; 
 
+	if (Platform::fb()->isConfigured()) {
+		if (m_font==NULL) {
+			m_font = new Font();
+			//clear();
+			m_x = 0;
+			m_y = 0;
+		}
+		m_font->drawFont(Platform::fb(), m_x*m_font->width(), m_y*(m_font->height()+0), c);
+		m_x++;
+	} else {
+		if (m_videomem==NULL) return;
+		unsigned int offset = m_y*width() + m_x; 
 
-	m_videomem[offset] = c | VIDEO_COLOR_MASK;
-	m_x++;
+		m_videomem[offset] = c | VIDEO_COLOR_MASK;
 
-	setCursor();
+		m_x++;
+		setCursor();
+	}
 
 #if 0
 	//volatile unsigned int a;

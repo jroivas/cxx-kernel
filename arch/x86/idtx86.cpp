@@ -206,6 +206,7 @@ extern "C" void irq_handler(Regs * r)
 }
 
 extern uint32_t debug_ptr;
+extern uint32_t debug_ptr_cr2;
 extern "C" void isr_handler(Regs * r)
 {
 	if (r==NULL) {
@@ -217,16 +218,16 @@ extern "C" void isr_handler(Regs * r)
 		p.state()->seizeInterrupts();
 		p.state()->halt();
 	}
-	if (r->int_no == 14) {
+	if (r->int_no == 0xE) {
 		VideoX86 tmp;
-		tmp.printf("\nERROR! Page fault! \n");
+		tmp.printf("\nERROR! Page fault! %x EIP: %x  \n", debug_ptr_cr2, r->eip);
 		Platform p;
 		p.state()->seizeInterrupts();
 		p.state()->halt();
 	}
 	if (r->int_no == 6) {
 		VideoX86 tmp;
-		tmp.printf("\nERROR! Invalid instruction: %x\n",debug_ptr);
+		tmp.printf("\nERROR! Invalid instruction: %x\n", debug_ptr);
 		Platform p;
 		p.state()->seizeInterrupts();
 		p.state()->halt();

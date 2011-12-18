@@ -19,16 +19,18 @@ public:
 	};
 
 	FB();
-	~FB();
+	virtual ~FB();
 	virtual ModeConfig *query(ModeConfig *prefer) = 0;
 	virtual bool configure(ModeConfig *mode);
 	virtual void blit() = 0;
 	void swap();
-	void clear();
+	virtual void clear();
 	unsigned char *data();
 	void setSingleBuffer();
+	void setDirect();
 	void putPixel(int x, int y, unsigned char r, unsigned char g, unsigned char b, unsigned char a=255);
 	void putPixel(int x, int y, unsigned int color);
+	bool isConfigured() { return configured; }
 
 protected:
 	void allocBuffers();
@@ -39,5 +41,6 @@ protected:
 	ModeConfig *current;
 	unsigned int size;
 	bool direct;
+	bool configured;
 };
 #endif

@@ -30,13 +30,12 @@ Kernel::~Kernel()
 	video = NULL;
 }
 
+//extern const struct gfb_font bold8x16;
 int Kernel::run()
 {
 	platform->state()->startInterrupts();
 	if (video!=NULL) {
 		video->clear();
-		video->printf("self: %x\n",(ptr_val_t)this);
-		video->printf("vid: %x\n",(ptr_val_t)video);
 		video->printf("Ticks: %lu!\n",Timer::get()->getTicks());
 		video->printf("Hello world!\n");
 		video->printf("\nC++ kernel.\n");
@@ -47,28 +46,24 @@ int Kernel::run()
 
                 /* Some random timing... */
                 volatile int b = 5;
-                for (int i=0; i<0x4FFFFFF; i++) { b = b + i; }
+                for (int i=0; i<0x1FFFFFF; i++) { b = b + i; }
 		video->printf("Ticks: %lu!\n",Timer::get()->getTicks());
                 Timer::get()->wait(100);
 		video->printf("Ticks: %lu!\n",Timer::get()->getTicks());
 
 		//delete video;
 	}
-	//platform->fb();
-	//platform->fb()->query(NULL);
+
 	FB::ModeConfig conf;
-/*
 	conf.width=800;
 	conf.height=600;
-*/
-	conf.width=640;
-	conf.height=480;
-	conf.depth=16;
-	//platform->fb()->configure(platform->fb()->query(&conf));
-	
-	FB::ModeConfig *vconf = platform->fb()->query(NULL);
+	conf.depth=24;
+
+	//FB::ModeConfig *vconf = platform->fb()->query(NULL);
+	FB::ModeConfig *vconf = platform->fb()->query(&conf);
 	if (vconf!=NULL) {
 		platform->fb()->configure(vconf);
+#if 0
 		for (int j=0; j<120; j++) {
 			platform->fb()->putPixel(j,10,255,255,255);
 		}
@@ -80,17 +75,19 @@ int Kernel::run()
 				platform->fb()->putPixel(i,j,255,0,0);
 				platform->fb()->putPixel(j,i,0,0,255);
 			}
-			platform->fb()->swap();
-			platform->fb()->blit();
-			//platform->fb()->clear();
 		}
+		platform->fb()->swap();
+		platform->fb()->blit();
+#endif
+#endif
+#if 1
+		video->printf("C++ test kernel\n");
+		video->printf("Note to self: %x\n",0x1234);
+		platform->fb()->swap();
+		platform->fb()->blit();
 #endif
 	}
 	while(1) {}
-
-	//asm ("int $0x20");
-	//asm ("int $0x1F");
-
 
 	return 0;
 }

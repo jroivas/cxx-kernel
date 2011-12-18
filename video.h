@@ -1,17 +1,19 @@
 #ifndef VIDEO_H
 #define VIDEO_H
 
+#include "font.h"
+
 class Video
 {
 public:
 	Video();
-	~Video();
+	virtual ~Video();
 
 	static Video *get();
 	void clear();
         void printf(const char *fmt, ...);
 	void print(const char *cp);
-	void putCh(char c);
+	virtual void putCh(char c);
 
 	void resize(int width, int height);
 	void scroll();
@@ -30,6 +32,7 @@ protected:
 	unsigned int m_y;
 	unsigned int m_width;
 	unsigned int m_height;
+	Font *m_font;
 };
 
 #endif

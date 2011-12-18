@@ -1,27 +1,13 @@
 STACKSIZE             equ 0x4000
-;KERNEL_VIRTUAL        equ 0xC0000000
-KERNEL_VIRTUAL        equ 0x0
+;KERNEL_VIRTUAL        equ 0x0
 
-stackpos:
-	dd 0
-val1:
-	dd 0
-target:
-	dd 0
-retaddr:
-	dd 0
 
-[extern __initial_stack]
 [global pagingEnable]
 pagingEnable:
-	mov [stackpos], esp
-
+	; Enable paging
 	mov eax, cr0
 	or eax, 0x80000000
 	mov cr0, eax
-
-	;lea ecx, [__reloadStack]
-	;jmp ecx
 
 	ret
 
@@ -55,11 +41,11 @@ copyPhysicalPage:
 	mov ebx, [esp+12]
 	mov ecx, [esp+16]
 
-	;call pagingDisable
+	call pagingDisable
 	; Disable paging
-	mov edx, cr0
-	and edx, 0x7fffffff
-	mov cr0, edx
+	;mov edx, cr0
+	;and edx, 0x7fffffff
+	;mov cr0, edx
 
 	mov edx, 1024
 
@@ -71,11 +57,11 @@ copyPhysicalPage:
 	dec edx
 	jnz .copyloop
 
-	;call pagingEnable
+	call pagingEnable
 	; Enable paging
-	mov edx, cr0
-	and edx, 0x80000000
-	mov cr0, edx
+	;mov edx, cr0
+	;and edx, 0x80000000
+	;mov cr0, edx
 
 	popf
 	pop ebx

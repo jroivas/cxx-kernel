@@ -58,7 +58,7 @@ void *Paging::alloc(size_t cnt, unsigned int align, Alloc do_map)
 			if (tmp==NULL && pos!=0) tmp=(void*)pos;
 		} else {
 /*
-			unsigned short *atmp = (unsigned short *)(0xB82B0);
+			unsigned short *atmp = (unsigned short *)(0xB8000);
 			*atmp = 0x1745;
 			while(1);
 */
@@ -102,10 +102,12 @@ void Paging::free(void *ptr, size_t cnt)
 void Paging::map(void *phys, void *virt, unsigned int flags)
 {
 	_d->lock();
-	(void)phys;
-	(void)virt;
-	(void)flags;
-	_d->mapPhys(phys, (ptr_t)virt, flags);
+	if (!_d->mapPhys(phys, (ptr_t)virt, flags)) {
+		unsigned short *vid = (unsigned short *)(0xB8000);
+		*vid = 0x814a; //J
+		//while(1);
+		//if (virt!=NULL) *(ptr_val_t*)virt = NULL;
+	}
 	_d->unlock();
 }
 

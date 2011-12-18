@@ -40,18 +40,10 @@
  * Copyright (c) 2000 Andrew Miklic
  */
 
-#if 0
-#include <sys/cdefs.h>
-__FBSDID("$FreeBSD$");
+#include "raw_font.h"
 
-#include <sys/param.h>
-
-#include <dev/fb/gfb.h>
-#else
-#include "gfb.h"
-#endif
-
-const struct gfb_font bold8x16 = {
+#if 1
+struct raw_font font_bold8x16 = {
 	8,
 	16,
 	{
@@ -4646,3 +4638,8 @@ const struct gfb_font bold8x16 = {
 	0x00, 	/* ........ */
 	}
 };
+#endif
+
+struct raw_font *fontGetDefault() {
+	return &font_bold8x16;
+}

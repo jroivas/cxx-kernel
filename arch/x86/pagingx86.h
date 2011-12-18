@@ -41,7 +41,7 @@ public:
 //	void setAddress(uint32_t adr) { adr>>=12; adr &= 0xFFFFF000; adr <<= 12; adr |= val&0xFFF; val = adr; }
 	void setAddress(uint32_t adr) { adr &= 0xFFFFF000; adr |= val&0xFFF; val = adr; }
 
-	bool isAvail() { return val==0; }
+	bool isAvail() { return ((getAddress()==0) && (!getPresent())); }
 	bool copyTo(Page *p) { if (p==NULL) return false; p->val = val; return true; }
 
 	void alloc(PageType type=KernelPage);
@@ -79,7 +79,7 @@ public:
 
 private:
 	PageTable *tables[TABLES_PER_DIRECTORY];
-	uint32_t tablesPhys[TABLES_PER_DIRECTORY];
+	volatile uint32_t tablesPhys[TABLES_PER_DIRECTORY];
 	ptr_t phys;
 };
 

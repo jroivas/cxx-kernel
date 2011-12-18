@@ -1,25 +1,52 @@
 #include "font.h"
-#include "3rdparty/font/gfb.h"
 
-extern const struct gfb_font bold8x16;
-
+//#define RAWFONT(X)((struct raw_font *)X)
+#define RAWFONT(X)(X)
+//#include "3rdparty/font/boot_font.cpp"
 Font::Font()
 {
 	font_color = 0xFFFFFF;
+	current = fontGetDefault();
+	//current = NULL;
+	//current = &font_bold8x16;
 }
 
 void Font::drawFont(FB *fb, int x, int y, unsigned char c)
 {
 	if (fb==NULL) return;
+	if (current==NULL) return;
 
-	for (int i=0; i<bold8x16.height; i++) {
-		unsigned char ch = bold8x16.data[(unsigned int)c*bold8x16.height+i];
-		for (int j=0; j<bold8x16.width; j++) {
-			if (ch & (1<<j)) {
-				//fb->putPixel(x+j,y+i,font_color);
-				//fb->putPixel(x+(bold8x16.width-j),y+i,255,255,255);
-				fb->putPixel(x+(bold8x16.width-j),y+i,font_color);
+#if 1
+	for (int32_t i=0; i<RAWFONT(current)->height; i++) {
+		int32_t p = RAWFONT(current)->width;
+		unsigned char ch = RAWFONT(current)->data[(unsigned int)c*RAWFONT(current)->height+i];
+		for (int32_t j=0; j<RAWFONT(current)->width; j++) {
+			if (ch & (1<<(--p))) {
+				fb->putPixel(x+j,y+i,font_color);
 			}
 		}
 	}
+#else
+	for (int32_t i=0; i<RAWFONT(current).height; i++) {
+		int32_t p = RAWFONT(current).width;
+		unsigned char ch = RAWFONT(current).data[(unsigned int)c*RAWFONT(current).height+i];
+		for (int32_t j=0; j<RAWFONT(current).width; j++) {
+			if (ch & (1<<(--p))) {
+				fb->putPixel(x+j,y+i,font_color);
+			}
+		}
+	}
+#endif
+}
+
+uint8_t Font::width()
+{
+	if (current==NULL) return 0;
+	return RAWFONT(current)->width;
+}
+
+uint8_t Font::height()
+{
+	if (current==NULL) return 0;
+	return RAWFONT(current)->height;
 }
