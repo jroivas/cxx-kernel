@@ -261,12 +261,22 @@ bool PagingPrivate::init(void *platformData)
 		i += PAGE_SIZE;
 	}
 	i = 0xA0000;
-	while (i<(ptr_val_t)0xB0000) { //Needed by VESA
+	while (i<(ptr_val_t)0xBFFFF) { //VGA display memory
 		identityMapFrame(PDIR(directory)->getPage(i, PageDir::PageDoReserve), i, MapPageKernel, MapPageRW);
 		i += PAGE_SIZE;
 	}
-	i = 0xB8000;
-	while (i<(ptr_val_t)0xD0000) { //Needed by VESA
+	i = 0xC0000;
+	while (i<(ptr_val_t)0xC7FFF) { //Video BIOS
+		identityMapFrame(PDIR(directory)->getPage(i, PageDir::PageDoReserve), i, MapPageKernel, MapPageRW);
+		i += PAGE_SIZE;
+	}
+	i = 0xC8000;
+	while (i<(ptr_val_t)0xEFFFF) { //Mapped HW
+		identityMapFrame(PDIR(directory)->getPage(i, PageDir::PageDoReserve), i, MapPageKernel, MapPageRW);
+		i += PAGE_SIZE;
+	}
+	i = 0xF0000;
+	while (i<(ptr_val_t)0xFFFFF) { //BIOS
 		identityMapFrame(PDIR(directory)->getPage(i, PageDir::PageDoReserve), i, MapPageKernel, MapPageRW);
 		i += PAGE_SIZE;
 	}

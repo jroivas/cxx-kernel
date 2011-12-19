@@ -277,7 +277,10 @@ void Vesa::blit()
 {
 	if (m_direct) return;
 
+#if 0
 	if (!m_double_buffer) Mem::copy(m_current->base, m_backbuffer, m_size);
 	else memcpy_opt(m_current->base, m_buffer, m_size);
+#endif
+	memcpy_opt(m_current->base, m_buffer, m_size);
 	//Mem::copy(m_current->base,m_buffer,m_size);
 }

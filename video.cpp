@@ -64,6 +64,7 @@ void Video::resize(int width, int height)
 
 void Video::clear()
 {
+#if 1
 	if (Platform::fb()->isConfigured()) {
 	} else {
 		if (m_videomem==NULL) return;
@@ -76,10 +77,12 @@ void Video::clear()
 	}
 	m_x = 0;
 	m_y = 0;
+#endif
 }
 
 void Video::scroll()
 {
+#if 1
 	if (Platform::fb()->isConfigured()) {
 	} else {
 		if (m_videomem==NULL) return;
@@ -93,6 +96,7 @@ void Video::scroll()
 	}
 	if (m_x>=width()) m_x=0;
 	if (m_y>height()) m_y=height()-2;
+#endif
 }
 
 void Video::print(const char *cp)
@@ -281,6 +285,7 @@ void Video::putCh(char c)
 	scroll();
 
 	if (Platform::fb()->isConfigured()) {
+#if 1
 		if (m_font==NULL) {
 			m_font = new Font();
 			//clear();
@@ -289,7 +294,9 @@ void Video::putCh(char c)
 		}
 		m_font->drawFont(Platform::fb(), m_x*m_font->width(), m_y*(m_font->height()+0), c);
 		m_x++;
+#endif
 	} else {
+#if 1
 		if (m_videomem==NULL) return;
 		unsigned int offset = m_y*width() + m_x; 
 
@@ -297,6 +304,7 @@ void Video::putCh(char c)
 
 		m_x++;
 		setCursor();
+#endif
 	}
 
 #if 0
