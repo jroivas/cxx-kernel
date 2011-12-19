@@ -48,28 +48,38 @@ void *Paging::alloc(size_t cnt, unsigned int align, Alloc do_map)
 
 	(void)align;
 	(void)do_map;
-	void *tmp = NULL;
+	void *res = NULL;
+	//void *tmp = NULL;
 	ptr_val_t pos = 0;
+	ptr_val_t pp = 0;
 	while (cnt>0) {
 		pos = 0;
 		if (_d->map(&pos, PAGING_MAP_R0)) {
 			cnt--;
-			//v.printf("Mem reserve: %x   \n",pos);
-			if (tmp==NULL && pos!=0) tmp=(void*)pos;
+			if (res==NULL && pos!=0) {
+				res=(void*)pos;
+				pp = pos;
+			} else {
+				pp += PAGE_SIZE;
+				if (pp!=pos) {
+					//Platform::video()->printf("DISCONTINUATION: %x %x\n",pp,pos);
+					while(1);
+				}
+			}
 		} else {
 /*
 			unsigned short *atmp = (unsigned short *)(0xB8000);
 			*atmp = 0x1745;
 			while(1);
 */
-			tmp = NULL;
+			res = NULL;
 			break;
 		}
 	}
 
 	_d->unlock();
 
-	return tmp;
+	return res;
 }
 
 void *Paging::allocStatic(size_t size, ptr_t phys)
@@ -103,10 +113,10 @@ void Paging::map(void *phys, void *virt, unsigned int flags)
 {
 	_d->lock();
 	if (!_d->mapPhys(phys, (ptr_t)virt, flags)) {
-		unsigned short *vid = (unsigned short *)(0xB8000);
-		*vid = 0x814a; //J
+		//unsigned short *vid = (unsigned short *)(0xB8000);
+		//*vid = 0x814a; //J
 		//while(1);
-		//if (virt!=NULL) *(ptr_val_t*)virt = NULL;
+		if (virt!=NULL) *(ptr_val_t*)virt = NULL;
 	}
 	_d->unlock();
 }

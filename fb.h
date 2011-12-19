@@ -30,17 +30,18 @@ public:
 	void setDirect();
 	void putPixel(int x, int y, unsigned char r, unsigned char g, unsigned char b, unsigned char a=255);
 	void putPixel(int x, int y, unsigned int color);
-	bool isConfigured() { return configured; }
+	bool isConfigured() { return m_configured; }
 
 protected:
 	void allocBuffers();
 	void freeBuffers();
-	unsigned char *buffer;
-	unsigned char *backbuffer;
-	bool double_buffer;
-	ModeConfig *current;
-	unsigned int size;
-	bool direct;
-	bool configured;
+
+	unsigned char *m_buffer;
+	unsigned char *m_backbuffer;
+	bool m_double_buffer;
+	ModeConfig *m_current;
+	unsigned int m_size;
+	bool m_direct;
+	bool m_configured;
 };
 #endif

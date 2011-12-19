@@ -63,7 +63,7 @@ int Kernel::run()
 	FB::ModeConfig *vconf = platform->fb()->query(&conf);
 	if (vconf!=NULL) {
 		platform->fb()->configure(vconf);
-#if 0
+#if 1
 		for (int j=0; j<120; j++) {
 			platform->fb()->putPixel(j,10,255,255,255);
 		}
@@ -72,8 +72,8 @@ int Kernel::run()
 #if 1
 		for (int j=100; j<120; j++) {
 			for (int i=100; i<200; i++) {
-				platform->fb()->putPixel(i,j,255,0,0);
-				platform->fb()->putPixel(j,i,0,0,255);
+				platform->fb()->putPixel(i,100+j,255,0,0);
+				platform->fb()->putPixel(j,100+i,0,0,255);
 			}
 		}
 		platform->fb()->swap();

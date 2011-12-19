@@ -7,12 +7,12 @@
 #define PDIR(x) ((PageDir*)x)
 #define BITS(x) ((Bits*)x)
 
-#define KERNEL_PRE_POS     0x40000000
+#define KERNEL_PRE_POS     0x20000000
 #define KERNEL_INIT_SIZE   0x000FFFFF
-#define HEAP_START         0xC0000000
-#define HEAP_END           0xCFFFFFFF
-#define USER_HEAP_START    0xD0000000
-#define USER_HEAP_END      0xDFFFFFFF
+#define HEAP_START         0x30000000
+#define HEAP_END           0x3FFFFFFF
+#define USER_HEAP_START    0x40000000
+#define USER_HEAP_END      0x4FFFFFFF
 
 static ptr8_t  __free_page_address = (ptr8_t)KERNEL_PRE_POS;
 static ptr8_t  __heap_address      = (ptr8_t)HEAP_START;
@@ -334,7 +334,7 @@ bool PagingPrivate::identityMapFrame(Page *p, ptr_val_t addr, MapType type, MapP
 	uint32_t i = addr/PAGE_SIZE;
 	//if (BITS(data)->isSet(i)) return false;
 	if (BITS(data)->isSet(i)) res = false;
-
+	
 	BITS(data)->set(i);
 
 	p->setPresent(true);
@@ -362,6 +362,7 @@ bool PagingPrivate::mapFrame(Page *p, MapType type, MapPermissions perms)
 		uint32_t i = BITS(data)->findUnset(&ok);
 		if (!ok) {
 			//TODO handle out of pages/memory
+#if 0
 			unsigned short *tmp = (unsigned short *)(0xB8200);
 			static int n = 0;
 			*tmp = 0x1741+(n++%20);
@@ -373,6 +374,7 @@ bool PagingPrivate::mapFrame(Page *p, MapType type, MapPermissions perms)
 				*tmp++ = 0x1730+(i%10);
 				i/=10;
 			}
+#endif
 			while(1) ;
 			return false;
 		}
@@ -420,10 +422,6 @@ void PagingPrivate::freePage(void *ptr)
 
 bool PagingPrivate::mapPhys(void *phys, ptr_t virt, unsigned int flags)
 {
-	(void)phys;
-	(void)virt;
-	(void)flags;
-
 	ptr_val_t i = 0;
 #if 1
 	if (flags&PAGING_MAP_USER) {
@@ -442,6 +440,9 @@ bool PagingPrivate::mapPhys(void *phys, ptr_t virt, unsigned int flags)
 	Page *p = PDIR(directory)->getPage(i, PageDir::PageDoReserve);
 	if (p==NULL) {
 		//while(1);
+		return false;
+	}
+	if (!p->isAvail()) {
 		return false;
 	}
 
@@ -463,17 +464,20 @@ bool PagingPrivate::map(ptr_t virt, unsigned int flags)
 {
 	ptr_val_t i = 0;
 	if (flags&PAGING_MAP_USER) {
-		while ((ptr_val_t)__user_heap_address%PAGE_SIZE!=0) __user_heap_address++;
+		while (((ptr_val_t)__user_heap_address%PAGE_SIZE)!=0) __user_heap_address++;
 		i = (ptr_val_t)__user_heap_address;
 		__user_heap_address+=PAGE_SIZE;
 	} else {
-		while ((ptr_val_t)__heap_address%PAGE_SIZE!=0) __heap_address++;
+		while (((ptr_val_t)__heap_address%PAGE_SIZE)!=0) __heap_address++;
 		i = (ptr_val_t)__heap_address;
 		__heap_address+=PAGE_SIZE;
 	}
 
 	Page *p = PDIR(directory)->getPage(i, PageDir::PageDoReserve);
 	if (p==NULL) {
+		return false;
+	}
+	if (!p->isAvail()) {
 		return false;
 	}
 
@@ -589,9 +593,9 @@ Page *PageDir::getPage(ptr_val_t addr, PageReserve reserve)
 		ptr_val_t physPtr = 0;
 		tables[index] = new ((ptr_t)&physPtr) PageTable();
 		if (physPtr==0) {
+/*
 			unsigned short *vid = (unsigned short *)(0xB8000);
 			*vid = 0x1745; //E
-/*
 			while (1);
 */
 			return NULL;

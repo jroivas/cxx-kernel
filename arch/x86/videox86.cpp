@@ -19,11 +19,11 @@ void uart_init()
 	Port::out(COM1+2, 0);
 
 	Port::out(COM1+3, 0x80);
-	Port::out(COM1+0, 115200/9600);
+	Port::out(COM1+0, 115200/115200);
 	Port::out(COM1+1, 0);
 	Port::out(COM1+3, 3);
 	Port::out(COM1+4, 0);
-	Port::out(COM1+1, 0);
+	Port::out(COM1+1, 1);
 
 	__uart_initted = true;
 	if (Port::in(COM1+5)==0xff) {
@@ -41,7 +41,7 @@ void uart_putc(char c)
 		if ((Port::in(COM1+5) & 0x20)!=0) {
 			break;
 		}
-                Timer::get()->wait(10);
+                Timer::get()->wait(1);
 	}
 	Port::out(COM1, c);
 }
@@ -60,5 +60,6 @@ void VideoX86::putCh(char c)
 {
 	if (!__uart_initted) uart_init();
 	uart_putc(c);
+	if (c=='\n') uart_putc('\r');
 	Video::putCh(c);
 }

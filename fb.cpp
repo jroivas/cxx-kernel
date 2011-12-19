@@ -7,12 +7,12 @@
 
 FB::FB()
 {
-	current = NULL;
-	buffer = NULL;
-	backbuffer = NULL;
-	double_buffer = true;
-	direct = false;
-	configured = false;
+	m_current = NULL;
+	m_buffer = NULL;
+	m_backbuffer = NULL;
+	m_double_buffer = true;
+	m_direct = false;
+	m_configured = false;
 }
 
 FB::~FB()
@@ -22,56 +22,79 @@ FB::~FB()
 
 void FB::setSingleBuffer()
 {
-	double_buffer = false;
+	m_double_buffer = false;
+	if (m_buffer!=NULL) {
+		MM::instance()->free(m_buffer);
+	}
+	m_buffer = NULL;
 }
 
 void FB::setDirect()
 {
-	if (backbuffer!=NULL) {
-		MM::instance()->free(backbuffer);
-		direct = true;
-		backbuffer = current->base;
+	m_direct = true;
+	if (m_backbuffer!=NULL) {
+		MM::instance()->free(m_backbuffer);
 	}
-	if (buffer!=NULL) {
-		MM::instance()->free(buffer);
+	if (m_buffer!=NULL) {
+		MM::instance()->free(m_buffer);
 	}
+	m_backbuffer = m_current->base;
+	m_buffer = m_current->base;
 }
 
 void FB::allocBuffers()
 {
-	size = current->bytes_per_line*(current->height);
-	backbuffer = (unsigned char*)MM::instance()->alloc(size, MM::AllocClear);
-	if (backbuffer!=NULL) {
-		backbuffer[0] = 0xfe;
-		if (backbuffer==NULL || backbuffer[0] != 0xfe) {
-			direct = true;
-			MM::instance()->free(backbuffer);
-			backbuffer = current->base;
+	if (m_direct) return;
+	m_size = m_current->bytes_per_line*(m_current->height);
+	m_backbuffer = (unsigned char*)MM::instance()->alloc(m_size, MM::AllocClear);
+	if (m_backbuffer!=NULL) {
+		m_backbuffer[0] = 0xfe;
+		m_backbuffer[m_size/2] = 0xed;
+		m_backbuffer[m_size-1] = 0xdc;
+		if (m_backbuffer==NULL || m_backbuffer[0] != 0xfe || m_backbuffer[m_size/2] != 0xed || m_backbuffer[m_size-1] != 0xdc) {
+			m_direct = true;
+			MM::instance()->free(m_backbuffer);
+			m_backbuffer = m_current->base;
+			//Platform::video()->printf("direct\n");
 		} else {
-			backbuffer[0] = 0;
-			buffer = (unsigned char*)MM::instance()->alloc(size, MM::AllocClear);
-			buffer[0] = 0xef;
-			if (buffer==NULL || buffer[0] != 0xef) {
-				double_buffer = false;
-				MM::instance()->free(buffer);
-				buffer = NULL;
+			m_backbuffer[0] = 0;
+			m_backbuffer[m_size/2] = 0;
+			m_backbuffer[m_size-1] = 0;
+			m_buffer = (unsigned char*)MM::instance()->alloc(m_size, MM::AllocClear);
+			m_buffer[0] = 0xef;
+			m_buffer[m_size/2] = 0xde;
+			m_buffer[m_size-1] = 0xec;
+			if (m_buffer==NULL || m_buffer[0] != 0xef || m_buffer[m_size/2] != 0xde || m_buffer[m_size-1] != 0xec) {
+				m_double_buffer = false;
+				MM::instance()->free(m_buffer);
+				m_buffer = NULL;
+				//m_buffer = m_backbuffer;
+				//Platform::video()->printf("singlebuffer\n");
 			} else {
-				buffer[0] = 0;
+				m_buffer[0] = 0;
+				m_buffer[m_size/2] = 0;
+				m_buffer[m_size-1] = 0;
 			}
 		}
 	}
-	Platform::video()->printf("Allocbuffers: %x %x %x sizes: %d\n",current->base,buffer,backbuffer,current->bytes_per_line*(current->height));
+#if 0
+	for (uint32_t i=0; i<m_size; i++) {
+		if (buffer!=NULL) buffer[i] = 0;
+		if (backbuffer!=NULL) backbuffer[i] = 0;
+	}
+#endif
+	//Platform::video()->printf("Allocbuffers: %x %x %x sizes: %d\n",m_current->base,m_buffer,m_backbuffer,m_current->bytes_per_line*(m_current->height));
 }
 
 void FB::freeBuffers()
 {
-	if (buffer!=NULL) {
-		MM::instance()->free(buffer);
-		buffer = NULL;
+	if (m_buffer!=NULL) {
+		MM::instance()->free(m_buffer);
+		m_buffer = NULL;
 	}
-	if (backbuffer!=NULL) {
-		MM::instance()->free(backbuffer);
-		backbuffer = NULL;
+	if (m_backbuffer!=NULL) {
+		MM::instance()->free(m_backbuffer);
+		m_backbuffer = NULL;
 	}
 }
 
@@ -79,47 +102,47 @@ bool FB::configure(ModeConfig *mode)
 {
 	if (mode==NULL) return false;
 
-	current = mode;
+	m_current = mode;
 
 	allocBuffers();
 
-	configured = true;
+	m_configured = true;
 	return true;
 }
 
 unsigned char *FB::data()
 {
-	if (backbuffer == NULL) return NULL;
-	return backbuffer;
+	if (m_buffer == NULL) return NULL;
+	return m_buffer;
 }
 
 void FB::swap()
 {
-	//if (buffer == NULL) return;
-	if (backbuffer == NULL) return;
-	if (!double_buffer) {
-		buffer = backbuffer;
+	if (m_buffer == NULL) return;
+	if (m_backbuffer == NULL) return;
+	if (!m_double_buffer) {
+		m_buffer = m_backbuffer;
 		return;
 	}
 
-	if (buffer!=NULL && !direct) {
-		memcpy_opt(buffer, backbuffer, size);
-		//Mem::copy(buffer, backbuffer, size);
+	if (m_buffer!=NULL && !m_direct) {
+		memcpy_opt(m_buffer, m_backbuffer, m_size);
+		//Mem::copy(m_buffer, m_backbuffer, m_size);
 	}
 }
 
 void FB::putPixel(int x, int y, unsigned char r, unsigned char g, unsigned char b, unsigned char a)
 {
-	if (backbuffer==NULL) return;
-	if (current==NULL) return;
+	if (m_backbuffer==NULL) return;
+	if (m_current==NULL) return;
 
-	x %= current->width;
-	y %= current->height;
+	x %= m_current->width;
+	y %= m_current->height;
 
-	switch (current->depth) {
+	switch (m_current->depth) {
 		case 16:
 			{
-			unsigned short *pos = (unsigned short*)(backbuffer+(y*current->bytes_per_line + x*2));
+			unsigned short *pos = (unsigned short*)(m_backbuffer+(y*m_current->bytes_per_line + x*2));
 			unsigned short color = 0;
 			color += (r & 0x7C) << 8;
 			color += (g & 0x7E) << 2;
@@ -137,7 +160,7 @@ void FB::putPixel(int x, int y, unsigned char r, unsigned char g, unsigned char 
 			break;*/
 		case 24:
 			{
-			unsigned char *pos = (unsigned char*)(backbuffer+(y*current->bytes_per_line + x*3));
+			unsigned char *pos = (unsigned char*)(m_backbuffer+(y*m_current->bytes_per_line + x*3));
 			*pos++ = r;
 			*pos++ = g;
 			*pos = b;
@@ -145,12 +168,13 @@ void FB::putPixel(int x, int y, unsigned char r, unsigned char g, unsigned char 
 			break;
 		case 32:
 			{
-			unsigned int *pos = (unsigned int*)(backbuffer+(y*current->bytes_per_line + x*4));
-			unsigned int color = (a<<24)+(r<<16)+(g<<8)+b;
+			uint32_t *pos = (uint32_t*)(m_backbuffer+(y*m_current->bytes_per_line + x*4));
+			uint32_t color = (a<<24)+(r<<16)+(g<<8)+b;
 			*pos = color;
 			}
 			break;
 		default:
+			//Platform::video()->printf("Unsupported depth: %d\n",m_current->depth);
 			// Unsupported
 			break;
 	}
@@ -158,10 +182,10 @@ void FB::putPixel(int x, int y, unsigned char r, unsigned char g, unsigned char 
 
 void FB::putPixel(int x, int y, unsigned int color)
 {
-	if (backbuffer!=NULL && current!=NULL && current->depth==32) {
-		x %= current->width;
-		y %= current->height;
-		unsigned int *pos = (unsigned int*)(backbuffer+(y*current->bytes_per_line + x*4));
+	if (m_backbuffer!=NULL && m_current!=NULL && m_current->depth==32) {
+		x %= m_current->width;
+		y %= m_current->height;
+		uint32_t *pos = (uint32_t*)(m_backbuffer+(y*m_current->bytes_per_line + x*4));
 		*pos = color;
 	} else {
 		unsigned char b = color & 0xff;
@@ -174,7 +198,7 @@ void FB::putPixel(int x, int y, unsigned int color)
 
 void FB::clear()
 {
-	if (backbuffer==NULL) return;
+	if (m_backbuffer==NULL) return;
 #if 0
 	unsigned char *dest = backbuffer+(current->height*current->bytes_per_line);
 	unsigned char *ptr = backbuffer;

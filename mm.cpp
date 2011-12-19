@@ -315,6 +315,7 @@ void *MM::allocMem(size_t size, AllocType t)
 
 	ptr_val_t size2 = size+sizeof(PtrInfo);
 
+#if 0
 	/* Round up to 2^c boundaries */
 	ptr_val_t s = size2;
 	size_t c=0;
@@ -330,8 +331,9 @@ void *MM::allocMem(size_t size, AllocType t)
 	}
 	if (size2%(s>>1)==0) s>>=1;
 	size2=s;
+#endif
 
-	if (size2%PAGE_SIZE>0) m=1;
+	if (size2%PAGE_SIZE!=0) m=1;
 	ptr_val_t cnt = size2/PAGE_SIZE+m;
 
 

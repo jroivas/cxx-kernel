@@ -38,7 +38,7 @@ kernel.iso: kernel menu.lst stage2_eltorito
 	genisoimage -R -b boot/grub/stage2_eltorito -no-emul-boot -quiet -boot-load-size 4 -boot-info-table -o kernel.iso ./isofiles
 
 run_iso: kernel.iso
-	#qemu -no-kvm -cdrom kernel.iso
+	#qemu -serial mon:stdio -no-kvm -cdrom kernel.iso
 	qemu -serial mon:stdio -cdrom kernel.iso
 
 3rdparty/libx86emu.a:
