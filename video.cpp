@@ -107,7 +107,7 @@ void Video::print(const char *cp)
 	for (ch = str; *ch; ch++) putCh(*ch);
 }
 
-void Video::print_l(long val, int radix)
+void Video::print_l(long val, int radix, int fmtcnt)
 {
         if (val==0) {
                 putCh('0');
@@ -124,8 +124,8 @@ void Video::print_l(long val, int radix)
         if (n) l++;
         if (l==0) l=1;
 
+	int cnt = 0;
         char s[256];
-        //char *s = (char*)calloc(1,l+1);
         if (n) s[0]='-';
         s[l]=0;
         l--;
@@ -135,20 +135,22 @@ void Video::print_l(long val, int radix)
                 else s[l]='A'+t-10;
                 val/=radix;
                 l--;
+		cnt++;
         } 
-#if 0
-        if (val>0) {
-                //s[l]='0'+val%radix;
-                char t = val%radix;
-                if (t<10) s[l]='0'+t;
-                else s[l]='A'+t-10;
-        }
-#endif
+	if (cnt<fmtcnt) {
+        	char s2[256];
+		int cc=fmtcnt-cnt;
+		if (cc>255) cc=255;
+		for (int i=0; i<cc; i++) {
+			s2[i] = '0';
+		}
+		s[cc] = 0;
+        	print(s2);
+	}
         print(s);
-        //free(s);
 }
 
-void Video::print_ul(unsigned long val, int radix)
+void Video::print_ul(unsigned long val, int radix, int fmtcnt)
 {
         if (val==0) {
                 putCh('0');
@@ -159,8 +161,8 @@ void Video::print_ul(unsigned long val, int radix)
         while (tmp>0) { tmp/=radix; l++; }
         if (l==0) l=1;
 
+	int cnt = 0;
         char s[256];
-        //char *s = (char*)calloc(1,l+1);
         s[l]=0;
         s[l+1]=0;
         l--;
@@ -170,16 +172,19 @@ void Video::print_ul(unsigned long val, int radix)
                 else s[l]='A'+(t-10);
                 val/=radix;
                 l--;
+		cnt++;
         } 
-#if 0
-        if (val>0) {
-                char t = val%radix;
-                if (t<10) s[l]='0'+t;
-                else s[l]='A'+t-10;
-        }
-#endif
+	if (cnt<fmtcnt) {
+        	char s2[256];
+		int cc=fmtcnt-cnt;
+		if (cc>255) cc=255;
+		for (int i=0; i<cc; i++) {
+			s2[i] = '0';
+		}
+		s[cc] = 0;
+        	print(s2);
+	}
         print(s);
-        //free(s);
 }
 
 void Video::printf(const char *fmt, ...)
@@ -196,6 +201,7 @@ void Video::printf(const char *fmt, ...)
         bool f = false;
         bool s_signed = true;
         int l_cnt = 0;
+	int fmtcnt = 0;
 
 	for (ch = str; *ch; ch++) {
                 if (f) {
@@ -214,7 +220,7 @@ void Video::printf(const char *fmt, ...)
                         else if (*ch=='x') {
                                 putCh('0');
                                 putCh('x');
-                                print_ul(va_arg(al, unsigned int), 16);
+                                print_ul(va_arg(al, unsigned int), 16, fmtcnt);
                                 f = false;
                         }
                         else if (*ch=='c') {
@@ -223,15 +229,15 @@ void Video::printf(const char *fmt, ...)
 			}
                         else if (*ch=='d') {
                                 if (!s_signed) {
-                                        print_ul(va_arg(al, unsigned int));
+                                        print_ul(va_arg(al, unsigned int), 10, fmtcnt);
                                 } else {
-                                        print_l(va_arg(al, int));
+                                        print_l(va_arg(al, int), 10, fmtcnt);
                                 }
                                 f = false;
                         } else if (*ch=='u') {
-                                if (l_cnt==0) print_ul(va_arg(al, unsigned int));
-                                else if (l_cnt==1) print_ul(va_arg(al, unsigned long));
-                                else if (l_cnt==2) print_ul(va_arg(al, unsigned long long));
+                                if (l_cnt==0) print_ul(va_arg(al, unsigned int), 10, fmtcnt);
+                                else if (l_cnt==1) print_ul(va_arg(al, unsigned long), 10, fmtcnt);
+                                else if (l_cnt==2) print_ul(va_arg(al, unsigned long long), 10, fmtcnt);
 #if 0
                                 s_signed = false;
                                 if (!s_signed) {
@@ -242,8 +248,13 @@ void Video::printf(const char *fmt, ...)
 #endif
                                 f = false;
                         }
+			else if (*ch>='0' && *ch<='9') {
+				fmtcnt *= 10;
+				fmtcnt += (*ch-'0');
+			}
                 } 
                 else if (*ch=='%') {
+			fmtcnt = 0;
                         f = true;
                         s_signed = true;
                 }

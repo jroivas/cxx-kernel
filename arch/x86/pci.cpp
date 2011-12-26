@@ -1,5 +1,6 @@
 #include "pci.h"
 #include "port.h"
+#include "mm.h"
 #include "../platform.h"
 
 #define PCI_PORT_CONFIG_ADDR 0xCF8
@@ -52,6 +53,29 @@ uint32_t PCI::getHeaderType(uint32_t bus, uint32_t device)
 	return PCI_CONFIG_GET_HEADER_TYPE(getConfig(bus, device, 0, PCI_REGISTER_HEADER_TYPE));
 }
 
+PCI::HeaderGeneric *PCI::getHeader(uint32_t bus, uint32_t device)
+{
+	HeaderGeneric *tmp = (HeaderGeneric*)MM::instance()->alloc(sizeof(struct HeaderGeneric));
+	if (tmp==NULL) return NULL;
+	tmp->reg00 = getConfig(bus, device, 0, 0x00);
+	tmp->reg04 = getConfig(bus, device, 0, 0x04);
+	tmp->reg08 = getConfig(bus, device, 0, 0x08);
+	tmp->reg0C = getConfig(bus, device, 0, 0x0C);
+	tmp->reg10 = getConfig(bus, device, 0, 0x10);
+	tmp->reg14 = getConfig(bus, device, 0, 0x14);
+	tmp->reg18 = getConfig(bus, device, 0, 0x18);
+	tmp->reg1C = getConfig(bus, device, 0, 0x1C);
+	tmp->reg20 = getConfig(bus, device, 0, 0x20);
+	tmp->reg24 = getConfig(bus, device, 0, 0x24);
+	tmp->reg28 = getConfig(bus, device, 0, 0x28);
+	tmp->reg2C = getConfig(bus, device, 0, 0x2C);
+	tmp->reg30 = getConfig(bus, device, 0, 0x30);
+	tmp->reg34 = getConfig(bus, device, 0, 0x34);
+	tmp->reg38 = getConfig(bus, device, 0, 0x38);
+	tmp->reg3C = getConfig(bus, device, 0, 0x3C);
+	return tmp;
+}
+
 void PCI::scanDevices()
 {
 	Platform::video()->printf("Scanning PCI...\n");
@@ -61,7 +85,8 @@ void PCI::scanDevices()
 			uint32_t v; 
 			if ((v=PCI_CONFIG_GET_VENDOR(res))!=0xFFFF) {
 				uint32_t d = PCI_CONFIG_GET_DEVICE(res);
-				Platform::video()->printf("Found device: %x:%x   %x\n",v,d,getHeaderType(bus,dev));
+				//HeaderGeneric *hdr = getHeader(bus, dev);
+				Platform::video()->printf("Found device: %4x:%4x\n",v,d);
 			}
 		}	
 	}
