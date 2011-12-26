@@ -4,6 +4,7 @@
 #include "timer.h"
 #include "kb.h"
 #include "fb.h"
+#include "arch/x86/pci.h"
 
 Kernel::Kernel()
 {
@@ -87,6 +88,8 @@ int Kernel::run()
 		platform->fb()->blit();
 #endif
 	}
+	PCI *p = new PCI();
+	p->scanDevices();
 	while(1) {}
 
 	return 0;
