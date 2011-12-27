@@ -81,7 +81,7 @@ public:
 	PCI();
 	~PCI();
 	bool isAvailable();
-	HeaderGeneric *getHeader(uint32_t bus, uint32_t device);
+	HeaderGeneric *getHeader(uint32_t bus, uint32_t device, uint32_t func);
 	bool isDevice(uint32_t bus, uint32_t device);
 	void scanDevices();
 
