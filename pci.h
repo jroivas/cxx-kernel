@@ -23,22 +23,7 @@ public:
 		uint8_t bist;
 	};
 	struct HeaderGeneric {
-		uint32_t reg00;
-		uint32_t reg04;
-		uint32_t reg08;
-		uint32_t reg0C;
-		uint32_t reg10;
-		uint32_t reg14;
-		uint32_t reg18;
-		uint32_t reg1C;
-		uint32_t reg20;
-		uint32_t reg24;
-		uint32_t reg28;
-		uint32_t reg2C;
-		uint32_t reg30;
-		uint32_t reg34;
-		uint32_t reg38;
-		uint32_t reg3C;
+		uint32_t reg[16];
 	};
 	struct Header00 {
 		struct HeaderCommon common;
@@ -95,15 +80,17 @@ public:
 
 	PCI();
 	~PCI();
-	uint32_t getVendor(uint32_t bus, uint32_t device);
-	uint32_t getDevice(uint32_t bus, uint32_t device);
-	uint32_t getHeaderType(uint32_t bus, uint32_t device);
+	bool isAvailable();
 	HeaderGeneric *getHeader(uint32_t bus, uint32_t device);
+	bool isDevice(uint32_t bus, uint32_t device);
 	void scanDevices();
 
 protected:
+	uint32_t getVendor(uint32_t bus, uint32_t device);
+	uint32_t getDevice(uint32_t bus, uint32_t device);
 	uint32_t getConfig(uint32_t bus, uint32_t device, uint32_t func, uint32_t reg);
-
+	virtual void systemPut(uint32_t val) = 0;
+	virtual uint32_t systemGet() = 0;
 };
 
 #endif

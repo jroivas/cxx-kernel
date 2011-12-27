@@ -8,6 +8,7 @@
 #include "kb.h"
 #include "fb.h"
 #include "types.h"
+#include "pci.h"
 
 #ifdef __i386__
 #include "x86/pagingx86.h"
@@ -24,6 +25,7 @@ public:
 	static IDT *idt();
 	static KB *kb();
 	static FB *fb();
+	static PCI *pci();
 	static int CAS(ptr_val_t volatile *m_ptr, int cmp, int set);
 	static void halt();
 	static void seizeInterrupts();

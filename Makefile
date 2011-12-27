@@ -1,15 +1,8 @@
 include config.mk
 CXXFLAGS:=$(CXXFLAGS) -I.
 CXXFLAGSO:=-O2 $(CXXFLAGSO) -I.
-#OBJS=loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o idt.o idt_handlers.o timer.o kb.o
 #OBJS=arch/$(ARCH)/loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o idt.o timer.o kb.o fb.o math.o states.o
-OBJS=arch/loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o idt.o timer.o kb.o fb.o math.o states.o setjmp.o bits.o 3rdparty/font/boot_font.o font.o
-#OBJS=arch/loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o idt.o timer.o kb.o fb.o math.o states.o setjmp.o bits.o font.o
-#OBJS=kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o idt.o timer.o kb.o fb.o math.o states.o
-#THIRDPARTY=3rdparty/libx86emu.a
-#THIRDPARTY=3rdparty/libx86.a
-#THIRDPARTY=3rdparty/a/*.o
-#THIRDPARTY=3rdparty/fb/x86emu.o
+OBJS=arch/loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o idt.o timer.o kb.o fb.o math.o states.o setjmp.o bits.o 3rdparty/font/boot_font.o font.o pci.o
 THIRDPARTY=3rdparty/my_x86emu/x86emu.o
 
 #LIBS=-Larch/ -larch
@@ -39,7 +32,7 @@ kernel.iso: kernel menu.lst stage2_eltorito
 
 run_iso: kernel.iso
 	#qemu -serial mon:stdio -no-kvm -cdrom kernel.iso
-	qemu -serial mon:stdio -cdrom kernel.iso
+	qemu -serial mon:stdio -cdrom kernel.iso -hda testhd.img
 
 3rdparty/libx86emu.a:
 	make -C 3rdparty

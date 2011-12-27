@@ -107,9 +107,24 @@ void Video::print(const char *cp)
 	for (ch = str; *ch; ch++) putCh(*ch);
 }
 
+void Video::print_prenull(int cnt, int fmtcnt)
+{
+	if (cnt<fmtcnt) {
+        	char s2[256];
+		int cc=fmtcnt-cnt;
+		if (cc>255) cc=255;
+		for (int i=0; i<cc; i++) {
+			s2[i] = '0';
+		}
+		s2[cc] = 0;
+        	print(s2);
+	}
+}
+
 void Video::print_l(long val, int radix, int fmtcnt)
 {
         if (val==0) {
+		print_prenull(1, fmtcnt);
                 putCh('0');
                 return;
         }
@@ -137,22 +152,14 @@ void Video::print_l(long val, int radix, int fmtcnt)
                 l--;
 		cnt++;
         } 
-	if (cnt<fmtcnt) {
-        	char s2[256];
-		int cc=fmtcnt-cnt;
-		if (cc>255) cc=255;
-		for (int i=0; i<cc; i++) {
-			s2[i] = '0';
-		}
-		s[cc] = 0;
-        	print(s2);
-	}
+	print_prenull(cnt, fmtcnt);
         print(s);
 }
 
 void Video::print_ul(unsigned long val, int radix, int fmtcnt)
 {
         if (val==0) {
+		print_prenull(1, fmtcnt);
                 putCh('0');
                 return;
         }
@@ -174,16 +181,7 @@ void Video::print_ul(unsigned long val, int radix, int fmtcnt)
                 l--;
 		cnt++;
         } 
-	if (cnt<fmtcnt) {
-        	char s2[256];
-		int cc=fmtcnt-cnt;
-		if (cc>255) cc=255;
-		for (int i=0; i<cc; i++) {
-			s2[i] = '0';
-		}
-		s[cc] = 0;
-        	print(s2);
-	}
+	print_prenull(cnt, fmtcnt);
         print(s);
 }
 
@@ -218,8 +216,6 @@ void Video::printf(const char *fmt, ...)
                                 l_cnt++;
                         }
                         else if (*ch=='x') {
-                                putCh('0');
-                                putCh('x');
                                 print_ul(va_arg(al, unsigned int), 16, fmtcnt);
                                 f = false;
                         }

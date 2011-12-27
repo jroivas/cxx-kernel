@@ -9,6 +9,7 @@
 #include "x86/kbx86.h"
 #include "x86/vesa.h"
 #include "x86/x86.h"
+#include "x86/pcix86.h"
 #endif
 
 static Timer *__platform_timer = NULL;
@@ -16,6 +17,7 @@ static Video *__platform_video = NULL;
 static IDT   *__platform_idt   = NULL;
 static KB    *__platform_kb    = NULL;
 static FB    *__platform_fb    = NULL;
+static PCI   *__platform_pci   = NULL;
 
 Platform::Platform()
 {
@@ -117,6 +119,16 @@ FB *Platform::fb()
 	}
 	#endif
 	return __platform_fb;
+}
+
+PCI *Platform::pci()
+{
+	#ifdef __i386__
+	if (__platform_pci==NULL) {
+		__platform_pci = new PCIX86();
+	}
+	#endif
+	return __platform_pci;
 }
 
 void Platform::halt()

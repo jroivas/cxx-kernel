@@ -4,7 +4,6 @@
 #include "timer.h"
 #include "kb.h"
 #include "fb.h"
-#include "arch/x86/pci.h"
 
 Kernel::Kernel()
 {
@@ -54,6 +53,14 @@ int Kernel::run()
 
 		//delete video;
 	}
+	PCI *p = Platform::pci();
+	if (p!=NULL) {
+		if (p->isAvailable()) video->printf("Found PCI\n");
+		else video->printf("PCI not available\n");
+		p->scanDevices();
+	}
+	for (int i=0; i<0x5FFFFFF; i++) 
+		for (int j=0; j<0x22; j++) { }
 
 	FB::ModeConfig conf;
 	conf.width=800;
@@ -88,8 +95,6 @@ int Kernel::run()
 		platform->fb()->blit();
 #endif
 	}
-	PCI *p = new PCI();
-	p->scanDevices();
 	while(1) {}
 
 	return 0;
