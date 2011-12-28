@@ -2,25 +2,41 @@ include config.mk
 CXXFLAGS:=$(CXXFLAGS) -I.
 CXXFLAGSO:=-O2 $(CXXFLAGSO) -I.
 #OBJS=arch/$(ARCH)/loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o idt.o timer.o kb.o fb.o math.o states.o
-OBJS=arch/loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o idt.o timer.o kb.o fb.o math.o states.o setjmp.o bits.o 3rdparty/font/boot_font.o font.o pci.o
+OBJS=arch/loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o idt.o timer.o kb.o fb.o math.o states.o setjmp.o bits.o 3rdparty/font/boot_font.o font.o pci.o ata.o
 THIRDPARTY=3rdparty/my_x86emu/x86emu.o
 
-#LIBS=-Larch/ -larch
-LIBS=arch/arch.a arch/$(ARCH)/$(ARCH).a
+#LIBS=arch/arch.a
+LIBS=
 
-all: kernel kernel.iso
+all: x86
+
+config_h_pre:
+	echo '#ifndef CONFIG_H' > config.h
+	echo '#define CONFIG_H' >> config.h
+
+config_h_post:
+	echo '#endif' >> config.h
+
+config_h_x86:
+	echo '#define ARCH_x86' >> config.h
+
+config_h_linux:
+	echo '#define ARCH_LINUX' >> config.h
+
+x86: config_h_pre config_h_x86 config_h_post kernel_x86 kernel.iso
+
+linux: config_h_pre config_h_linux config_h_post kernel_linux kernel.iso
 
 run: run_iso
 
 run_qemu: kernel
 	qemu -kernel kernel
 
-kernel: link2.ld build_arch $(OBJS) $(LIBS) 3rdparty/libx86emu.a
-	#$(LD) -m elf_i386 -nostdlib -T link2.ld -o kernel $(OBJS) $(LIBS) $(THIRDPARTY)
-	#$(LD) -m elf_i386 -nostdlib -T link2.ld -o kernel $(OBJS) arch/platform.o arch/$(ARCH)/*.o $(THIRDPARTY)
-	$(LD) -m elf_i386 -nostdlib -T link2.ld -o kernel $(OBJS) arch/platform.o arch/$(ARCH)/*.o $(THIRDPARTY)
-	#$(LD) -m elf_i386 -nostdlib -T link2.ld -o kernel $(OBJS) arch/platform.o arch/$(ARCH)/*.o
-	#$(LD) -m elf_i386 -nostdlib -T link2.ld -o kernel $(OBJS) $(LIBS) $(THIRDPARTY)
+kernel_linux: link2.ld arch_linux $(OBJS) $(LIBS) 3rdparty/libx86emu.a
+	$(LD) -m elf_i386 -o kernel $(OBJS) arch/platform.o arch/linux/*.o $(THIRDPARTY)
+
+kernel_x86: link2.ld arch_x86 $(OBJS) arch/x86/x86.a $(LIBS) 3rdparty/libx86emu.a
+	$(LD) -m elf_i386 -nostdlib -T link2.ld -o kernel $(OBJS) arch/platform.o arch/x86/*.o $(THIRDPARTY)
 	#$(CXX) -m32 -Xlinker -T -Xlinker link2.ld -ffreestanding -fno-builtin -nostdlib -s  -o  kernel $(OBJS) arch/platform.o arch/$(ARCH)/*.o $(THIRDPARTY)
 
 kernel.iso: kernel menu.lst stage2_eltorito
@@ -74,8 +90,6 @@ gdt.o: gdt.cpp gdt.h
 string.o: string.cpp string.h memcopy.h
 	$(CXX) -c $(CXXFLAGSO) -o $@ $< 
 
-x86.o: x86.cpp x86.h
-
 idt.o: idt.cpp idt.h
 
 timer.o: timer.cpp timer.h
@@ -90,11 +104,17 @@ math.o: math.cpp math.h
 
 setjmp.o: setjmp.cpp setjmp.h
 
-arch/$(ARCH)/loader.o:
-arch/$(ARCH)/$(ARCH).a:
-arch/arch.a:
-build_arch:
-	make -C arch
+#arch/$(ARCH)/loader.o:
+#arch/$(ARCH)/$(ARCH).a:
+#arch/arch.a:
+#build_arch:
+#	make -C arch
+
+arch_x86:
+	make ARCH=x86 -C arch
+
+arch_linux:
+	make ARCH=linux -C arch
 
 clean:
 	make -C arch clean

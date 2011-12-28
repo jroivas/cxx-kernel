@@ -4,6 +4,7 @@
 #include "timer.h"
 #include "kb.h"
 #include "fb.h"
+#include "ata.h"
 
 Kernel::Kernel()
 {
@@ -50,8 +51,6 @@ int Kernel::run()
 		video->printf("Ticks: %lu!\n",Timer::get()->getTicks());
                 Timer::get()->wait(100);
 		video->printf("Ticks: %lu!\n",Timer::get()->getTicks());
-                Timer::get()->msleep(500);
-		video->printf("Ticks msleep(500): %lu!\n",Timer::get()->getTicks());
                 Timer::get()->msleep(50);
 		video->printf("Ticks msleep(50): %lu!\n",Timer::get()->getTicks());
 
@@ -62,19 +61,9 @@ int Kernel::run()
 		if (p->isAvailable()) video->printf("Found PCI\n");
 		else video->printf("PCI not available\n");
 		p->scanDevices();
-
-		PCI::DeviceIterator *i = p->startIter();
-		PCI::HeaderGeneric *h = NULL;
-		do {
-			h = p->findNextDevice(i, 0x1, 0x1);
-			if (h!=NULL) {
-				PCI::HeaderCommon *hc = (PCI::HeaderCommon*)h;
-				video->printf("Found ATA device: %4x:%4x\n", hc->vendor, hc->device);
-			}
-		} while (h!=NULL);
-		p->endIter(i);
-
 	}
+	ATA *a = new ATA();
+	(void)a;
 	for (int i=0; i<0x5FFFFFF; i++) 
 		for (int j=0; j<0x22; j++) { }
 

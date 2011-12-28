@@ -1,6 +1,8 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
+#include "config.h"
+
 #include "states.h"
 #include "timer.h"
 #include "video.h"

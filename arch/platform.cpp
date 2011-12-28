@@ -1,7 +1,7 @@
 #include "platform.h"
 #include "types.h"
 
-#ifdef __i386__
+#ifdef ARCH_x86
 #include "x86/statesx86.h"
 #include "x86/timerx86.h"
 #include "x86/videox86.h"
@@ -26,12 +26,12 @@ Platform::Platform()
 	m_state = NULL;
 	#endif
 
-	#ifdef __i386__
+	#ifdef ARCH_x86
 	current = PlatformX86;
 	m_state = new StateX86();
 	#endif
 
-	#ifdef __x86_64__
+	#ifdef ARCH_x86_64
 	current = PlatformX86_64;
 	m_state = NULL;
 	#endif
@@ -50,7 +50,7 @@ State *Platform::state()
 
 int Platform::CAS(ptr_val_t volatile *m_ptr, int cmp, int set)
 {
-	#ifdef __i386__
+	#ifdef ARCH_x86
         int res = cmp;
         asm volatile(
                 "lock; cmpxchgl %1,%2\n"
@@ -64,15 +64,16 @@ int Platform::CAS(ptr_val_t volatile *m_ptr, int cmp, int set)
 	return res;
 	#endif
 
-	//if (*m_ptr==cmp)
-
-	*m_ptr=set;
-	return 1;
+	if ((int)*m_ptr==cmp) {
+		*m_ptr=set;
+		return 1;
+	}
+	return 0;
 }
 
 Timer *Platform::timer()
 {
-	#ifdef __i386__
+	#ifdef ARCH_x86
 	if (__platform_timer==NULL) {
 		__platform_timer = new TimerX86();
 	}
@@ -83,7 +84,7 @@ Timer *Platform::timer()
 
 Video *Platform::video()
 {
-	#ifdef __i386__
+	#ifdef ARCH_x86
 	if (__platform_video==NULL) {
 		__platform_video = new VideoX86();
 	}
@@ -93,7 +94,7 @@ Video *Platform::video()
 
 IDT *Platform::idt()
 {
-	#ifdef __i386__
+	#ifdef ARCH_x86
 	if (__platform_idt==NULL) {
 		__platform_idt = new IDTX86();
 	}
@@ -103,7 +104,7 @@ IDT *Platform::idt()
 
 KB *Platform::kb()
 {
-	#ifdef __i386__
+	#ifdef ARCH_x86
 	if (__platform_kb==NULL) {
 		__platform_kb = new KBX86();
 	}
@@ -113,7 +114,7 @@ KB *Platform::kb()
 
 FB *Platform::fb()
 {
-	#ifdef __i386__
+	#ifdef ARCH_x86
 	if (__platform_fb==NULL) {
 		__platform_fb = new Vesa();
 	}
@@ -123,7 +124,7 @@ FB *Platform::fb()
 
 PCI *Platform::pci()
 {
-	#ifdef __i386__
+	#ifdef ARCH_x86
 	if (__platform_pci==NULL) {
 		__platform_pci = new PCIX86();
 	}
@@ -133,14 +134,14 @@ PCI *Platform::pci()
 
 void Platform::halt()
 {
-	#ifdef __i386__
+	#ifdef ARCH_x86
 	hlt();
 	#endif
 }
 
 void Platform::seizeInterrupts()
 {
-	#ifdef __i386__
+	#ifdef ARCH_x86
 	cli();
 	#endif
 }
