@@ -77,17 +77,21 @@ public:
 		uint8_t interruptPIN;
 		uint16_t bridgeControl;
 	};
+	class DeviceIterator;
 
 	PCI();
 	~PCI();
 	bool isAvailable();
 	HeaderGeneric *getHeader(uint32_t bus, uint32_t device, uint32_t func);
-	bool isDevice(uint32_t bus, uint32_t device);
+	bool isDevice(uint32_t bus, uint32_t device, uint32_t func);
 	void scanDevices();
+	DeviceIterator *startIter();
+	HeaderGeneric *findNextDevice(DeviceIterator *iter, uint8_t classcode, uint8_t subclass);
+	void endIter(DeviceIterator *iter);
 
 protected:
-	uint32_t getVendor(uint32_t bus, uint32_t device);
-	uint32_t getDevice(uint32_t bus, uint32_t device);
+	uint32_t getVendor(uint32_t bus, uint32_t device, uint32_t func);
+	uint32_t getDevice(uint32_t bus, uint32_t device, uint32_t func);
 	uint32_t getConfig(uint32_t bus, uint32_t device, uint32_t func, uint32_t reg);
 	virtual void systemPut(uint32_t val) = 0;
 	virtual uint32_t systemGet() = 0;

@@ -17,12 +17,12 @@ Timer *Timer::get()
 Timer::Timer()
 {
         //IDT::get()->installRoutine(TIMER_ISR_NUMBER, Timer::handler);
-        ticks = 0;
+        m_ticks = 0;
 }
 
 void Timer::setFrequency(unsigned int hz) 
 {
-	(void)hz;
+	m_hz = hz;
 }
 
 void Timer::run(Regs *r)
@@ -38,8 +38,26 @@ void Timer::handler(Regs *r)
 
 void Timer::wait(unsigned long ticks_to_wait)
 {
-        unsigned long target = ticks_to_wait+ticks;
-        while (ticks < target) {
+        unsigned long target = ticks_to_wait+m_ticks;
+        while (m_ticks < target) {
                 // Sleep
         }
+}
+
+void Timer::sleep(unsigned long sec)
+{
+	unsigned long t = m_hz*sec;
+	wait(t);
+}
+
+void Timer::msleep(unsigned long msec)
+{
+	unsigned long t = msec*m_hz/1000;
+	wait(t);
+}
+
+void Timer::usleep(unsigned long usec)
+{
+	unsigned long t = usec*m_hz/10000000;
+	wait(t);
 }

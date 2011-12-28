@@ -15,13 +15,14 @@ void TimerX86::setFrequency(unsigned int hz)
         Port::out(0x43, 0x36);
         Port::out(0x40, val&0xFF);
         Port::out(0x40, (val>>8)&0xFF);
+	Timer::setFrequency(hz);
 }
 
 void TimerX86::run(Regs *r)
 {
         (void)r;
-        ticks++;
-        if (ticks%10==0) {
+        m_ticks++;
+        if (m_ticks%10==0) {
                 Port::out(0x20, 0x20);
         }
 }

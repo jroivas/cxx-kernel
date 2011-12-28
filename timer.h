@@ -8,14 +8,18 @@ class Timer
 public:
         static Timer *get();
         void wait(unsigned long ticks_to_wait);
-        unsigned long getTicks() { return ticks; }
+        unsigned long getTicks() { return m_ticks; }
         virtual void setFrequency(unsigned int hz);
+	void sleep(unsigned long sec);
+	void msleep(unsigned long msec);
+	void usleep(unsigned long usec);
 
 protected:
         Timer();
         virtual void run(Regs *r);
         static void handler(Regs *r);
-        unsigned long ticks;
+        unsigned long m_ticks;
+	unsigned long m_hz;
 };
 
 #endif
