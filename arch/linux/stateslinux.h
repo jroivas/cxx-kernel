@@ -7,7 +7,7 @@ class StateLinux : public State
 {
 public:
 	StateLinux() : State() { }
-	~StateLinux(){ State::~State(); }
+	~StateLinux(){ }
 	void halt();
 	void seizeInterrupts();
 	void startInterrupts();

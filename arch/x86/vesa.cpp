@@ -21,7 +21,6 @@ Vesa::Vesa() : FB()
 
 Vesa::~Vesa()
 {
-	FB::~FB();
 }
 
 int Vesa::modeDiff(FB::ModeConfig *conf, FB::ModeConfig *cmp)
@@ -210,7 +209,7 @@ FB::ModeConfig *Vesa::query(FB::ModeConfig *prefer)
 	uint32_t s = res->bytes_per_line*(res->height);
 	ptr_val_t newbase;
 	p.map(res->base, &newbase, 0x3);
-	ptr_val_t prev = newbase;
+	//ptr_val_t prev = newbase;
 	ptr_val_t tmpbase = 0;
 	for (uint32_t i=PAGE_SIZE; i<=s; i+=PAGE_SIZE) {
 		p.map(res->base+i, &tmpbase, 0x3);
@@ -219,7 +218,7 @@ FB::ModeConfig *Vesa::query(FB::ModeConfig *prefer)
 			Platform::video()->printf("Discontinuation: %x\n",tmpbase);
 			for (int j=0; j<0xffffff; j++) ;
 		}
-		prev = tmpbase;
+		//prev = tmpbase;
 	}
 	p.unlock();
 

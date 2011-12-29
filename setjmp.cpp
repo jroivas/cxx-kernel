@@ -3,6 +3,7 @@
 
 extern "C" void longjmp(jmp_buf buf, long ret_val)
 {
+#if __i386__
 	ptr_val_t *esp;
 
 /* make sure return value is not 0 */
@@ -30,7 +31,7 @@ extern "C" void longjmp(jmp_buf buf, long ret_val)
 		"movl %0,%%esp\n"
 /* ESP now points to 8 general-purpose registers stored in jmp_buf
 Pop them */
-		//"popa\n"
+		"popa\n"
 /* load new stack pointer from jmp_buf */
 		"movl -20(%%esp),%%esp\n"
 /* ESP now points to new stack, with the IRET frame (EIP, CS, EFLAGS)
@@ -38,4 +39,8 @@ we created just above. Pop these registers: */
 		"iret\n"
 		:
 		: "m"(buf));
+#else
+	(void)buf;
+	(void)ret_val;
+#endif
 }

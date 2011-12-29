@@ -8,7 +8,7 @@ class Vesa : public FB
 {
 public:
 	Vesa();
-	virtual ~Vesa();
+	~Vesa();
 
 	FB::ModeConfig *query(FB::ModeConfig *prefer);
 	virtual bool configure(ModeConfig *mode);
