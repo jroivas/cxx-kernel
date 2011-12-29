@@ -1,4 +1,5 @@
 #include "gdt.h"
+#include "types.h"
 
 struct gdt_entry_t
 {
@@ -83,7 +84,7 @@ void gdt_set_gate(int num, unsigned long base, unsigned long limit, unsigned cha
 void gdt_init()
 {
 	__gdt_ptr.limit = (sizeof(struct gdt_entry_t) * 6) - 1;
-	__gdt_ptr.base = (unsigned int)&__gdt;
+	__gdt_ptr.base = (ptr_val_t)&__gdt;
 
         __tss0.ss0 = (unsigned short)0x10;
         __tss0.esp0 = get_esp();

@@ -48,6 +48,8 @@ extern "C" void _atexit()
 		destructor++;
 	}
 #else
+#ifndef ARCH_LINUX
 	__cxa_finalize(0);
+#endif
 #endif
 }

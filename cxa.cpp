@@ -1,5 +1,6 @@
 #include "cxa.h"
 
+#ifndef ARCH_LINUX
 struct CXA
 {
 	void (*d)(void *);
@@ -73,3 +74,4 @@ void __cxa_finalize(void *f)
 		__cxa_free(f);
 	}
 }
+#endif

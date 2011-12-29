@@ -77,16 +77,6 @@ protected:
 
 uint8_t ATA::Device::read(uint32_t port)
 {
-#if 0
-	uint32_t diff = port-m_basePort;
-	if (diff>7) {
-		diff = port-m_basePort2+8;
-	}
-	if (diff>0x7 && diff<0xC) {
-	}
-	uint8_t res = m_ata->systemPortIn(port);
-	return res;
-#endif
 	if (m_ata==NULL) return 0;
 	return m_ata->systemPortIn(port);
 }
@@ -119,13 +109,6 @@ void ATA::Device::wait()
 	for (int i=0; i<4; i++) {
 		read(altStatus());
 	}
-#if 0
-	uint8_t res;
-	do {
-		res = read(altStatus());
-		//res = read(status());
-	} while ((res&ATA_STATUS_BUSY)>0);
-#endif
 }
 
 uint8_t ATA::Device::getStatus()
@@ -165,14 +148,6 @@ void ATA::Device::identify()
 	wait();
 	//Timer::get()->msleep(2);
 }
-
-#if 0
-	if (m_lba) {
-		write(devSel(), ATA_MODE_LBA | m_type<<4);
-	} else {
-		write(devSel(), ATA_MODE_PIO | m_type<<4);
-	}
-#endif
 
 void ATA::Device::detectLBA()
 {
