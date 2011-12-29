@@ -12,6 +12,12 @@
 #include "x86/pcix86.h"
 #include "x86/atax86.h"
 #endif
+#ifdef ARCH_LINUX
+#include "linux/idtlinux.h"
+#include "linux/timerlinux.h"
+#include "linux/stateslinux.h"
+#include "linux/videolinux.h"
+#endif
 
 static Timer *__platform_timer = NULL;
 static Video *__platform_video = NULL;
@@ -36,6 +42,11 @@ Platform::Platform()
 	#ifdef ARCH_x86_64
 	current = PlatformX86_64;
 	m_state = NULL;
+	#endif
+
+	#ifdef ARCH_LINUX
+	current = PlatformLinux;
+	m_state = new StateLinux();
 	#endif
 }
 
@@ -75,32 +86,41 @@ int Platform::CAS(ptr_val_t volatile *m_ptr, int cmp, int set)
 
 Timer *Platform::timer()
 {
-	#ifdef ARCH_x86
 	if (__platform_timer==NULL) {
+		#ifdef ARCH_x86
 		__platform_timer = new TimerX86();
+		#endif
+		#ifdef ARCH_LINUX
+		__platform_timer = new TimerLinux();
+		#endif
 	}
-	#endif
 
 	return __platform_timer;
 }
 
 Video *Platform::video()
 {
-	#ifdef ARCH_x86
 	if (__platform_video==NULL) {
+		#ifdef ARCH_x86
 		__platform_video = new VideoX86();
+		#endif
+		#ifdef ARCH_LINUX
+		__platform_video = new VideoLinux();
+		#endif
 	}
-	#endif
 	return __platform_video;
 }
 
 IDT *Platform::idt()
 {
-	#ifdef ARCH_x86
 	if (__platform_idt==NULL) {
+		#ifdef ARCH_x86
 		__platform_idt = new IDTX86();
+		#endif
+		#ifdef ARCH_LINUX
+		__platform_idt = new IDTLinux();
+		#endif
 	}
-	#endif
 	return __platform_idt;
 }
 

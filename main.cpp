@@ -20,11 +20,13 @@ extern "C" void _main(unsigned long multiboot, unsigned long magic)
 
 	extern void (* start_ctors)();
 	extern void (* end_ctors)();
+	if (start_ctors!=NULL) {
 	void (**constructor)() = & start_ctors;
 	while (constructor<&end_ctors) {
 		//*(tmp) = 0x2730+((unsigned int)constructor%10);
 		((void (*) (void)) (*constructor)) ();
 		constructor++;
+	}
 	}
 
 	paging_init((MultibootInfo *)multiboot);

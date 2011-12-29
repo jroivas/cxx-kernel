@@ -1,7 +1,7 @@
 include ../../config.mk
-CXXFLAGS:=$(CXXFLAGS) -I../../ -I../../3rdparty/my_x86emu/
+CXXFLAGS:=$(CXXFLAGS) -I../../
 
-OBJS=loader.o paginglinux.o
+OBJS=loader.o paginglinux.o idtlinux.o timerlinux.o stateslinux.o videolinux.o
 
 all: $(OBJS)
 	mv loader.o ../

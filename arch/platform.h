@@ -44,7 +44,7 @@ private:
 		PlatformX86,
 		PlatformX86_64,
 		PlatformARM,
-		PlatformLINUX
+		PlatformLinux
 	};
 	Platforms current;
 	State *m_state;

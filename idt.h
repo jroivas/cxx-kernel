@@ -13,6 +13,7 @@ public:
 	virtual void initISR() = 0;
 	virtual void initIRQ() = 0;
 	virtual void installRoutine(unsigned int i, idt_routine_t) = 0;
+	virtual void uninstallRoutine(unsigned int i) = 0;
 	virtual void installHandler(unsigned int i, idt_handler_t high, idt_handler_t bottom, void *data) = 0;
 	idt_routine_t routine(unsigned int i);
 

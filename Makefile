@@ -8,6 +8,8 @@ THIRDPARTY=3rdparty/my_x86emu/x86emu.o 3rdparty/font/boot_font.o
 #LIBS=arch/arch.a
 LIBS=
 
+.PHONY: all clean x86 linux
+
 all: x86
 
 config_h_pre:
@@ -33,7 +35,7 @@ run_qemu: kernel
 	qemu -kernel kernel
 
 kernel_linux: link2.ld arch_linux $(OBJS) $(LIBS) 3rdparty_libs
-	$(CXX) -o kernel_linux $(OBJS) arch/platform.o arch/linux/*.o $(THIRDPARTY) -lc
+	$(CXX) -o kernel_linux $(OBJS) arch/platform.o arch/linux/*.o $(THIRDPARTY) -lc -lpthread
 
 kernel_x86: link2.ld arch_x86 $(OBJS) arch/x86/x86.a $(LIBS) 3rdparty_libs
 	$(LD) -m elf_i386 -nostdlib -T link2.ld -o kernel $(OBJS) arch/platform.o arch/x86/*.o $(THIRDPARTY)

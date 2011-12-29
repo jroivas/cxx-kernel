@@ -8,19 +8,26 @@
 
 Kernel::Kernel()
 {
-	//video = new Video();
 	platform = new Platform();
 	video = Video::get();
 
 	if (IDT::get()==NULL) {
-		unsigned short *tmp = (unsigned short *)(0xB8006);
-		*tmp = 0x9745; //E
-		while(1) ;
+		delete platform;
+		delete video;
+		video = 0;
+		platform = 0;
+		return;
 	}
 	IDT::get()->initISR();
-	//while(1);
 	IDT::get()->initIRQ();
 
+	if (Timer::get()==NULL) {
+		delete platform;
+		delete video;
+		video = 0;
+		platform = 0;
+		return;
+	}
         Timer::get()->setFrequency(KERNEL_FREQUENCY);
         KB::get();
 }
@@ -34,6 +41,8 @@ Kernel::~Kernel()
 //extern const struct gfb_font bold8x16;
 int Kernel::run()
 {
+	if (platform==NULL) return 1;
+	if (platform->state()==NULL) return 1;
 	platform->state()->startInterrupts();
 	if (video!=NULL) {
 		video->clear();
@@ -63,7 +72,9 @@ int Kernel::run()
 		//p->scanDevices();
 	}
 	ATA *ata = Platform::ata();
-	ata->init();
+	if (ata!=NULL) {
+		ata->init();
+	}
 	for (int i=0; i<0x5FFFFFF; i++) 
 		for (int j=0; j<0x22; j++) { }
 
@@ -73,6 +84,7 @@ int Kernel::run()
 	conf.depth=24;
 
 	//FB::ModeConfig *vconf = platform->fb()->query(NULL);
+	if (platform->fb()==NULL) return 1;
 	FB::ModeConfig *vconf = platform->fb()->query(&conf);
 	if (vconf!=NULL) {
 		platform->fb()->configure(vconf);

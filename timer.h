@@ -13,11 +13,11 @@ public:
 	void sleep(unsigned long sec);
 	void msleep(unsigned long msec);
 	void usleep(unsigned long usec);
+        static void handler(Regs *r);
 
 protected:
         Timer();
         virtual void run(Regs *r);
-        static void handler(Regs *r);
         unsigned long m_ticks;
 	unsigned long m_hz;
 };

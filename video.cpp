@@ -65,7 +65,7 @@ void Video::resize(int width, int height)
 void Video::clear()
 {
 #if 1
-	if (Platform::fb()->isConfigured()) {
+	if (Platform::fb()!=NULL && Platform::fb()->isConfigured()) {
 	} else {
 		if (m_videomem==NULL) return;
 		unsigned int i = 0;
@@ -83,7 +83,7 @@ void Video::clear()
 void Video::scroll()
 {
 #if 1
-	if (Platform::fb()->isConfigured()) {
+	if (Platform::fb()!=NULL && Platform::fb()->isConfigured()) {
 	} else {
 		if (m_videomem==NULL) return;
 		if (m_y>=height()) {
@@ -291,7 +291,7 @@ void Video::putCh(char c)
 
 	scroll();
 
-	if (Platform::fb()->isConfigured()) {
+	if (Platform::fb()!=NULL && Platform::fb()->isConfigured()) {
 #if 1
 		if (m_font==NULL) {
 			m_font = new Font();

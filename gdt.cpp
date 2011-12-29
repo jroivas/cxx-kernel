@@ -99,5 +99,7 @@ void gdt_init()
  
 	gdt_flush();
 
+#ifdef ARCH_X86
         asm volatile("ltr %%ax": : "a" (0x28));
+#endif
 }
