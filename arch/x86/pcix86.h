@@ -11,6 +11,7 @@ public:
 
 protected:
 	virtual void systemPut(uint32_t val);
+	virtual void systemPutData(uint8_t val);
 	virtual uint32_t systemGet();
 };
 

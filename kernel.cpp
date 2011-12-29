@@ -60,10 +60,10 @@ int Kernel::run()
 	if (p!=NULL) {
 		if (p->isAvailable()) video->printf("Found PCI\n");
 		else video->printf("PCI not available\n");
-		p->scanDevices();
+		//p->scanDevices();
 	}
-	ATA *a = new ATA();
-	(void)a;
+	ATA *ata = Platform::ata();
+	ata->init();
 	for (int i=0; i<0x5FFFFFF; i++) 
 		for (int j=0; j<0x22; j++) { }
 

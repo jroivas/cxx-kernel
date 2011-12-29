@@ -83,17 +83,23 @@ public:
 	~PCI();
 	bool isAvailable();
 	HeaderGeneric *getHeader(uint32_t bus, uint32_t device, uint32_t func);
+	void setHeader(uint32_t bus, uint32_t device, uint32_t func, uint32_t reg, uint8_t val);
 	bool isDevice(uint32_t bus, uint32_t device, uint32_t func);
 	void scanDevices();
+
 	DeviceIterator *startIter();
 	HeaderGeneric *findNextDevice(DeviceIterator *iter, uint8_t classcode, uint8_t subclass);
+	HeaderGeneric *getCurrent(DeviceIterator *iter);
 	void endIter(DeviceIterator *iter);
+	void set(DeviceIterator *iter, uint32_t reg, uint8_t val);
 
 protected:
 	uint32_t getVendor(uint32_t bus, uint32_t device, uint32_t func);
 	uint32_t getDevice(uint32_t bus, uint32_t device, uint32_t func);
 	uint32_t getConfig(uint32_t bus, uint32_t device, uint32_t func, uint32_t reg);
+	void setConfig(uint32_t bus, uint32_t device, uint32_t func, uint32_t reg, uint32_t val);
 	virtual void systemPut(uint32_t val) = 0;
+	virtual void systemPutData(uint8_t val) = 0;
 	virtual uint32_t systemGet() = 0;
 };
 

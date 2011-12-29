@@ -10,6 +10,7 @@
 #include "x86/vesa.h"
 #include "x86/x86.h"
 #include "x86/pcix86.h"
+#include "x86/atax86.h"
 #endif
 
 static Timer *__platform_timer = NULL;
@@ -18,6 +19,7 @@ static IDT   *__platform_idt   = NULL;
 static KB    *__platform_kb    = NULL;
 static FB    *__platform_fb    = NULL;
 static PCI   *__platform_pci   = NULL;
+static ATA   *__platform_ata   = NULL;
 
 Platform::Platform()
 {
@@ -130,6 +132,16 @@ PCI *Platform::pci()
 	}
 	#endif
 	return __platform_pci;
+}
+
+ATA *Platform::ata()
+{
+	#ifdef ARCH_x86
+	if (__platform_ata==NULL) {
+		__platform_ata = new ATAX86();
+	}
+	#endif
+	return __platform_ata;
 }
 
 void Platform::halt()

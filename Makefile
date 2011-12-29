@@ -46,7 +46,7 @@ kernel.iso: kernel menu.lst stage2_eltorito
 	cp -f menu.lst isofiles/boot/grub/
 	genisoimage -R -b boot/grub/stage2_eltorito -no-emul-boot -quiet -boot-load-size 4 -boot-info-table -o kernel.iso ./isofiles
 
-run_iso: kernel.iso
+run_iso: all kernel.iso
 	#qemu -serial mon:stdio -no-kvm -cdrom kernel.iso
 	qemu -serial mon:stdio -cdrom kernel.iso -hda testhd.img
 

@@ -45,6 +45,20 @@ uint32_t PCI::getConfig(uint32_t bus, uint32_t device, uint32_t func, uint32_t r
 	return systemGet();
 }
 
+void PCI::setConfig(uint32_t bus, uint32_t device, uint32_t func, uint32_t reg, uint32_t val)
+{
+	uint32_t addr = 0;
+
+	addr = 1<<31; 
+	addr |= ((bus & 0xFF) << 16); 
+	addr |= ((device & 0x1F) << 11);
+	addr |= ((func & 0x7) << 8);
+	addr |= (reg & 0xFC);
+
+	systemPut(addr);
+	systemPutData(val);
+}
+
 bool PCI::isAvailable()
 {
 	if (systemGet()==0xFFFFFFFF) return false;
@@ -72,6 +86,17 @@ PCI::HeaderGeneric *PCI::getHeader(uint32_t bus, uint32_t device, uint32_t func)
 		tmp->reg[i] = getConfig(bus, device, func, i*4);
 	}
 	return tmp;
+}
+
+void PCI::setHeader(uint32_t bus, uint32_t device, uint32_t func, uint32_t reg, uint8_t val)
+{
+	setConfig(bus, device, func, reg, val);
+}
+
+void PCI::set(DeviceIterator *iter, uint32_t reg, uint8_t val)
+{
+	if (iter==NULL) return;
+	setHeader(iter->bus, iter->dev, iter->func, reg, val);
 }
 
 bool PCI::isDevice(uint32_t bus, uint32_t device, uint32_t func)
@@ -152,5 +177,15 @@ PCI::HeaderGeneric *PCI::findNextDevice(DeviceIterator *iter, uint8_t classcode,
 		iter->bus++;
 	}
 
+	return NULL;
+}
+
+PCI::HeaderGeneric *PCI::getCurrent(DeviceIterator *iter)
+{
+	uint32_t res = getConfig(iter->bus, iter->dev, iter->func, 0);
+	if (PCI_CONFIG_GET_VENDOR(res)!=0xFFFF) {
+		HeaderGeneric *hdr = getHeader(iter->bus, iter->dev, iter->func);
+		return hdr;
+	}
 	return NULL;
 }

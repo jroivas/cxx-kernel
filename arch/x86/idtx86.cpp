@@ -18,7 +18,10 @@ IDTX86::IDTX86() : IDT()
 	Mem::set(&idt, 0, sizeof(Entry)*256);
 
 	for (int i=0; i<IRQ_ROUTINES; i++) {
-		routines[i] = 0;
+		routines[i] = NULL;
+	}
+	for (int i=0; i<ISR_HANDLERS; i++) {
+		handlers[i] = NULL;
 	}
 
 	load();
@@ -29,7 +32,8 @@ void IDTX86::load()
 	idt_load();
 }
 
-void IDTX86::installRoutine(unsigned int i, void (*handler)(Regs *r))
+//void IDTX86::installRoutine(unsigned int i, void (*handler)(Regs *r))
+void IDTX86::installRoutine(unsigned int i, idt_routine_t handler)
 {
 	routines[i] = handler;
 }
@@ -39,9 +43,42 @@ void IDTX86::uninstallRoutine(unsigned int i)
 	routines[i] = NULL;
 }
 
-routine_t IDTX86::getRoutine(unsigned int i)
+void IDTX86::installHandler(unsigned int i, idt_handler_t high, idt_handler_t bottom, void *data)
+{
+	Handler *h = new Handler();
+	h->num = i;
+	h->high_half = high;
+	h->bottom_half = bottom;
+	h->data = data;
+
+	//TODO: create a thread if necessary
+
+	/* Installing handler */
+	if (handlers[i]==NULL) {
+		handlers[i] = h;
+	} else {
+		Handler *p = handlers[i];
+		while (p->next!=NULL) {
+			p = p->next;
+		}
+		p->next = h;
+	}
+}
+
+idt_routine_t IDTX86::getRoutine(unsigned int i)
 {
 	return routines[i];
+}
+
+IDTX86::Handler *IDTX86::getHandler(unsigned int i)
+{
+	return handlers[i];
+}
+
+IDTX86::Handler *IDTX86::handler(unsigned int i)
+{
+	if (get()==NULL) return NULL;
+	return ((IDTX86*)get())->getHandler(i);
 }
 
 void IDTX86::setGate(unsigned char num, unsigned long base, unsigned short sel, unsigned char flags)
@@ -183,19 +220,26 @@ extern "C" void irq_handler(Regs * r)
 	if (r==NULL) {
 		VideoX86 tmp;
 		//tmp.clear();
-		tmp.printf("ERROR! IRQ, regs. \n");
+		tmp.printf("ERROR! ISR, regs. \n");
 
 		Platform p;
 		p.state()->seizeInterrupts();
 		p.state()->halt();
 	}
 
-	void (*handler)(Regs *r);
-	handler = NULL;
+	void (*routine)(Regs *r);
+	routine = NULL;
 
-	handler = IDTX86::get()->routine(r->int_no - 32);
-	if (handler!=NULL) {
-		handler(r);
+	routine = IDTX86::get()->routine(r->int_no - 32);
+	if (routine!=NULL) {
+		routine(r);
+	}
+
+	IDTX86::Handler *handler = IDTX86::handler(r->int_no);
+	while (handler!=NULL) {
+		handler->high_half(r->int_no, handler->data);
+		//handler->bottom_half(r->int_no, handler->data); //FIXME
+		handler = handler->next;
 	}
 
 	if (r->int_no >= 40) {
@@ -236,10 +280,17 @@ extern "C" void isr_handler(Regs * r)
 		// Got it
 		VideoX86 tmp;
 		//tmp.clear();
-		tmp.printf("ERROR! ISR %d\n",r->int_no);
+		tmp.printf("ERROR! Exception %d\n",r->int_no);
 
 		Platform p;
 		p.state()->seizeInterrupts();
 		p.state()->halt();
+	}
+
+	IDTX86::Handler *handler = IDTX86::handler(r->int_no);
+	while (handler!=NULL) {
+		handler->high_half(r->int_no, handler->data);
+		//handler->bottom_half(r->int_no, handler->data); //FIXME
+		handler = handler->next;
 	}
 }
