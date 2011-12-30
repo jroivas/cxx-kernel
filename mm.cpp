@@ -1,5 +1,7 @@
 #include "mm.h"
+#include "config.h"
 
+//#ifdef ARCH_LINUX
 #ifdef USE_LINUX
 #include <sys/mman.h>
 #include <stdio.h>
@@ -75,10 +77,13 @@ MM *MM::instance()
 void *MM::allocPage(size_t cnt)
 {
 #ifdef USE_LINUX
+//#ifdef ARCH_LINUX
 	void *block;
 	size_t block_size = cnt * PAGE_SIZE;
 	//block = mmap((void *)0, block_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0);
-	block = mmap(NULL, block_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	//block = mmap(NULL, block_size, PROT_EXEC | PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	block = mmap(NULL, block_size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+	//block = malloc(block_size);
 	if (block==(void*)-1) return NULL;
 
 	return block;
@@ -527,6 +532,7 @@ void *MM::realloc(void *ptr, size_t size)
 	return tmp;
 }
 
+#ifndef ARCH_LINUX
 void *malloc(size_t size)
 {
 	//printf("malloc %lu\n",size);
@@ -565,4 +571,5 @@ void free(void *ptr)
 	MM::instance()->free(ptr);
 	TIME_END();
 }
+#endif
 #undef printf

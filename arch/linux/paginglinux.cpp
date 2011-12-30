@@ -15,7 +15,7 @@ PagingPrivate::PagingPrivate()
 	pageCnt = 0;
 	is_ok = false;
 	__free_page_chunk_size = 1000;
-	__free_page_chunk = (uint8_t*)mmap(NULL, __free_page_chunk_size*4096, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	__free_page_chunk = (uint8_t*)mmap(NULL, __free_page_chunk_size*4096, PROT_EXEC | PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 	__free_page_address = __free_page_chunk;
 }
 
@@ -68,7 +68,7 @@ bool PagingPrivate::mapFrame(Page *p, MapType type, MapPermissions perms)
 
 void *PagingPrivate::getPage()
 {
-	return (void*)mmap(NULL, 4096, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	return (void*)mmap(NULL, PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 }
 
 void PagingPrivate::freePage(void *ptr)
@@ -82,10 +82,10 @@ bool PagingPrivate::mapPhys(void *phys, ptr_t virt, unsigned int flags)
 	return map(virt, flags);
 }
 
-bool PagingPrivate::map(ptr_t virt, unsigned int flags)
+bool PagingPrivate::map(ptr_t virt, unsigned int flags, unsigned int cnt)
 {
 	(void)flags;
-	ptr_t block = (ptr_t)mmap(NULL, 4096, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	ptr_t block = (ptr_t)mmap(NULL, PAGE_SIZE*cnt, PROT_EXEC | PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 	if (block==NULL) return false;
 	if (virt!=NULL) {
 		*virt = (ptr_val_t)block;

@@ -470,39 +470,48 @@ bool PagingPrivate::mapPhys(void *phys, ptr_t virt, unsigned int flags)
 }
 
 /* Map physical page to virtual */
-bool PagingPrivate::map(ptr_t virt, unsigned int flags)
+bool PagingPrivate::map(ptr_t virt, unsigned int flags, unsigned int cnt)
 {
 	ptr_val_t i = 0;
+	ptr_val_t vptr = 0;
+	unsigned int left = cnt;
 	if (flags&PAGING_MAP_USER) {
 		while (((ptr_val_t)__user_heap_address%PAGE_SIZE)!=0) __user_heap_address++;
 		i = (ptr_val_t)__user_heap_address;
-		__user_heap_address+=PAGE_SIZE;
+		while (left-->0) 
+			__user_heap_address+=PAGE_SIZE;
 	} else {
 		while (((ptr_val_t)__heap_address%PAGE_SIZE)!=0) __heap_address++;
 		i = (ptr_val_t)__heap_address;
-		__heap_address+=PAGE_SIZE;
+		while (left-->0) 
+			__heap_address+=PAGE_SIZE;
 	}
 
-	Page *p = PDIR(directory)->getPage(i, PageDir::PageDoReserve);
-	if (p==NULL) {
-		return false;
-	}
-	if (!p->isAvail()) {
-		return false;
-	}
+	vptr = i;
+	while (cnt>0) {
+		Page *p = PDIR(directory)->getPage(i, PageDir::PageDoReserve);
+		if (p==NULL) {
+			return false;
+		}
+		if (!p->isAvail()) {
+			return false;
+		}
 
-	bool res = false;
-	if (flags&PAGING_MAP_USER) {
-		res = mapFrame(p, MapPageUser, MapPageRW);
-	} else {
-		res = mapFrame(p, MapPageKernel, MapPageRW);
+		if (flags&PAGING_MAP_USER) {
+			if (!mapFrame(p, MapPageUser, MapPageRW)) return false;
+		} else {
+			if (!mapFrame(p, MapPageKernel, MapPageRW)) return false;
+		}
+
+		cnt--;
+		i+=PAGE_SIZE;
 	}
 
 	if (virt!=NULL) {
-		*virt = i;
+		*virt = vptr;
 	}
-	//while(1);
-	return res;
+
+	return true;
 }
 
 /* Unmap memory at ptr */

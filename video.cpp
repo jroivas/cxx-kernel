@@ -294,7 +294,7 @@ void Video::putCh(char c)
 	if (Platform::fb()!=NULL && Platform::fb()->isConfigured()) {
 #if 1
 		if (m_font==NULL) {
-			m_font = new Font();
+			m_font = new KernelFont();
 			//clear();
 			m_x = 0;
 			m_y = 0;

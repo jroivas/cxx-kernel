@@ -27,14 +27,20 @@ typedef unsigned long ptr_val_t;
 #ifndef ARCH_LINUX
 typedef int off_t;
 #endif
-typedef char  int8_t;
+typedef signed char  int8_t;
 typedef unsigned char  uint8_t;
 typedef short int16_t;
 typedef unsigned short uint16_t;
 typedef int  int32_t;
 typedef unsigned int  uint32_t;
+
+#if __x86_64__
+typedef long int int64_t;
+typedef unsigned long int uint64_t;
+#else
 typedef long long int int64_t;
 typedef unsigned long long int uint64_t;
+#endif
 
 #include "operators.h"
 

@@ -75,8 +75,10 @@ int Kernel::run()
 	if (ata!=NULL) {
 		ata->init();
 	}
+/*
 	for (int i=0; i<0x5FFFFFF; i++) 
-		/*for (int j=0; j<0x22; j++)*/ { }
+		for (int j=0; j<0x22; j++) { }
+*/
 
 	FB::ModeConfig conf;
 	conf.width=800;
@@ -112,6 +114,7 @@ int Kernel::run()
 		platform->fb()->blit();
 #endif
 	}
+	video->printf("Done\n");
 	while(1) {}
 
 	return 0;

@@ -3,7 +3,7 @@
 //#define RAWFONT(X)((struct raw_font *)X)
 #define RAWFONT(X)(X)
 //#include "3rdparty/font/boot_font.cpp"
-Font::Font()
+KernelFont::KernelFont()
 {
 	font_color = 0xFFFFFF;
 	current = fontGetDefault();
@@ -11,7 +11,7 @@ Font::Font()
 	//current = &font_bold8x16;
 }
 
-void Font::drawFont(FB *fb, int x, int y, unsigned char c)
+void KernelFont::drawFont(FB *fb, int x, int y, unsigned char c)
 {
 	if (fb==NULL) return;
 	if (current==NULL) return;
@@ -39,13 +39,13 @@ void Font::drawFont(FB *fb, int x, int y, unsigned char c)
 #endif
 }
 
-uint8_t Font::width()
+uint8_t KernelFont::width()
 {
 	if (current==NULL) return 0;
 	return RAWFONT(current)->width;
 }
 
-uint8_t Font::height()
+uint8_t KernelFont::height()
 {
 	if (current==NULL) return 0;
 	return RAWFONT(current)->height;

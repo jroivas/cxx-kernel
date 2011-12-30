@@ -1,6 +1,7 @@
 #include "paging.h"
 #include "types.h"
 #include "arch/platform.h"
+#include "config.h"
 
 //Mutex for locking
 ptr32_val_t __page_mapping_alloc_mutex = 0;
@@ -37,6 +38,9 @@ void Paging::init(void *platformData)
 	_d->init(platformData);
 	_d->unlock();
 }
+#ifdef ARCH_LINUX
+#include <stdlib.h>
+#endif
 
 /* Allocate pages */
 void *Paging::alloc(size_t cnt, unsigned int align, Alloc do_map)
@@ -45,16 +49,18 @@ void *Paging::alloc(size_t cnt, unsigned int align, Alloc do_map)
 	 * This of course means only one alloc is allowed at time.
 	 */
 	_d->lock();
-
 	(void)align;
 	(void)do_map;
 	void *res = NULL;
-	//void *tmp = NULL;
+#ifdef aARCH_LINUX
+	res = malloc(PAGE_SIZE*cnt);
+#else
 	ptr_val_t pos = 0;
+#if 0
 	ptr_val_t pp = 0;
 	while (cnt>0) {
 		pos = 0;
-		if (_d->map(&pos, PAGING_MAP_R0)) {
+		if (_d->map(&pos, PAGING_MAP_R0, 1)) {
 			cnt--;
 			if (res==NULL && pos!=0) {
 				res=(void*)pos;
@@ -62,20 +68,22 @@ void *Paging::alloc(size_t cnt, unsigned int align, Alloc do_map)
 			} else {
 				pp += PAGE_SIZE;
 				if (pp!=pos) {
-					//Platform::video()->printf("DISCONTINUATION: %x %x\n",pp,pos);
+					Platform::video()->printf("DISCONTINUATION: %x %x\n",pp,pos);
 					while(1);
 				}
 			}
 		} else {
-/*
-			unsigned short *atmp = (unsigned short *)(0xB8000);
-			*atmp = 0x1745;
-			while(1);
-*/
 			res = NULL;
 			break;
 		}
+#else
+	if (_d->map(&pos, PAGING_MAP_R0, cnt)) {
+		res=(void*)pos;
+#endif
+	} else {
+		res = NULL;
 	}
+#endif
 
 	_d->unlock();
 
@@ -113,10 +121,7 @@ void Paging::map(void *phys, void *virt, unsigned int flags)
 {
 	_d->lock();
 	if (!_d->mapPhys(phys, (ptr_t)virt, flags)) {
-		//unsigned short *vid = (unsigned short *)(0xB8000);
-		//*vid = 0x814a; //J
-		//while(1);
-		if (virt!=NULL) *(ptr_val_t*)virt = NULL;
+		if (virt!=NULL) *(ptr_val_t*)virt = 0;
 	}
 	_d->unlock();
 }

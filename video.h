@@ -33,7 +33,7 @@ protected:
 	unsigned int m_y;
 	unsigned int m_width;
 	unsigned int m_height;
-	Font *m_font;
+	KernelFont *m_font;
 };
 
 #endif

@@ -17,6 +17,7 @@
 #include "linux/timerlinux.h"
 #include "linux/stateslinux.h"
 #include "linux/videolinux.h"
+#include "linux/x11.h"
 #endif
 
 static Timer *__platform_timer = NULL;
@@ -136,11 +137,14 @@ KB *Platform::kb()
 
 FB *Platform::fb()
 {
-	#ifdef ARCH_x86
 	if (__platform_fb==NULL) {
+		#ifdef ARCH_x86
 		__platform_fb = new Vesa();
+		#endif
+		#ifdef ARCH_LINUX
+		__platform_fb = new X11();
+		#endif
 	}
-	#endif
 	return __platform_fb;
 }
 

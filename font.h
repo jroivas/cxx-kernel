@@ -5,10 +5,10 @@
 #include "types.h"
 #include "3rdparty/font/raw_font.h"
 
-class Font
+class KernelFont
 {
 public:
-	Font();
+	KernelFont();
 	void drawFont(FB *fb, int x, int y, unsigned char c);
 	uint8_t width();
 	uint8_t height();
