@@ -4,8 +4,15 @@
 #include "arch/x86/port.h"
 #include "arch/x86/x86.h"
 
+#if 0
 #define ATA_MODE_LBA 0xE0
 #define ATA_MODE_PIO 0xA0
+#else
+#define ATA_MODE_LBA (1<<6)
+#define ATA_MODE_PIO (0)
+#endif
+//#define ATA_DEVSEL_CONST (1<<5|1<<7)
+#define ATA_DEVSEL_CONST 0
 
 #define ATA_CMD_IDENTIFY_PACKET 0xA1
 #define ATA_CMD_IDENTIFY        0xEC
@@ -26,6 +33,8 @@
 #define ATA_IDENT_MAX_LBA      120
 #define ATA_IDENT_COMMANDSETS  164
 #define ATA_IDENT_MAX_LBA_EXT  200
+
+#define ATA_MAX_WAIT_CNT 0xFF
 
 class ATA::Device
 {
@@ -56,14 +65,18 @@ protected:
 	bool reset();
 	void wait();
 	bool waitStatus();
-	void identify();
+	void select();
+	bool identify();
 	void detect();
 	void detectModel();
 	void detectLBA();
+	bool sector(uint32_t addr);
 
 	uint8_t getStatus();
+	uint32_t getSecCount();
 	uint32_t m_basePort;
 	uint32_t m_basePort2;
+	uint32_t m_size;
 	bool irq;
 	bool m_avail;
 	bool m_lba;
@@ -73,6 +86,7 @@ protected:
 	DeviceType m_type;
 	DeviceModel m_model;
 	ATA *m_ata;
+	uint8_t m_mode;
 };
 
 uint8_t ATA::Device::read(uint32_t port)
@@ -86,12 +100,17 @@ void ATA::Device::write(uint32_t port, uint8_t data)
 	m_ata->systemPortOut(port, data);
 }
 
+uint32_t ATA::Device::getSecCount()
+{
+	return m_ata->systemPortIn16(secCount());
+}
+
 void ATA::Device::readBuffer(uint32_t port, uint32_t *buffer, uint32_t size)
 {
 	uint32_t *ptr = buffer;
 	while (size>0) {
-		*ptr++ = m_ata->systemPortInLong(port);
-		size/=4;
+		*ptr++ = m_ata->systemPortIn32(port);
+		size-=4;
 	}
 }
 
@@ -105,10 +124,10 @@ bool ATA::Device::reset()
 
 void ATA::Device::wait()
 {
-	// Waiting for 400 ms
 	for (int i=0; i<4; i++) {
 		read(altStatus());
 	}
+	Timer::get()->msleep(1);
 }
 
 uint8_t ATA::Device::getStatus()
@@ -122,7 +141,7 @@ bool ATA::Device::waitStatus()
 	uint32_t cnt = 0;
 	do {
 		stat = getStatus();
-		if (cnt++>0xFF) return false;
+		if (cnt++>ATA_MAX_WAIT_CNT) return false;
 	} while ((stat&ATA_STATUS_BUSY)!=0);
 	return true;
 
@@ -137,16 +156,22 @@ bool ATA::Device::waitStatus()
 #endif
 }
 
-void ATA::Device::identify()
+void ATA::Device::select()
 {
-	//Platform::video()->printf("Dev: %x %x\n",devSel(), ATA_MODE_PIO | (m_type<<4));
-	write(devSel(), ATA_MODE_PIO | (m_type<<4));
+	write(devSel(), ATA_DEVSEL_CONST | m_mode | (m_type<<4));
 	wait();
-	//Timer::get()->msleep(2);
+}
+
+bool ATA::Device::identify()
+{
+	select();
 
 	write(command(), ATA_CMD_IDENTIFY);
 	wait();
-	//Timer::get()->msleep(2);
+
+	uint8_t status = getStatus();
+	if (status==0xFF || status==0x7f) return false;
+	return true;
 }
 
 void ATA::Device::detectLBA()
@@ -166,10 +191,29 @@ void ATA::Device::detectModel()
 	Platform::video()->printf("Devinfo: %x %x model:%d\n",low,high,m_model);
 }
 
+bool ATA::Device::sector(uint32_t addr)
+{
+	select();
+
+
+	if (addr>=0x10000000) { // Need LBA48
+	}
+	else if (m_lba) {
+	}
+
+	return true;
+}
+
 void ATA::Device::detect()
 {
 	if (m_avail) return;
 
+	m_mode = ATA_MODE_PIO;
+	//m_mode = ATA_MODE_LBA;
+
+	write(control(), 2);
+
+	if (!reset()) return;
 #if 0
 	write(LBA0(), 0xAB);
 	uint8_t dt = read(LBA0());
@@ -179,20 +223,17 @@ void ATA::Device::detect()
 		return;
 	}
 #endif
-
-	write(control(), 2);
-
-	if (!reset()) return;
 	identify();
 
-	if (getStatus()==0) {
+	if (!identify()) {
 		m_avail = false;
 		return;
 	}
+	//Platform::video()->printf("Has LBA? %x %x\n",*(uint16_t*)(buf+ATA_IDENT_CAPABILITIES),*(uint16_t*)(buf+ATA_IDENT_CAPABILITIES)&0x200);
 
 	uint8_t error = 0;
+	uint32_t errcnt = 0;
 	while (1) {
-		//TODO: Do we need timeout?
 		uint8_t status = getStatus();
 		if ((status & ATA_STATUS_ERROR)>0) {
 			error = 1;
@@ -200,6 +241,10 @@ void ATA::Device::detect()
 		}
 		if ((status & ATA_STATUS_BUSY)==0 && (status & ATA_STATUS_DRQ)>0) {
 			break;
+		}
+		if (errcnt++>ATA_MAX_WAIT_CNT) {
+			m_avail = false;
+			return;
 		}
 	}
 
@@ -210,21 +255,41 @@ void ATA::Device::detect()
 		Timer::get()->msleep(1);
 	}
 
-	m_avail = true;
-
-#if 0
 	uint8_t buf[2048];
+	uint8_t devname[42];
 	readBuffer(data(), (uint32_t*)buf, 128);
-	Platform::video()->printf("Sig: %d, caps: %d\n",
-		*(uint16_t*)(buf+ATA_IDENT_DEVICETYPE),
-		*(uint16_t*)(buf+ATA_IDENT_CAPABILITIES)
+
+	for (uint32_t tt=0; tt<40; tt+=2) {
+		devname[tt] = *(buf+ATA_IDENT_MODEL+tt+1);
+		devname[tt+1] = *(buf+ATA_IDENT_MODEL+tt);
+		
+	}
+	devname[40]=0;
+	Platform::video()->printf("Model: %s\n",devname);
+
+	if ((*(uint16_t*)(buf+ATA_IDENT_CAPABILITIES)&0x200)==0x200) {
+		m_lba = true;
+		Platform::video()->printf("Has LBA\n");
+	}
+	if (!m_lba) {
+		uint8_t sec;
+		uint16_t cyl;
+		uint8_t head;
+		sec = (*(uint8_t*)(buf+ATA_IDENT_SECTORS));
+		cyl = (*(uint16_t*)(buf+ATA_IDENT_CYLINDERS));
+		head = (*(uint8_t*)(buf+ATA_IDENT_HEADS));
+		if (sec>0) m_size = (((cyl*head+head)*sec+(sec-1))*512);
+		else m_size = 0;
+		//Platform::video()->printf("Size: sec %u cyl %u head %u == %u (%u MB)\n",sec,cyl,head,m_size,m_size/1024/1024);
+	} else {
+		m_size = *(uint32_t*)(buf+ATA_IDENT_MAX_LBA)*512;
+	}
+	Platform::video()->printf("Size: %u (%u MB)\n",
+		m_size,
+		m_size/1024/1024
 		);
 
-	Platform::video()->printf("Size: %u vs. %u\n",
-		*(uint32_t*)(buf+ATA_IDENT_MAX_LBA),
-		*(uint32_t*)(buf+ATA_IDENT_MAX_LBA_EXT)
-		);
-#endif
+	m_avail = true;
 }
 
 ATA::ATA()

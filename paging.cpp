@@ -38,9 +38,6 @@ void Paging::init(void *platformData)
 	_d->init(platformData);
 	_d->unlock();
 }
-#ifdef ARCH_LINUX
-#include <stdlib.h>
-#endif
 
 /* Allocate pages */
 void *Paging::alloc(size_t cnt, unsigned int align, Alloc do_map)
@@ -52,9 +49,6 @@ void *Paging::alloc(size_t cnt, unsigned int align, Alloc do_map)
 	(void)align;
 	(void)do_map;
 	void *res = NULL;
-#ifdef aARCH_LINUX
-	res = malloc(PAGE_SIZE*cnt);
-#else
 	ptr_val_t pos = 0;
 #if 0
 	ptr_val_t pp = 0;
@@ -83,7 +77,6 @@ void *Paging::alloc(size_t cnt, unsigned int align, Alloc do_map)
 	} else {
 		res = NULL;
 	}
-#endif
 
 	_d->unlock();
 

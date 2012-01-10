@@ -75,9 +75,9 @@ int Kernel::run()
 	if (ata!=NULL) {
 		ata->init();
 	}
-/*
 	for (int i=0; i<0x5FFFFFF; i++) 
 		for (int j=0; j<0x22; j++) { }
+/*
 */
 
 	FB::ModeConfig conf;

@@ -27,6 +27,7 @@ TimerLinux::TimerLinux()
 void TimerLinux::setFrequency(unsigned int hz)
 {
 	__static_hz = 10000000/hz;
+	Timer::setFrequency(hz);
 }
 
 void TimerLinux::run(Regs *r)
