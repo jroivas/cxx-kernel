@@ -14,11 +14,22 @@
 //#define ATA_DEVSEL_CONST (1<<5|1<<7)
 #define ATA_DEVSEL_CONST 0
 
+#define ATA_CMD_READ            0x20
+#define ATA_CMD_READ_48         0x24
+#define ATA_CMD_READ_DMA        0xC8
+#define ATA_CMD_READ_DMA_48     0x25
+#define ATA_CMD_WRITE           0x30
+#define ATA_CMD_WRITE_48        0x34
+#define ATA_CMD_WRITE_DMA       0xCA
+#define ATA_CMD_WRITE_DMA_48    0x35
+#define ATA_CMD_FLUSH           0xE7
+#define ATA_CMD_FLUSH_48        0xEA
 #define ATA_CMD_IDENTIFY_PACKET 0xA1
 #define ATA_CMD_IDENTIFY        0xEC
 
 #define ATA_STATUS_ERROR 0x01
 #define ATA_STATUS_DRQ   0x08
+#define ATA_STATUS_DF    0x20
 #define ATA_STATUS_READY 0x40
 #define ATA_STATUS_BUSY  0x80
 
@@ -36,12 +47,21 @@
 
 #define ATA_MAX_WAIT_CNT 0xFF
 
+#define ATA_INTERRUPT_BASE 14
+
+void ATA::interrupt_handler(unsigned int num, void *data)
+{
+	(void)num;
+	(void)data;
+	Platform::video()->printf("ATA interrupt\n");
+}
+
 class ATA::Device
 {
 public:
 	enum DeviceType { ATAMaster=2, ATASlave=1 };
 	enum DeviceModel { UNKNOWN, PATA, PATAPI, SATA, SATAPI };
-	Device(ATA *a) { m_ata = a; next = NULL; m_avail = false; m_lba = false; }
+	Device(ATA *a) { m_ata = a; next = NULL; m_avail = false; m_lba = false; m_lba48 = false; m_dma = false; }
 	void setup(uint32_t pri, uint32_t sec, DeviceType type) { m_basePort = pri; m_basePort2 = sec; m_type = type; detect(); }
 	inline uint32_t data() { return m_basePort; }
 	inline uint32_t fetures() { return m_basePort; }
@@ -60,33 +80,44 @@ public:
 	inline uint32_t control() { return m_basePort2+2; }
 	inline uint32_t devAddress() { return m_basePort2+3; }
 	Device *next;
+	bool readSector(uint8_t *buffer, uint16_t sectors, uint32_t addr, uint32_t addr_hi=0);
+	bool writeSector(uint8_t *buffer, uint16_t sectors, uint32_t addr, uint32_t addr_hi=0);
+	uint32_t size() { return m_size; }
 
 protected:
 	bool reset();
 	void wait();
-	bool waitStatus();
+	bool waitStatus(uint8_t extra=0, uint8_t extra_val=0);
 	void select();
 	bool identify();
 	void detect();
 	void detectModel();
-	void detectLBA();
-	bool sector(uint32_t addr);
+	bool prepareAccess(uint16_t sectors, uint32_t addr, uint32_t addr_hi=0);
+	bool poll(bool extra=false);
 
 	uint8_t getStatus();
 	uint32_t getSecCount();
 	uint32_t m_basePort;
 	uint32_t m_basePort2;
 	uint32_t m_size;
-	bool irq;
+	bool m_irq;
 	bool m_avail;
 	bool m_lba;
+	bool m_lba48;
+	bool m_dma;
 	uint8_t read(uint32_t port);
 	void write(uint32_t port, uint8_t data);
+	void write16(uint32_t port, uint16_t data);
 	void readBuffer(uint32_t port, uint32_t *buffer, uint32_t size);
+	void writeBuffer(uint32_t port, uint32_t *buffer, uint32_t size);
 	DeviceType m_type;
 	DeviceModel m_model;
 	ATA *m_ata;
 	uint8_t m_mode;
+
+	uint16_t m_cyl;
+	uint8_t m_sect;
+	uint8_t m_head;
 };
 
 uint8_t ATA::Device::read(uint32_t port)
@@ -100,6 +131,11 @@ void ATA::Device::write(uint32_t port, uint8_t data)
 	m_ata->systemPortOut(port, data);
 }
 
+void ATA::Device::write16(uint32_t port, uint16_t data)
+{
+	m_ata->systemPortOut16(port, data);
+}
+
 uint32_t ATA::Device::getSecCount()
 {
 	return m_ata->systemPortIn16(secCount());
@@ -110,6 +146,15 @@ void ATA::Device::readBuffer(uint32_t port, uint32_t *buffer, uint32_t size)
 	uint32_t *ptr = buffer;
 	while (size>0) {
 		*ptr++ = m_ata->systemPortIn32(port);
+		size-=4;
+	}
+}
+
+void ATA::Device::writeBuffer(uint32_t port, uint32_t *buffer, uint32_t size)
+{
+	uint32_t *ptr = buffer;
+	while (size>0) {
+		m_ata->systemPortOut32(port, *ptr++);
 		size-=4;
 	}
 }
@@ -135,7 +180,7 @@ uint8_t ATA::Device::getStatus()
 	return read(status());
 }
 
-bool ATA::Device::waitStatus()
+bool ATA::Device::waitStatus(uint8_t extra, uint8_t extra_val)
 {
 	uint8_t stat;
 	uint32_t cnt = 0;
@@ -143,6 +188,15 @@ bool ATA::Device::waitStatus()
 		stat = getStatus();
 		if (cnt++>ATA_MAX_WAIT_CNT) return false;
 	} while ((stat&ATA_STATUS_BUSY)!=0);
+
+	if (extra>0) {
+		cnt = 0;
+		do {
+			stat = getStatus();
+			if (cnt++>ATA_MAX_WAIT_CNT) return false;
+		} while ((stat&extra)==extra_val);
+	}
+
 	return true;
 
 #if 0
@@ -174,10 +228,6 @@ bool ATA::Device::identify()
 	return true;
 }
 
-void ATA::Device::detectLBA()
-{
-}
-
 void ATA::Device::detectModel()
 {
 	uint8_t low = read(LBA1());
@@ -191,14 +241,130 @@ void ATA::Device::detectModel()
 	Platform::video()->printf("Devinfo: %x %x model:%d\n",low,high,m_model);
 }
 
-bool ATA::Device::sector(uint32_t addr)
+bool ATA::Device::prepareAccess(uint16_t sectors, uint32_t addr, uint32_t addr_hi)
 {
-	select();
-
+	uint8_t sect = 0;
+	uint16_t cyl = 0;
+	uint8_t head = 0;
+	uint8_t io_addr[6];
 
 	if (addr>=0x10000000) { // Need LBA48
+		io_addr[0] = (addr & 0xFF);
+		io_addr[1] = (addr >> 8) & 0xFF;
+		io_addr[2] = (addr >> 16) & 0xFF;
+		io_addr[3] = (addr >> 24) & 0xFF;
+		io_addr[4] = (addr_hi) & 0xFF;
+		io_addr[5] = (addr_hi >> 8) & 0xFF;
+		m_lba48 = true;
 	}
 	else if (m_lba) {
+		io_addr[0] = (addr & 0xFF);
+		io_addr[1] = (addr >> 8) & 0xFF;
+		io_addr[2] = (addr >> 16) & 0xFF;
+		io_addr[3] = 0;
+		io_addr[4] = 0;
+		io_addr[5] = 0;
+	} else {
+		sect = (addr % m_sect) + 1;
+		cyl = (addr + 1 - sect) / (m_head * m_sect);
+		head = (addr + 1 - sect) % (m_head * m_sect) / m_sect;
+		io_addr[0] = sect;
+		io_addr[1] = cyl & 0xFF;
+		io_addr[2] = (cyl >> 8) & 0xFF;
+		io_addr[3] = 0;
+		io_addr[4] = 0;
+		io_addr[5] = 0;
+	}
+
+	if (!waitStatus()) return false;
+
+	select();
+
+	if (m_lba48) {
+		write(LBA3(), io_addr[3]);
+		write(LBA4(), io_addr[4]);
+		write(LBA5(), io_addr[5]);
+	}
+	write16(secCount(), sectors);
+	write(LBA0(), io_addr[0]);
+	write(LBA1(), io_addr[1]);
+	write(LBA2(), io_addr[2]);
+
+	return true;
+}
+
+bool ATA::Device::poll(bool extra)
+{
+	wait();
+
+	if (!waitStatus()) return false;
+
+	if (extra) {
+		uint8_t status = getStatus();
+		if ((status & ATA_STATUS_ERROR)>0) return false;
+		if ((status & ATA_STATUS_DF)>0) return false;
+		if ((status & ATA_STATUS_DRQ)==0) return false;
+	}
+
+	return true;
+}
+
+bool ATA::Device::readSector(uint8_t *buffer, uint16_t sectors, uint32_t addr, uint32_t addr_hi)
+{
+	uint8_t cmd = 0;
+	if (buffer==NULL) return false;
+
+	prepareAccess(sectors, addr, addr_hi);
+
+	if (m_lba48 && m_dma) cmd = ATA_CMD_READ_DMA_48;
+	else if (m_dma) cmd = ATA_CMD_READ_DMA;
+	else if (m_lba48 && !m_dma) cmd = ATA_CMD_READ_48;
+	else cmd = ATA_CMD_READ;
+
+	write(command(), cmd);
+
+	uint8_t *tmp = buffer;
+	if (!m_dma) {
+		for (uint32_t i=0; i<sectors; i++) {
+			if (!poll(true)) return false;
+
+			//uint8_t buffer[512];
+			readBuffer(data(), (uint32_t*)tmp, 512);
+			tmp+=512;
+		}
+	}
+
+	return true;
+}
+
+/* buffer needs to be sectors*SECTOR_SIZE
+ */
+bool ATA::Device::writeSector(uint8_t *buffer, uint16_t sectors, uint32_t addr, uint32_t addr_hi)
+{
+	uint8_t cmd = 0;
+	if (buffer==NULL) return false;
+
+	prepareAccess(sectors, addr, addr_hi);
+
+	if (m_lba48 && m_dma) cmd = ATA_CMD_WRITE_DMA_48;
+	else if (m_dma) cmd = ATA_CMD_WRITE_DMA;
+	else if (m_lba48 && !m_dma) cmd = ATA_CMD_WRITE_48;
+	else cmd = ATA_CMD_WRITE;
+
+	write(command(), cmd);
+
+	uint8_t *tmp = buffer;
+	if (!m_dma) {
+		for (uint32_t i=0; i<sectors; i++) {
+			poll();
+			writeBuffer(data(), (uint32_t*)tmp, 512);
+			tmp+=512;
+		}
+		uint8_t cmd = 0;
+		if (m_lba48) cmd = ATA_CMD_FLUSH_48;
+		else cmd = ATA_CMD_FLUSH;
+		write(command(), cmd);
+		poll();
 	}
 
 	return true;
@@ -229,7 +395,6 @@ void ATA::Device::detect()
 		m_avail = false;
 		return;
 	}
-	//Platform::video()->printf("Has LBA? %x %x\n",*(uint16_t*)(buf+ATA_IDENT_CAPABILITIES),*(uint16_t*)(buf+ATA_IDENT_CAPABILITIES)&0x200);
 
 	uint8_t error = 0;
 	uint32_t errcnt = 0;
@@ -269,16 +434,15 @@ void ATA::Device::detect()
 
 	if ((*(uint16_t*)(buf+ATA_IDENT_CAPABILITIES)&0x200)==0x200) {
 		m_lba = true;
+		m_mode = ATA_MODE_LBA;
 		Platform::video()->printf("Has LBA\n");
 	}
+
 	if (!m_lba) {
-		uint8_t sec;
-		uint16_t cyl;
-		uint8_t head;
-		sec = (*(uint8_t*)(buf+ATA_IDENT_SECTORS));
-		cyl = (*(uint16_t*)(buf+ATA_IDENT_CYLINDERS));
-		head = (*(uint8_t*)(buf+ATA_IDENT_HEADS));
-		if (sec>0) m_size = (((cyl*head+head)*sec+(sec-1))*512);
+		m_sect = (*(uint8_t*)(buf+ATA_IDENT_SECTORS));
+		m_cyl = (*(uint16_t*)(buf+ATA_IDENT_CYLINDERS));
+		m_head = (*(uint8_t*)(buf+ATA_IDENT_HEADS));
+		if (m_sect>0) m_size = (((m_cyl*m_head+m_head)*m_sect+(m_sect-1))*512);
 		else m_size = 0;
 		//Platform::video()->printf("Size: sec %u cyl %u head %u == %u (%u MB)\n",sec,cyl,head,m_size,m_size/1024/1024);
 	} else {
@@ -296,6 +460,7 @@ ATA::ATA()
 {
 	m_devices = NULL;
 	m_pci = Platform::pci();
+	m_interrupt = ATA_INTERRUPT_BASE;
 }
 
 ATA::~ATA()
@@ -317,15 +482,15 @@ void ATA::init()
 				uint16_t cmd = h->common.command;
 				cmd &= ~(1<<10);
 				cmd |= ((1<<0)|(1<<2));
-				Platform::video()->printf("newcmd: %x cmd: %x\n",cmd, h->common.command);
+				//Platform::video()->printf("newcmd: %x cmd: %x\n",cmd, h->common.command);
 				if (cmd!=h->common.command) {
 					m_pci->set(i, 0x4, cmd&0xFF);
 				}
 				hdr = m_pci->getCurrent(i);
 				h = (PCI::Header00*)hdr;
-				Platform::video()->printf("Int: %x cmd: %x\n",h->interruptLine, h->common.command);
+				//Platform::video()->printf("Int: %x cmd: %x\n",h->interruptLine, h->common.command);
 
-				Platform::video()->printf("Addr: %x %x %x %x\n", h->baseAddress0, h->baseAddress1, h->baseAddress2, h->baseAddress3);
+				//Platform::video()->printf("Addr: %x %x %x %x\n", h->baseAddress0, h->baseAddress1, h->baseAddress2, h->baseAddress3);
 #if 1
 				if (h->baseAddress0==0 || h->baseAddress0==1) h->baseAddress0 = 0x1F0;
 				else h->baseAddress0 &= 0xFFFFFFFC;
@@ -351,6 +516,8 @@ void ATA::init()
 				addDevice(dev2);
 				addDevice(dev3);
 				addDevice(dev4);
+
+				Platform::idt()->installHandler(m_interrupt++, interrupt_handler, NULL, NULL);
 			}
 		} while (hdr!=NULL);
 		m_pci->endIter(i);
@@ -371,4 +538,38 @@ void ATA::addDevice(Device *dev)
 	}
 
 	d->next = dev;
+}
+
+uint32_t ATA::numDevices()
+{
+	Device *d = m_devices;
+	if (d==NULL) return 0;
+
+	uint32_t n = 1;
+
+	while (d->next != NULL) {
+		n++;
+	}
+	return n;
+}
+
+uint32_t ATA::deviceSize(Device *d)
+{
+	if (d==NULL) return 0;
+
+	return d->size();
+}
+
+bool ATA::read(Device *d, uint8_t *buffer, uint16_t sectors, uint32_t addr, uint32_t addr_hi)
+{
+	if (d==NULL) return false;
+
+	return d->readSector(buffer, sectors, addr, addr_hi);
+}
+
+bool ATA::write(Device *d, uint8_t *buffer, uint16_t sectors, uint32_t addr, uint32_t addr_hi)
+{
+	if (d==NULL) return false;
+
+	return d->writeSector(buffer, sectors, addr, addr_hi);
 }

@@ -13,6 +13,13 @@ public:
 	virtual ~ATA();
 	void init();
 
+	uint32_t numDevices();
+	Device *getDevice();
+
+	uint32_t deviceSize(Device *d);
+	bool read(Device *d, uint8_t *buffer, uint16_t sectors, uint32_t addr, uint32_t addr_hi=0);
+	bool write(Device *d, uint8_t *buffer, uint16_t sectors, uint32_t addr, uint32_t addr_hi=0);
+
 protected:
 	void addDevice(Device *dev);
 	PCI *m_pci;
@@ -23,6 +30,9 @@ protected:
 	virtual uint8_t systemPortIn(uint32_t port) = 0;
 	virtual uint16_t systemPortIn16(uint32_t port) = 0;
 	virtual uint32_t systemPortIn32(uint32_t port) = 0;
+
+	static void interrupt_handler(unsigned int num, void *data);
+	unsigned int m_interrupt;
 };
 
 #endif

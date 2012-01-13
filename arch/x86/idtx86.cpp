@@ -237,7 +237,9 @@ extern "C" void irq_handler(Regs * r)
 
 	IDTX86::Handler *handler = IDTX86::handler(r->int_no);
 	while (handler!=NULL) {
-		handler->high_half(r->int_no, handler->data);
+		if (handler->high_half!=NULL) {
+			handler->high_half(r->int_no, handler->data);
+		}
 		//handler->bottom_half(r->int_no, handler->data); //FIXME
 		handler = handler->next;
 	}
