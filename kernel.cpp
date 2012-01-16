@@ -74,10 +74,41 @@ int Kernel::run()
 	ATA *ata = Platform::ata();
 	if (ata!=NULL) {
 		ata->init();
+		ATA::Device *dev = ata->getDevice();
+		while (dev!=NULL) {
+			video->printf("Got device %x\n",dev);
+			if ((ata->deviceModel(dev) == ATA::SATA || ata->deviceModel(dev) == ATA::PATA) && ata->deviceSize(dev)>0) break;
+			dev = ata->nextDevice(dev);
+		}
+		uint8_t buffer[512];
+		for (uint32_t cc=0; cc<512; cc++) {
+			buffer[cc] = 0;
+		}
+		buffer[0] = 0x42;
+		buffer[1] = 0xAA;
+		buffer[2] = 0xBB;
+		buffer[3] = 0xCC;
+		buffer[42] = 0xFF;
+		video->printf("Writing...\n");
+		if (ata->write(dev, buffer, 1,  0)) {
+			video->printf("Done0.\n");
+		} else {
+			video->printf("Fail0.\n");
+		}
+		if (ata->write(dev, buffer, 1,  1)) {
+			video->printf("Done1.\n");
+		} else {
+			video->printf("Fail1.\n");
+		}
+		if (ata->write(dev, buffer, 1,  2)) {
+			video->printf("Done2.\n");
+		} else {
+			video->printf("Fail2.\n");
+		}
 	}
+/*
 	for (int i=0; i<0x5FFFFFF; i++) 
 		for (int j=0; j<0x22; j++) { }
-/*
 */
 
 	FB::ModeConfig conf;
