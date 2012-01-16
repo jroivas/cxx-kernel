@@ -11,8 +11,8 @@
 #define ATA_MODE_LBA (1<<6)
 #define ATA_MODE_PIO (0)
 #endif
-//#define ATA_DEVSEL_CONST (1<<5|1<<7)
-#define ATA_DEVSEL_CONST 0
+#define ATA_DEVSEL_CONST (1<<5|1<<7)
+//#define ATA_DEVSEL_CONST 0
 
 #define ATA_CMD_READ            0x20
 #define ATA_CMD_READ_48         0x24
@@ -59,9 +59,17 @@ void ATA::interrupt_handler(unsigned int num, void *data)
 class ATA::Device
 {
 public:
-	enum DeviceType { ATAMaster=2, ATASlave=1 };
+	enum DeviceType { ATAMaster=0, ATASlave=1 };
 	Device(ATA *a) { m_ata = a; next = NULL; m_avail = false; m_lba = false; m_lba48 = false; m_dma = false; }
 	void setup(uint32_t pri, uint32_t sec, DeviceType type) { m_basePort = pri; m_basePort2 = sec; m_type = type; detect(); }
+	Device *next;
+	bool readSector(uint8_t *buffer, uint16_t sectors, uint32_t addr, uint32_t addr_hi=0);
+	bool writeSector(uint8_t *buffer, uint16_t sectors, uint32_t addr, uint32_t addr_hi=0);
+	uint32_t size() { return m_size; }
+	DeviceModel model() { return m_model; }
+	void select(uint8_t head=0);
+
+protected:
 	inline uint32_t data() { return m_basePort; }
 	inline uint32_t fetures() { return m_basePort; }
 	inline uint32_t error() { return m_basePort+1; }
@@ -78,22 +86,18 @@ public:
 	inline uint32_t altStatus() { return m_basePort2+2; }
 	inline uint32_t control() { return m_basePort2+2; }
 	inline uint32_t devAddress() { return m_basePort2+3; }
-	Device *next;
-	bool readSector(uint8_t *buffer, uint16_t sectors, uint32_t addr, uint32_t addr_hi=0);
-	bool writeSector(uint8_t *buffer, uint16_t sectors, uint32_t addr, uint32_t addr_hi=0);
-	uint32_t size() { return m_size; }
-	DeviceModel model() { return m_model; }
 
-protected:
 	bool reset();
 	void wait();
 	bool waitStatus(uint8_t extra=0, uint8_t extra_val=0);
-	void select(uint8_t head=0);
 	bool identify();
 	void detect();
 	void detectModel();
 	bool prepareAccess(uint16_t sectors, uint32_t addr, uint32_t addr_hi=0);
 	bool poll(bool extra=false);
+
+	inline void setHi() { write(control(), 0x80+m_irq?0:0x2); }
+	inline void setLo() { write(control(), m_irq?0:0x2); }
 
 	uint8_t getStatus();
 	uint32_t getSecCount();
@@ -145,7 +149,13 @@ void ATA::Device::readBuffer(uint32_t port, uint32_t *buffer, uint32_t size)
 {
 	uint32_t *ptr = buffer;
 	while (size>0) {
+/*
 		*ptr++ = m_ata->systemPortIn32(port);
+		size-=4;
+*/
+		uint16_t a = m_ata->systemPortIn16(port);
+		uint16_t b = m_ata->systemPortIn16(port);
+		*ptr++ = a + (b<<16);
 		size-=4;
 	}
 }
@@ -161,15 +171,17 @@ void ATA::Device::writeBuffer(uint32_t port, uint32_t *buffer, uint32_t size)
 
 bool ATA::Device::reset()
 {
+#if 1
 	write(status(), 4);
 	write(status(), 0);
+#endif
 	wait();
 	return waitStatus();
 }
 
 void ATA::Device::wait()
 {
-	for (int i=0; i<4; i++) {
+	for (int i=0; i<5; i++) {
 		read(altStatus());
 	}
 	Timer::get()->msleep(1);
@@ -194,7 +206,8 @@ bool ATA::Device::waitStatus(uint8_t extra, uint8_t extra_val)
 		do {
 			stat = getStatus();
 			if (cnt++>ATA_MAX_WAIT_CNT) return false;
-		} while ((stat&extra)==extra_val);
+			wait();
+		} while ((stat&extra)!=extra_val);
 	}
 
 	return true;
@@ -212,6 +225,7 @@ bool ATA::Device::waitStatus(uint8_t extra, uint8_t extra_val)
 
 void ATA::Device::select(uint8_t head)
 {
+	//Platform::video()->printf("Devsel: %x\n", ATA_DEVSEL_CONST | m_mode | (m_type<<4) | head);
 	write(devSel(), ATA_DEVSEL_CONST | m_mode | (m_type<<4) | head);
 	wait();
 }
@@ -249,6 +263,7 @@ bool ATA::Device::prepareAccess(uint16_t sectors, uint32_t addr, uint32_t addr_h
 	uint8_t io_addr[6];
 	m_lba48 = false;
 
+	if (!reset()) return false;
 	if (addr>=0x10000000 || addr_hi>0) { // Need LBA48
 		io_addr[0] = (addr & 0xFF);
 		io_addr[1] = (addr >> 8) & 0xFF;
@@ -268,7 +283,7 @@ bool ATA::Device::prepareAccess(uint16_t sectors, uint32_t addr, uint32_t addr_h
 		io_addr[5] = 0;
 		head = (addr & 0xF000000) >> 24;
 	} else {
-		Platform::video()->printf("WARNING: CHS\n");
+		//Platform::video()->printf("WARNING: CHS\n");
 		sect = (addr % m_sect) + 1;
 		cyl = (addr + 1 - sect) / (m_head * m_sect);
 		head = (addr + 1 - sect) % (m_head * m_sect) / m_sect;
@@ -280,15 +295,26 @@ bool ATA::Device::prepareAccess(uint16_t sectors, uint32_t addr, uint32_t addr_h
 		io_addr[5] = 0;
 	}
 
+
 	if (!waitStatus()) return false;
 
 	select(head);
 
+	if (!waitStatus()) return false;
+
+
+	//if (!waitStatus(ATA_STATUS_DRQ, ATA_STATUS_DRQ)) 
+	//	select(head);
+
+	//if (!waitStatus(ATA_STATUS_DRQ, ATA_STATUS_DRQ)) return false;
+
 	if (m_lba48) {
-		write(LBA3(), io_addr[3]);
-		write(LBA4(), io_addr[4]);
-		write(LBA5(), io_addr[5]);
+		setHi(); write(secCount(), 0); setLo();
+		setHi(); write(LBA3(), io_addr[3]); setLo();
+		setHi(); write(LBA4(), io_addr[4]); setLo();
+		setHi(); write(LBA5(), io_addr[5]); setLo();
 	}
+	setLo();
 	write(secCount(), sectors);
 	write(LBA0(), io_addr[0]);
 	write(LBA1(), io_addr[1]);
@@ -327,6 +353,9 @@ bool ATA::Device::readSector(uint8_t *buffer, uint16_t sectors, uint32_t addr, u
 
 	write(command(), cmd);
 
+	if (!waitStatus(ATA_STATUS_ERROR, 0)) return false;
+	if (!waitStatus(ATA_STATUS_DRQ, ATA_STATUS_DRQ)) return false;
+
 	uint8_t *tmp = buffer;
 	if (!m_dma) {
 		for (uint32_t i=0; i<sectors; i++) {
@@ -335,6 +364,7 @@ bool ATA::Device::readSector(uint8_t *buffer, uint16_t sectors, uint32_t addr, u
 			readBuffer(data(), (uint32_t*)tmp, 512);
 			tmp+=512;
 		}
+		wait();
 	}
 
 	return true;
@@ -382,8 +412,13 @@ void ATA::Device::detect()
 	//m_mode = ATA_MODE_LBA;
 
 	//write(control(), 2);
+	write(control(), m_irq?0:0x2);
 
 	if (!reset()) return;
+	if (!identify()) {
+		m_avail = false;
+		return;
+	}
 #if 0
 	write(LBA0(), 0xAB);
 	uint8_t dt = read(LBA0());
@@ -393,12 +428,6 @@ void ATA::Device::detect()
 		return;
 	}
 #endif
-	identify();
-
-	if (!identify()) {
-		m_avail = false;
-		return;
-	}
 
 	uint8_t error = 0;
 	uint32_t errcnt = 0;
@@ -595,4 +624,18 @@ bool ATA::write(Device *d, uint8_t *buffer, uint16_t sectors, uint32_t addr, uin
 	if (d==NULL) return false;
 
 	return d->writeSector(buffer, sectors, addr, addr_hi);
+}
+
+bool ATA::select(Device *d)
+{
+	
+	if (d==NULL) return false;
+
+	uint8_t tmp[512];
+	d->select();
+
+ 	//FIXME hack to get reading/writing right. For some reason first read/write does nothing. Sequent read/write works just fine.
+	d->readSector(tmp, 1, 0);
+
+	return true;
 }

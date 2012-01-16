@@ -76,7 +76,6 @@ int Kernel::run()
 		ata->init();
 		ATA::Device *dev = ata->getDevice();
 		while (dev!=NULL) {
-			video->printf("Got device %x\n",dev);
 			if ((ata->deviceModel(dev) == ATA::SATA || ata->deviceModel(dev) == ATA::PATA) && ata->deviceSize(dev)>0) break;
 			dev = ata->nextDevice(dev);
 		}
@@ -84,27 +83,34 @@ int Kernel::run()
 		for (uint32_t cc=0; cc<512; cc++) {
 			buffer[cc] = 0;
 		}
+#if 0
 		buffer[0] = 0x42;
-		buffer[1] = 0xAA;
-		buffer[2] = 0xBB;
-		buffer[3] = 0xCC;
+		buffer[1] = 0;
+		buffer[2] = 0xAA;
+		buffer[3] = 0xBB;
+		buffer[4] = 0xCC;
 		buffer[42] = 0xFF;
 		video->printf("Writing...\n");
-		if (ata->write(dev, buffer, 1,  0)) {
-			video->printf("Done0.\n");
-		} else {
-			video->printf("Fail0.\n");
+		for (uint32_t sec=0; sec<4; sec++) {
+			buffer[1] = (sec%0xFF);
+			if (ata->write(dev, buffer, 1,  sec)) {
+				//video->printf("Done %d.\n", sec);
+			} else {
+				video->printf("Fail %d.\n", sec);
+			}
 		}
-		if (ata->write(dev, buffer, 1,  1)) {
-			video->printf("Done1.\n");
-		} else {
-			video->printf("Fail1.\n");
-		}
-		if (ata->write(dev, buffer, 1,  2)) {
-			video->printf("Done2.\n");
-		} else {
-			video->printf("Fail2.\n");
-		}
+#else
+		video->printf("Reading...\n");
+		//ata->read(dev, buffer, 1,  0);
+		ata->select(dev);
+		//ata->read(dev, buffer, 1,  2);
+		for (uint32_t sec=0; sec<6; sec++) {
+			if (ata->read(dev, buffer, 1,  sec)) {
+				video->printf("Ok %d. %x %x %x\n", sec, buffer[0], buffer[1], buffer[2]);
+			}
+		}	
+#endif
+		video->printf("Done.\n");
 	}
 /*
 	for (int i=0; i<0x5FFFFFF; i++) 
