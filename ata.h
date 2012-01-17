@@ -3,12 +3,12 @@
 
 #include "types.h"
 #include "pci.h"
+#include "storage.h"
 
-class ATA
+class ATA : public Storage
 {
 public:
-	class Device;
-	enum DeviceModel { ATA_UNKNOWN, PATA, PATAPI, SATA, SATAPI };
+	class DevicePrivate;
 
 	ATA();
 	virtual ~ATA();
@@ -27,7 +27,7 @@ public:
 protected:
 	void addDevice(Device *dev);
 	PCI *m_pci;
-	Device *m_devices;
+	DevicePrivate *m_devices;
 	virtual void systemPortOut(uint32_t port, uint8_t val) = 0;
 	virtual void systemPortOut16(uint32_t port, uint16_t val) = 0;
 	virtual void systemPortOut32(uint32_t port, uint32_t val) = 0;
