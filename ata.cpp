@@ -63,7 +63,7 @@ public:
 
 	DevicePrivate(ATA *a) : Device() { m_ata = a; next = NULL; m_avail = false; m_lba = false; m_lba48 = false; m_dma = false; m_class = CLASS_ATA; }
 	void setup(uint32_t pri, uint32_t sec, DeviceType type) { m_basePort = pri; m_basePort2 = sec; m_type = type; detect(); }
-	DevicePrivate *next;
+	//DevicePrivate *next;
 	bool readSector(uint8_t *buffer, uint16_t sectors, uint32_t addr, uint32_t addr_hi=0);
 	bool writeSector(uint8_t *buffer, uint16_t sectors, uint32_t addr, uint32_t addr_hi=0);
 	uint32_t size() { return m_size; }
@@ -556,47 +556,6 @@ void ATA::init()
 		} while (hdr!=NULL);
 		m_pci->endIter(i);
 	}
-}
-
-void ATA::addDevice(Device *dev)
-{
-	if (dev==NULL) return;
-	if (m_devices==NULL) {
-		m_devices = (DevicePrivate*)dev;
-		return;
-	}
-
-	DevicePrivate *d = m_devices;
-	while (d->next != NULL) {
-		d = d->next;
-	}
-
-	d->next = (DevicePrivate*)dev;
-}
-
-uint32_t ATA::numDevices()
-{
-	DevicePrivate *d = m_devices;
-	if (d==NULL) return 0;
-
-	uint32_t n = 1;
-
-	while (d->next != NULL) {
-		n++;
-	}
-	return n;
-}
-
-ATA::Device *ATA::getDevice()
-{
-	return m_devices;
-}
-
-ATA::Device *ATA::nextDevice(Device *dev)
-{
-	if (dev==NULL) return NULL;
-
-	return ((DevicePrivate*)dev)->next;
 }
 
 uint32_t ATA::deviceSize(Device *d)

@@ -1,7 +1,7 @@
 include ../../config.mk
 CXXFLAGS:=$(CXXFLAGS) -I../../
 
-OBJS=loader.o paginglinux.o idtlinux.o timerlinux.o stateslinux.o videolinux.o x11.o
+OBJS=loader.o paginglinux.o idtlinux.o timerlinux.o stateslinux.o videolinux.o x11.o virtualdisc.o
 
 all: $(OBJS)
 	mv loader.o ../

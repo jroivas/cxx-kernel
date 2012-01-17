@@ -1,6 +1,8 @@
 #ifndef STORAGE_H
 #define STORAGE_H
 
+#include "types.h"
+
 class Storage
 {
 public:
@@ -8,16 +10,17 @@ public:
 	enum DeviceClass { CLASS_NONE, CLASS_ATA, CLASS_USB };
 	class Device { 
 	public:
-		Device() { m_class = CLASS_NONE; }
+		Device() { m_class = CLASS_NONE; next = NULL; }
 		uint8_t m_class;
+		Device *next;
 	};
 
-	Storage() {}
+	Storage() { m_devices = NULL; }
 	virtual ~Storage() {}
 
-	virtual uint32_t numDevices() = 0;
-	virtual Device *getDevice() = 0;
-	virtual Device *nextDevice(Device *dev) = 0;
+	virtual uint32_t numDevices();
+	virtual Device *getDevice();
+	virtual Device *nextDevice(Device *dev);
 
 	virtual uint32_t deviceSize(Device *d) = 0;
 	virtual DeviceModel deviceModel(Device *d) = 0;
@@ -26,5 +29,7 @@ public:
 	virtual bool select(Device *d) = 0;
 
 protected:
+	void addDevice(Device *dev);
+	Device *m_devices;
 };
 #endif

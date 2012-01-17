@@ -14,9 +14,11 @@ public:
 	virtual ~ATA();
 	void init();
 
+#if 0
 	uint32_t numDevices();
 	Device *getDevice();
 	Device *nextDevice(Device *dev);
+#endif
 
 	uint32_t deviceSize(Device *d);
 	DeviceModel deviceModel(Device *d);
@@ -25,9 +27,9 @@ public:
 	bool select(Device *d);
 
 protected:
-	void addDevice(Device *dev);
+//	void addDevice(Device *dev);
 	PCI *m_pci;
-	DevicePrivate *m_devices;
+	//DevicePrivate *m_devices;
 	virtual void systemPortOut(uint32_t port, uint8_t val) = 0;
 	virtual void systemPortOut16(uint32_t port, uint16_t val) = 0;
 	virtual void systemPortOut32(uint32_t port, uint32_t val) = 0;
