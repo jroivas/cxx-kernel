@@ -12,12 +12,6 @@ public:
 	~VirtualDisc();
 
 	bool append(const char *name);
-/*
-
-	uint32_t numDevices();
-	Device *getDevice();
-	Device *nextDevice(Device *dev);
-*/
 
 	uint32_t deviceSize(Device *d);
 	DeviceModel deviceModel(Device *d);
@@ -26,7 +20,6 @@ public:
 	bool select(Device *d);
 
 protected:
-	//DevicePrivate *m_devices;
 
 };
 

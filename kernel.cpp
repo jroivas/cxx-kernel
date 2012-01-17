@@ -1,3 +1,4 @@
+#include "config.h"
 #include "types.h"
 #include "kernel.h"
 #include "idt.h"
@@ -5,6 +6,10 @@
 #include "kb.h"
 #include "fb.h"
 #include "ata.h"
+
+#ifdef ARCH_LINUX
+#include "arch/linux/virtualdisc.h"
+#endif
 
 Kernel::Kernel()
 {
@@ -96,7 +101,7 @@ int Kernel::run()
 			video->printf("Done %d.\n", 0);
 		}
 #if 0
-		for (uint32_t sec=0; sec<4; sec++) {
+		for (uint32_t sec=1; sec<4; sec++) {
 			buffer[1] = (sec%0xFF);
 			if (ata->write(dev, buffer, 1,  sec)) {
 				//video->printf("Done %d.\n", sec);
@@ -110,11 +115,27 @@ int Kernel::run()
 		//ata->read(dev, buffer, 1,  2);
 		for (uint32_t sec=0; sec<6; sec++) {
 			if (ata->read(dev, buffer, 1,  sec)) {
-				video->printf("Ok %d. %x %x %x\n", sec, buffer[0], buffer[1], buffer[2]);
+				video->printf("ATA: Ok %d. %x %x %x\n", sec, buffer[0], buffer[1], buffer[2]);
 			}
 		}	
 		video->printf("Done.\n");
 	}
+#ifdef ARCH_LINUX
+	VirtualDisc *vd = new VirtualDisc();
+	vd->append("test.img");
+	ATA::Device *dev = vd->getDevice();
+	uint8_t buffer[512];
+	if (dev!=NULL) {
+		video->printf("Reading...\n");
+		for (uint32_t sec=0; sec<6; sec++) {
+			if (vd->read(dev, buffer, 1,  sec)) {
+				video->printf("VIRTUAL: Ok %d. %x %x %x\n", sec, buffer[0], buffer[1], buffer[2]);
+			}
+		}	
+		video->printf("Done.\n");
+	}
+#endif
+
 /*
 	for (int i=0; i<0x5FFFFFF; i++) 
 		for (int j=0; j<0x22; j++) { }
