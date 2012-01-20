@@ -11,11 +11,14 @@ public:
 	void append(void *val);
 	void *first();
 	void *last();
+	void deleteAll(void *val);
+	void *takeFirst();
 
 	uint32_t size();
 	void *at(uint32_t i);
 	bool appendAfter(uint32_t i, void *val);
 	bool addAt(uint32_t i, void *val);
+	bool deleteAt(uint32_t i);
 
 protected:
 	class ListObject {

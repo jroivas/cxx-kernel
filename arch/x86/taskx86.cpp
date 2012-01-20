@@ -3,7 +3,6 @@
 #include "mm.h"
 
 #define DEFAULT_STACK_SIZE 0x1000
-#define TASK_MAGIC 0x42
 
 extern "C" void changeProcess(uint32_t eip, uint32_t base, uint32_t stack, uint32_t pagetable);
 extern "C" uint32_t getEIP();
@@ -31,11 +30,17 @@ void TaskX86::init(ptr_val_t addr, ptr_val_t stack, uint32_t flags)
 	r.gs = 0x10;
 }
 
-void TaskX86::saveState()
+/* Save task state and return instruction pointer */
+ptr_val_t TaskX86::saveState()
 {
 	r.esp = getESP();
 	r.ebp = getEBP();
-	r.eip = getEIP();
+	ptr_val_t eip = getEIP();
+	if (eip!=TASK_MAGIC) {
+		r.eip = eip;
+	}
+
+	return eip;
 }
 
 void TaskX86::switchTo()

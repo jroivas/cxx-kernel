@@ -9,9 +9,11 @@ class ProcessManager
 public:
 	ProcessManager();
 	void addTask(Task *t);
+	void schedule();
 
 private:
 	List *m_tasks;
+	Task *m_current;
 };
 
 #endif

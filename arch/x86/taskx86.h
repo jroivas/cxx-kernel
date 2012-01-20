@@ -10,7 +10,7 @@ public:
 	TaskX86() : Task() { }
 	void init(ptr_val_t addr, ptr_val_t stack, uint32_t flags);
 	void switchTo();
-	void saveState();
+	ptr_val_t saveState();
 	Task *clone(CloneFlags flags = CLONE_NORMAL);
 
 private:

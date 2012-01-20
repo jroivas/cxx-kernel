@@ -2,6 +2,7 @@
 #define TASK_H
 
 #include "types.h"
+#define TASK_MAGIC 0x42
 
 class Task
 {
@@ -19,6 +20,7 @@ public:
 	Task();
 	virtual void init(ptr_val_t addr, ptr_val_t stack, uint32_t flags) = 0;
 	virtual void switchTo() = 0;
+	virtual ptr_val_t saveState() = 0;
 	virtual Task *clone(CloneFlags flags = CLONE_NORMAL) = 0;
 
 protected:
