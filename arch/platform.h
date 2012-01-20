@@ -12,6 +12,7 @@
 #include "types.h"
 #include "pci.h"
 #include "ata.h"
+#include "task.h"
 
 #ifdef ARCH_x86
 #include "x86/pagingx86.h"
@@ -33,6 +34,8 @@ public:
 	static FB *fb();
 	static PCI *pci();
 	static ATA *ata();
+	static Task *task();
+
 	static int CAS(ptr_val_t volatile *m_ptr, int cmp, int set);
 	static void halt();
 	static void seizeInterrupts();

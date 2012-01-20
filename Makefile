@@ -1,8 +1,7 @@
 include config.mk
 CXXFLAGS:=$(CXXFLAGS) -I.
 CXXFLAGSO:=-O2 $(CXXFLAGSO) -I.
-#OBJS=arch/$(ARCH)/loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o idt.o timer.o kb.o fb.o math.o states.o
-OBJS=arch/loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o idt.o timer.o kb.o fb.o math.o states.o setjmp.o bits.o font.o pci.o ata.o storage.o
+OBJS=arch/loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o idt.o timer.o kb.o fb.o math.o states.o setjmp.o bits.o font.o pci.o ata.o storage.o task.o list.o processmanager.o
 THIRDPARTY=3rdparty/my_x86emu/x86emu.o 3rdparty/font/boot_font.o
 
 #LIBS=arch/arch.a

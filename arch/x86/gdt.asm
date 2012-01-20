@@ -12,3 +12,10 @@ gdt_flush:
 
 __gdt_flush_exit:
         ret
+
+
+[global tss_flush]
+tss_flush:
+	mov ax, 0x2B ; TSS is sixth entry in GDT
+	ltr ax
+	ret

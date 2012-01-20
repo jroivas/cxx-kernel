@@ -11,6 +11,7 @@
 #include "x86/x86.h"
 #include "x86/pcix86.h"
 #include "x86/atax86.h"
+#include "x86/taskx86.h"
 #endif
 #ifdef ARCH_LINUX
 #include "linux/idtlinux.h"
@@ -27,6 +28,7 @@ static KB    *__platform_kb    = NULL;
 static FB    *__platform_fb    = NULL;
 static PCI   *__platform_pci   = NULL;
 static ATA   *__platform_ata   = NULL;
+static Task  *__platform_task  = NULL;
 
 Platform::Platform()
 {
@@ -166,6 +168,16 @@ ATA *Platform::ata()
 	}
 	#endif
 	return __platform_ata;
+}
+
+Task *Platform::task()
+{
+	#ifdef ARCH_x86
+	if (__platform_task==NULL) {
+		__platform_task = new TaskX86();
+	}
+	#endif
+	return __platform_task;
 }
 
 void Platform::halt()

@@ -89,6 +89,7 @@ int Kernel::run()
 			buffer[cc] = 0;
 		}
 
+#if 0
 		ata->select(dev);
 		buffer[0] = 0x42;
 		buffer[1] = 0;
@@ -100,6 +101,7 @@ int Kernel::run()
 		if (ata->write(dev, buffer, 1, 0)) {
 			video->printf("Done %d.\n", 0);
 		}
+#endif
 #if 0
 		for (uint32_t sec=1; sec<4; sec++) {
 			buffer[1] = (sec%0xFF);

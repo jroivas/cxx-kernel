@@ -1,5 +1,6 @@
 #include "gdt.h"
 #include "types.h"
+#include "string.h"
 
 struct gdt_entry_t
 {
@@ -21,6 +22,7 @@ struct gdt_entry_t __gdt[6];
 struct gdt_ptr_t __gdt_ptr;
 
 extern "C" void gdt_flush();
+extern "C" void tss_flush();
 
 typedef struct tss
 {
@@ -86,7 +88,13 @@ void gdt_init()
 	__gdt_ptr.limit = (sizeof(struct gdt_entry_t) * 6) - 1;
 	__gdt_ptr.base = (ptr_val_t)&__gdt;
 
-        __tss0.ss0 = (unsigned short)0x10;
+	Mem::set(&__tss0, 0, sizeof(tss_t));
+        __tss0.cs = (unsigned short)0x08; //FIXME
+        __tss0.ds = (unsigned short)0x10; //FIXME
+        __tss0.cs = (unsigned short)0x10; //FIXME
+        __tss0.es = (unsigned short)0x10; //FIXME
+        __tss0.gs = (unsigned short)0x10; //FIXME
+        __tss0.ss0 = (unsigned short)0x10; //FIXME
         __tss0.esp0 = get_esp();
         __tss0.iopb = (unsigned short)sizeof(tss_t) - 1;
  
@@ -98,6 +106,7 @@ void gdt_init()
         gdt_set_gate(5, (unsigned long) &__tss0, sizeof(tss_t) - 1, 0x89, 0x40);
  
 	gdt_flush();
+	tss_flush();
 
 #ifdef ARCH_X86
         asm volatile("ltr %%ax": : "a" (0x28));

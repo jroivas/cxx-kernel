@@ -1,7 +1,7 @@
 include ../../config.mk
 CXXFLAGS:=$(CXXFLAGS) -I../../ -I../../3rdparty/my_x86emu/
 
-OBJS=idt_handlers.o statesx86.o x86.o port.o timerx86.o videox86.o idtx86.o kbx86.o vesa.o bios.o setjmp.o pagingx86.o pages.o memcpy.o gdt.o pcix86.o atax86.o
+OBJS=idt_handlers.o statesx86.o x86.o port.o timerx86.o videox86.o idtx86.o kbx86.o vesa.o bios.o setjmp.o pagingx86.o pages.o memcpy.o gdt.o pcix86.o atax86.o taskx86.o process.o
 
 all: x86.a loader.o
 
@@ -17,6 +17,9 @@ idt_handlers.o: idt_handlers.asm
 	nasm -f elf32 -o $@ $<
 
 setjmp.o: setjmp.asm
+	nasm -f elf32 -o $@ $<
+
+process.o: process.asm
 	nasm -f elf32 -o $@ $<
 
 memcpy.o: memcpy.asm
