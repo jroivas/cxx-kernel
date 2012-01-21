@@ -1,4 +1,5 @@
 #include "processmanager.h"
+#include "arch/platform.h"
 
 ProcessManager::ProcessManager()
 {
@@ -19,7 +20,7 @@ void ProcessManager::addTask(Task *t)
 void ProcessManager::schedule()
 {
 	// This is crucial
-	Platform::seizeInterrups();
+	Platform::seizeInterrupts();
 
 	ptr_val_t inst = m_current->saveState();
 
