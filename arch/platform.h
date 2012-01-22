@@ -13,6 +13,7 @@
 #include "pci.h"
 #include "ata.h"
 #include "task.h"
+#include "processmanager.h"
 
 #ifdef ARCH_x86
 #include "x86/pagingx86.h"
@@ -35,10 +36,12 @@ public:
 	static PCI *pci();
 	static ATA *ata();
 	static Task *task();
+	static ProcessManager *processManager();
 
 	static int CAS(ptr_val_t volatile *m_ptr, int cmp, int set);
 	static void halt();
 	static void seizeInterrupts();
+	static void continueInterrupts();
 
 private:
 	/* Plese extend the platform enums when supported */

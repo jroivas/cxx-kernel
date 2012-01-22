@@ -6,10 +6,36 @@
 #include "kb.h"
 #include "fb.h"
 #include "ata.h"
+#include "processmanager.h"
+#include "task.h"
 
 #ifdef ARCH_LINUX
 #include "arch/linux/virtualdisc.h"
 #endif
+
+void kernel_loop()
+{
+	while (1) {
+		//FIXME
+		//Timer::get()->wait(1);
+	}
+}
+
+void B_proc()
+{
+	while (1) {
+		Platform::video()->printf("B");
+		Timer::get()->wait(100);
+	}
+}
+
+void A_proc()
+{
+	while (1) {
+		Platform::video()->printf("A");
+		Timer::get()->wait(50);
+	}
+}
 
 Kernel::Kernel()
 {
@@ -143,6 +169,7 @@ int Kernel::run()
 		for (int j=0; j<0x22; j++) { }
 */
 
+#if 1
 	FB::ModeConfig conf;
 	conf.width=800;
 	conf.height=600;
@@ -177,7 +204,22 @@ int Kernel::run()
 		platform->fb()->blit();
 #endif
 	}
+#endif
 	video->printf("Done\n");
+
+	ProcessManager *pm = Platform::processManager();
+	Task *kernel_task = Platform::task()->create((ptr_val_t)kernel_loop, 0, 0);
+	Task *a_task = Platform::task()->create((ptr_val_t)&A_proc, 0, 0);
+	Task *b_task = Platform::task()->create((ptr_val_t)&B_proc, 0, 0);
+
+	kernel_task->setSlice(2);
+	a_task->setSlice(500);
+
+	pm->addTask(kernel_task);
+	pm->addTask(a_task);
+	pm->addTask(b_task);
+	pm->setRunning();
+
 	while(1) {}
 
 	return 0;

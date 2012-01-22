@@ -12,6 +12,7 @@ public:
 	void switchTo();
 	ptr_val_t saveState();
 	Task *clone(CloneFlags flags = CLONE_NORMAL);
+	Task *create(ptr_val_t addr, ptr_val_t stack, uint32_t flags);
 
 private:
 	Regs r;

@@ -21,6 +21,10 @@ void TaskX86::init(ptr_val_t addr, ptr_val_t stack, uint32_t flags)
 	r.useresp = stack;
 	r.eflags = flags;
 
+	m_entry = addr;
+	m_slice_size = 1000;
+	m_slice = 1000;
+
 	//FIXME
 	r.cs = 0x08;
 	r.ds = 0x10;
@@ -35,6 +39,7 @@ ptr_val_t TaskX86::saveState()
 {
 	r.esp = getESP();
 	r.ebp = getEBP();
+	m_slice = m_slice_size;
 	ptr_val_t eip = getEIP();
 	if (eip!=TASK_MAGIC) {
 		r.eip = eip;
@@ -57,5 +62,14 @@ Task *TaskX86::clone(TaskX86::CloneFlags flags)
 
 	t->init(r.eip, esp, r.eflags);
 
+	return t;
+}
+
+Task *TaskX86::create(ptr_val_t addr, ptr_val_t stack, uint32_t flags)
+{
+	TaskX86 *t = new TaskX86();
+	if (t==NULL) return NULL;
+
+	t->init(addr, stack, flags);
 	return t;
 }

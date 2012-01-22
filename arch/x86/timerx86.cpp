@@ -7,6 +7,7 @@
 TimerX86::TimerX86() : Timer()
 {
 	IDT::get()->installRoutine(TIMER_ISR_NUMBER, TimerX86::handler);
+	pm = Platform::processManager();
 }
 
 void TimerX86::setFrequency(unsigned int hz)
@@ -22,7 +23,13 @@ void TimerX86::run(Regs *r)
 {
         (void)r;
         m_ticks++;
-        if (m_ticks%10==0) {
-                Port::out(0x20, 0x20);
-        }
+
+	//if (m_ticks%10==0) Platform::video()->printf("T");
+
+        Port::out(0x20, 0x20);
+
+	if (pm!=NULL && pm->isRunning()) {
+		if (pm->hasSlice()) pm->decSlice();
+		else pm->schedule();
+	}
 }

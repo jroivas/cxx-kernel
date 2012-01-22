@@ -29,6 +29,7 @@ static FB    *__platform_fb    = NULL;
 static PCI   *__platform_pci   = NULL;
 static ATA   *__platform_ata   = NULL;
 static Task  *__platform_task  = NULL;
+static ProcessManager *__platform_pm = NULL;
 
 Platform::Platform()
 {
@@ -180,6 +181,14 @@ Task *Platform::task()
 	return __platform_task;
 }
 
+ProcessManager *Platform::processManager()
+{
+	if (__platform_pm==NULL) {
+		__platform_pm = new ProcessManager();
+	}
+	return __platform_pm;
+}
+
 void Platform::halt()
 {
 	#ifdef ARCH_x86
@@ -191,5 +200,12 @@ void Platform::seizeInterrupts()
 {
 	#ifdef ARCH_x86
 	cli();
+	#endif
+}
+
+void Platform::continueInterrupts()
+{
+	#ifdef ARCH_x86
+	sti();
 	#endif
 }

@@ -3,6 +3,7 @@
 
 #include "timer.h"
 #include "regs.h"
+#include "../platform.h"
 
 class TimerX86 : public Timer
 {
@@ -12,6 +13,7 @@ public:
 
 protected:
         virtual void run(Regs *r);
+	ProcessManager *pm;
 };
 
 #endif

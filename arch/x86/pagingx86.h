@@ -75,7 +75,6 @@ public:
 	PageTable *getTable(uint32_t i);
 	Page *getPage(ptr_val_t addr, PageReserve reserve=PageDoReserve);
 	void copyTo(PageDir *dir);
-	//void *reserveStatic(size_t size, ptr_t phys);
 
 private:
 	PageTable *tables[TABLES_PER_DIRECTORY];
