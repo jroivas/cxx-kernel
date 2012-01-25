@@ -13,14 +13,7 @@
 #include "arch/linux/virtualdisc.h"
 #endif
 
-void kernel_loop()
-{
-	while (1) {
-		//FIXME
-		//Timer::get()->wait(1);
-	}
-}
-
+extern "C" uint32_t getEIP();
 void B_proc()
 {
 	while (1) {
@@ -34,6 +27,58 @@ void A_proc()
 	while (1) {
 		Platform::video()->printf("A");
 		Timer::get()->wait(50);
+	}
+}
+
+void C_proc()
+{
+	while (1) {
+		Platform::video()->printf("C");
+		Timer::get()->wait(500);
+	}
+}
+
+
+void kernel_loop()
+{
+	//Platform::video()->printf("KERNEL1\n");
+#if 1
+	ProcessManager *pm = Platform::processManager();
+	Task *a_task = Platform::task()->create((ptr_val_t)&A_proc, 0, 0);
+	Task *b_task = Platform::task()->create((ptr_val_t)&B_proc, 0, 0);
+	Task *c_task = Platform::task()->create((ptr_val_t)&C_proc, 0, 0);
+	a_task->setName("A task");
+	a_task->setSize(100);
+	a_task->setPriority(40);
+	b_task->setName("B task");
+	b_task->setNice(10);
+	c_task->setPriority(10);
+	c_task->setName("C task");
+
+	pm->addTask(a_task);
+	pm->addTask(b_task);
+	pm->addTask(c_task);
+#endif
+
+	uint32_t start = Platform::timer()->getTicks();
+	(void)start;
+	while (1) {
+		//FIXME
+#if 0
+		uint32_t end = Platform::timer()->getTicks();
+		Platform::video()->printf("Diff: %d\n",end-start);
+#endif
+#if 0
+		ProcessManager *pm = Platform::processManager();
+		pm->schedule();
+#endif
+		if (Platform::fb()!=NULL) {
+			Platform::fb()->swap();
+			Platform::fb()->blit();
+		}
+
+		/* Update screen */
+		Timer::get()->wait(1);
 	}
 }
 
@@ -208,17 +253,68 @@ int Kernel::run()
 	video->printf("Done\n");
 
 	ProcessManager *pm = Platform::processManager();
-	Task *kernel_task = Platform::task()->create((ptr_val_t)kernel_loop, 0, 0);
-	Task *a_task = Platform::task()->create((ptr_val_t)&A_proc, 0, 0);
-	Task *b_task = Platform::task()->create((ptr_val_t)&B_proc, 0, 0);
+	if (pm!=NULL && Platform::task()!=NULL) {
+		Task *kernel_task = Platform::task()->create((ptr_val_t)kernel_loop, 0, 0);
+		//Task *kernel_task = Platform::task();
+#if 0
+		Task *a_task = Platform::task()->create((ptr_val_t)&A_proc, 0, 0);
+		Task *b_task = Platform::task()->create((ptr_val_t)&B_proc, 0, 0);
+		Task *c_task = Platform::task()->create((ptr_val_t)&C_proc, 0, 0);
 
-	kernel_task->setSlice(2);
-	a_task->setSlice(500);
+		//kernel_task->setNice(0);
+		kernel_task->setSize(20);
+		a_task->setSize(100);
+		a_task->setPriority(40);
+		b_task->setNice(10);
+		c_task->setPriority(10);
+/*
+		kernel_task->setSlice(2);
+		a_task->setSlice(500);
+		c_task->setSlice(1000);
+*/
 
-	pm->addTask(kernel_task);
-	pm->addTask(a_task);
-	pm->addTask(b_task);
-	pm->setRunning();
+		pm->addTask(kernel_task);
+		pm->addTask(a_task);
+		pm->addTask(b_task);
+		pm->addTask(c_task);
+#else
+		kernel_task->setSize(2);
+		kernel_task->setNice(40);
+		pm->setRunning();
+		pm->addTask(kernel_task);
+#endif
+
+#if 0
+		Task *a_task = Platform::task()->create((ptr_val_t)&A_proc, 0, 0);
+		Task *b_task = Platform::task()->create((ptr_val_t)&B_proc, 0, 0);
+		Task *c_task = Platform::task()->create((ptr_val_t)&C_proc, 0, 0);
+		a_task->setSize(100);
+		a_task->setPriority(40);
+		b_task->setNice(40);
+		c_task->setPriority(10);
+
+		pm->addTask(a_task);
+		pm->addTask(b_task);
+		pm->addTask(c_task);
+
+#endif
+#if 0
+		uint32_t mypid = pm->pid();
+		//kernel_task->setEntry(getEIP());
+		pm->setRunning();
+		Task *a_task = Platform::task()->clone(Task::CLONE_SHARE_STACK);
+		(void)a_task;
+		if (mypid == pm->pid()) {
+			//Parent
+			video->printf("parent %d\n",mypid);
+			//pm->addTask(a_task);
+			video->printf("parentb\n");
+		} else {
+			video->printf("task A\n");
+			//A_proc();
+		}
+#endif
+	}
 
 	while(1) {}
 

@@ -198,7 +198,9 @@ void FB::putPixel(int x, int y, unsigned int color)
 
 void FB::clear()
 {
-	if (m_backbuffer==NULL) return;
+	if (m_backbuffer!=NULL) Mem::set(m_backbuffer, 0, m_size);
+	if (m_buffer!=NULL) Mem::set(m_buffer, 0, m_size);
+	//swap();
 #if 0
 	unsigned char *dest = backbuffer+(current->height*current->bytes_per_line);
 	unsigned char *ptr = backbuffer;

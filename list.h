@@ -30,5 +30,6 @@ protected:
 	};
 	ListObject *m_first;
 	ListObject *m_last;
+	uint32_t m_size;
 };
 #endif

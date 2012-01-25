@@ -6,6 +6,7 @@ int main(int argc, char **argv)
 	TEST_INIT(list);
 
 	List l;
+	List p;
 	uint32_t val1 = 10;
 	uint32_t val2 = 2005;
 	uint32_t val3 = 3;
@@ -123,5 +124,39 @@ int main(int argc, char **argv)
 	TEST_ASSUME(list,*(uint32_t*)l.at(6)==val4);
 
 
+	p.append(&val1);
+	TEST_ASSUME(list,p.size()==1);
+	TEST_ASSUME(list,p.first()==&val1);
+	TEST_ASSUME(list,p.last()==&val1);
+
+	p.append(&val2);
+	TEST_ASSUME(list,p.size()==2);
+	TEST_ASSUME(list,p.first()==&val1);
+	TEST_ASSUME(list,p.last()==&val2);
+
+	TEST_ASSUME(list,p.takeFirst()==&val1);
+	TEST_ASSUME(list,p.size()==1);
+	TEST_ASSUME(list,p.first()==&val2);
+	TEST_ASSUME(list,p.last()==&val2);
+
+	p.append(&val3);
+	TEST_ASSUME(list,p.size()==2);
+	TEST_ASSUME(list,p.first()==&val2);
+	TEST_ASSUME(list,p.last()==&val3);
+
+	TEST_ASSUME(list,p.takeFirst()==&val2);
+	TEST_ASSUME(list,p.size()==1);
+	TEST_ASSUME(list,p.first()==&val3);
+	TEST_ASSUME(list,p.last()==&val3);
+
+	TEST_ASSUME(list,p.takeFirst()==&val3);
+	TEST_ASSUME(list,p.size()==0);
+	TEST_ASSUME(list,p.first()==NULL);
+	TEST_ASSUME(list,p.last()==NULL);
+
+	TEST_ASSUME(list,p.takeFirst()==NULL);
+	TEST_ASSUME(list,p.size()==0);
+	TEST_ASSUME(list,p.first()==NULL);
+	TEST_ASSUME(list,p.last()==NULL);
 	TEST_END(list);
 }

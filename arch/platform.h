@@ -2,6 +2,7 @@
 #define PLATFORM_H
 
 #include "config.h"
+#include "types.h"
 
 #include "states.h"
 #include "timer.h"
@@ -9,11 +10,11 @@
 #include "idt.h"
 #include "kb.h"
 #include "fb.h"
-#include "types.h"
 #include "pci.h"
 #include "ata.h"
 #include "task.h"
 #include "processmanager.h"
+#include "atomic.h"
 
 #ifdef ARCH_x86
 #include "x86/pagingx86.h"
@@ -38,7 +39,32 @@ public:
 	static Task *task();
 	static ProcessManager *processManager();
 
-	static int CAS(ptr_val_t volatile *m_ptr, int cmp, int set);
+	static inline int CAS(ptr_val_t volatile *m_ptr, int cmp, int set) {
+		return Platform_CAS(m_ptr, cmp, set);
+#if 0
+		// FIXME implement this properly
+
+		#ifdef ARCH_x86
+		int res = cmp;
+		asm volatile(
+			"lock; cmpxchgl %1,%2\n"
+			"setz %%al\n"
+			"movzbl %%al,%0"
+			: "+a"(res)
+			: "r" (set), "m"(*(m_ptr))
+			: "memory"
+			);
+
+		return res;
+		#endif
+
+		if ((int)*m_ptr==cmp) {
+			*m_ptr=set;
+			return 1;
+		}
+		return 0;
+#endif
+	}
 	static void halt();
 	static void seizeInterrupts();
 	static void continueInterrupts();

@@ -18,7 +18,7 @@ struct gdt_ptr_t
 	unsigned int base;
 } __attribute__((packed));
 
-struct gdt_entry_t __gdt[6];
+struct gdt_entry_t __gdt[8];
 struct gdt_ptr_t __gdt_ptr;
 
 extern "C" void gdt_flush();
@@ -67,6 +67,12 @@ typedef struct tss
 } tss_t;
 
 static tss_t __tss0;
+static tss_t __tss1;
+
+void *getTss0()
+{
+	return &__tss0;
+}
 
 extern "C" unsigned long get_esp();
 
@@ -85,10 +91,20 @@ void gdt_set_gate(int num, unsigned long base, unsigned long limit, unsigned cha
 
 void gdt_init()
 {
-	__gdt_ptr.limit = (sizeof(struct gdt_entry_t) * 6) - 1;
+	__gdt_ptr.limit = (sizeof(struct gdt_entry_t) * 7) - 1;
 	__gdt_ptr.base = (ptr_val_t)&__gdt;
 
 	Mem::set(&__tss0, 0, sizeof(tss_t));
+        __tss0.cs = (unsigned short)0x08; //FIXME
+        __tss0.ds = (unsigned short)0x10; //FIXME
+        __tss0.cs = (unsigned short)0x10; //FIXME
+        __tss0.es = (unsigned short)0x10; //FIXME
+        __tss0.gs = (unsigned short)0x10; //FIXME
+        __tss0.ss0 = (unsigned short)0x10; //FIXME
+        __tss0.esp0 = get_esp();
+        __tss0.iopb = (unsigned short)sizeof(tss_t) - 1;
+
+	Mem::set(&__tss1, 0, sizeof(tss_t));
         __tss0.cs = (unsigned short)0x08; //FIXME
         __tss0.ds = (unsigned short)0x10; //FIXME
         __tss0.cs = (unsigned short)0x10; //FIXME
@@ -104,6 +120,7 @@ void gdt_init()
 	gdt_set_gate(3, 0, 0xFFFFFFFF, 0xFA, 0xCF);
 	gdt_set_gate(4, 0, 0xFFFFFFFF, 0xF2, 0xCF);
         gdt_set_gate(5, (unsigned long) &__tss0, sizeof(tss_t) - 1, 0x89, 0x40);
+        gdt_set_gate(6, (unsigned long) &__tss1, sizeof(tss_t) - 1, 0xE9, 0x40);
  
 	gdt_flush();
 	tss_flush();

@@ -13,6 +13,7 @@
 #include "x86/atax86.h"
 #include "x86/taskx86.h"
 #endif
+
 #ifdef ARCH_LINUX
 #include "linux/idtlinux.h"
 #include "linux/timerlinux.h"
@@ -65,6 +66,7 @@ State *Platform::state()
 	return m_state;
 }
 
+#if 0
 int Platform::CAS(ptr_val_t volatile *m_ptr, int cmp, int set)
 {
 	#ifdef ARCH_x86
@@ -87,6 +89,7 @@ int Platform::CAS(ptr_val_t volatile *m_ptr, int cmp, int set)
 	}
 	return 0;
 }
+#endif
 
 Timer *Platform::timer()
 {

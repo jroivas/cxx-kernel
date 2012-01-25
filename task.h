@@ -2,7 +2,12 @@
 #define TASK_H
 
 #include "types.h"
-#define TASK_MAGIC 0x42
+#include "mutex.h"
+
+//#define TASK_MAGIC 0x42
+#define MAX_PRIORITY 20
+#define MAX_NICE     20
+#define TASK_NAME_LEN 42
 
 class Task
 {
@@ -19,21 +24,60 @@ public:
 
 	Task();
 	virtual void init(ptr_val_t addr, ptr_val_t stack, uint32_t flags) = 0;
-	virtual void switchTo() = 0;
-	virtual ptr_val_t saveState() = 0;
+
+	virtual void switchTo(volatile ptr_val_t *lock, ptr_t killer) = 0;
+	virtual void save() = 0;
+	virtual void restore(volatile ptr_val_t *lock) = 0;
+
+	void setName(const char *n) { for (uint32_t i=0; i<TASK_NAME_LEN-1; i++) { m_name[i] = n[i]; } m_name[TASK_NAME_LEN-1]=0; }
+	const char *name() { return m_name; }
+
 	virtual Task *clone(CloneFlags flags = CLONE_NORMAL) = 0;
 	virtual Task *create(ptr_val_t addr, ptr_val_t stack, uint32_t flags) = 0;
 
-	inline void setSlice(uint32_t s) { m_slice_size = s; m_slice = s; }
-	inline uint32_t getSlice() { return m_slice; }
+	virtual void setEntry(ptr_val_t addr) = 0;
+
+	inline void setSize(uint32_t s) { m_size = s; }
+	inline uint32_t size() { return m_size; }
+
+	void setSlice(uint32_t s);
+	inline uint32_t slice() { return m_slice; }
 	inline void decSlice() { if (m_slice>0) m_slice--; }
+
+	inline uint32_t priority() { return m_priority; }
+	inline void setPriority(uint32_t p) { if (p>MAX_PRIORITY) p = MAX_PRIORITY; m_priority = p; }
+
+	inline uint32_t nice() { return m_nice; }
+	inline void setNice(uint32_t p) { if (p>MAX_NICE) p = MAX_NICE; m_nice = p; }
+
+	inline void setPid(uint32_t p) { m_pid = p; };
+	inline uint32_t pid() { return m_pid; }
+
+	inline volatile ptr_val_t *getLock() { return &m_lock; }
+	void lock();
+	void unlock();
 
 protected:
 	ptr_val_t m_stack;
+	ptr_val_t m_stack_syscall;
 	ptr_val_t m_entry;
-	uint32_t m_slice_size;
+	uint32_t m_priority;
+	uint32_t m_nice;
+
+	uint32_t m_size;
 	uint32_t m_slice;
-	char m_name[32];
+	char m_name[TASK_NAME_LEN];
+	uint32_t m_pid;
+	volatile ptr_val_t m_lock;
+	Mutex m_m;
 };
+
+inline void Task::lock() {
+	m_m.lock();
+}
+inline void Task::unlock() {
+	m_m.unlock();
+}
+inline void Task::setSlice(uint32_t s) { if (m_size!=0 && s>m_size) m_slice = m_size; else m_slice = s; }
 
 #endif

@@ -5,6 +5,7 @@
 #include "types.h"
 #include "idt.h"
 
+#define INTERRUPTS 256
 #define IRQ_ROUTINES 16
 #define ISR_HANDLERS 256
 
@@ -50,7 +51,7 @@ private:
 		unsigned short base_high;
 	} __attribute__((packed));
 
-	Entry idt[256];
+	Entry idt[INTERRUPTS];
 
 	idt_routine_t routines[IRQ_ROUTINES];
 	Handler *handlers[ISR_HANDLERS];

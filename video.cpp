@@ -66,6 +66,7 @@ void Video::clear()
 {
 #if 1
 	if (Platform::fb()!=NULL && Platform::fb()->isConfigured()) {
+		Platform::fb()->clear();
 	} else {
 		if (m_videomem==NULL) return;
 		unsigned int i = 0;
@@ -84,6 +85,11 @@ void Video::scroll()
 {
 #if 1
 	if (Platform::fb()!=NULL && Platform::fb()->isConfigured()) {
+		if (m_y>=height()) {
+			Platform::fb()->clear();
+			m_x = 0;
+			m_y = 0;
+		}
 	} else {
 		if (m_videomem==NULL) return;
 		if (m_y>=height()) {

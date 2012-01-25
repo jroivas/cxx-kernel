@@ -1,6 +1,6 @@
 include config.mk
-CXXFLAGS:=$(CXXFLAGS) -I.
-CXXFLAGSO:=-O2 $(CXXFLAGSO) -I.
+CXXFLAGS:=$(CXXFLAGS) -I. -Iarch
+CXXFLAGSO:=-O2 $(CXXFLAGSO) -I. -Iarch
 OBJS=arch/loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o idt.o timer.o kb.o fb.o math.o states.o setjmp.o bits.o font.o pci.o ata.o storage.o task.o list.o processmanager.o
 THIRDPARTY=3rdparty/my_x86emu/x86emu.o 3rdparty/font/boot_font.o
 
@@ -60,62 +60,19 @@ test.img:
 3rdparty/libx86emu.a:
 	make -C 3rdparty
 
-#boot_font.o:
-#	#3rdparty/font/boot_font.o:
-#	$(CXX) -c $(CXXFLAGSO) -o $@ 3rdparty/font/boot_font.cpp
-
 .cpp.o:
-	$(CXX) -c $(CXXFLAGS) -o $@ $< 
+	$(CXX) -c $(CXXFLAGSO) -o $@ $< 
 
 .c.o:
-	$(CC) -c $(CXXFLAGS) -o $@ $< 
-
-main.o: main.cpp
-
-kernel.o: kernel.cpp kernel.h
-
-cxa.o: cxa.cpp
-
-video.o: video.cpp video.h
-	$(CXX) -c $(CXXFLAGSO) -o $@ $< 
-
-mutex.o: mutex.cpp mutex.h
-	$(CXX) -c $(CXXFLAGSO) -o $@ $< 
-
-local.o: local.cpp local.h
-
-operators.o: operators.cpp operators.h
-	$(CXX) -c $(CXXFLAGSO) -o $@ $< 
-
-mm.o: mm.cpp mm.h
-	$(CXX) -c $(CXXFLAGSO) -o $@ $< 
-
-paging.o: paging.cpp paging.h mmap.h
+	$(CC) -c $(CXXFLAGSO) -o $@ $< 
 
 gdt.o: gdt.cpp gdt.h
-
-string.o: string.cpp string.h memcopy.h
-	$(CXX) -c $(CXXFLAGSO) -o $@ $< 
 
 idt.o: idt.cpp idt.h
 
 timer.o: timer.cpp timer.h
+	$(CXX) -c $(CXXFLAGS) -o $@ $< 
 
-kb.o: kb.cpp kb.h
-
-fb.o: fb.cpp fb.h
-
-states.o: states.cpp states.h
-
-math.o: math.cpp math.h
-
-setjmp.o: setjmp.cpp setjmp.h
-
-#arch/$(ARCH)/loader.o:
-#arch/$(ARCH)/$(ARCH).a:
-#arch/arch.a:
-#build_arch:
-#	make -C arch
 
 arch_x86:
 	make ARCH=x86 -C arch

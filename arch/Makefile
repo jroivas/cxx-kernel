@@ -1,6 +1,6 @@
 include ../config.mk
-CXXFLAGS:=$(CXXFLAGS) -I../
-CXXFLAGSO:=$(CXXFLAGSO) -I../
+CXXFLAGS:=$(CXXFLAGS) -I../ -I.
+CXXFLAGSO:=$(CXXFLAGSO) -I../ -I.
 
 
 all: platform.o compile_arch

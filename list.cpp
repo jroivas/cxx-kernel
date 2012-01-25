@@ -4,6 +4,7 @@ List::List()
 {
 	m_first = NULL;
 	m_last = NULL;
+	m_size = 0;
 }
 
 void List::addFirst(void *val)
@@ -16,6 +17,7 @@ void List::addFirst(void *val)
 		m_last = obj;
 	}
 	m_first = obj;
+	m_size++;
 }
 
 void List::append(void *val)
@@ -29,6 +31,7 @@ void List::append(void *val)
 	ListObject *tmp = m_last;
 	tmp->next = obj;
 	m_last = obj;
+	m_size++;
 }
 
 void *List::first()
@@ -49,6 +52,7 @@ void *List::takeFirst()
 		m_last = NULL;
 	}
 	void *val = tmp->ptr;
+	m_size--;
 	delete tmp;
 	return val;
 }
@@ -76,6 +80,7 @@ void List::deleteAll(void *val)
 				m_last = prev;
 				prev->next = NULL;
 			}
+			m_size--;
 			delete o;
 			o = prev->next;
 		}
@@ -86,6 +91,7 @@ void List::deleteAll(void *val)
 
 uint32_t List::size()
 {
+#if 0
 	if (m_first==NULL) return 0;
 
 	uint32_t c = 1;
@@ -96,6 +102,9 @@ uint32_t List::size()
 	}
 
 	return c;
+#else
+	return m_size;
+#endif
 }
 
 void *List::at(uint32_t i)
@@ -137,6 +146,7 @@ bool List::appendAfter(uint32_t i, void *val)
 		m_last = obj;
 	}
 	o->next = obj;
+	m_size++;
 
 	return true;
 }
@@ -163,6 +173,7 @@ bool List::addAt(uint32_t i, void *val)
 		obj->next = o->next;
 	}
 	o->next = obj;
+	m_size++;
 
 	return true;
 }
@@ -175,8 +186,10 @@ bool List::deleteAt(uint32_t i)
 		if (m_first->next==NULL) {
 			m_first = NULL;
 			m_last = NULL;
+			m_size = 0;
 		} else {
 			m_first = m_first->next;
+			m_size--;
 		}
 		return true;
 	}
@@ -196,11 +209,13 @@ bool List::deleteAt(uint32_t i)
 		o->next = tmp->next;
 		if (tmp==m_last) m_last = o->next;
 		if (tmp->next==NULL) m_last = o;
+		m_size--;
 		delete tmp;
 	}
 	else {
 		m_first = NULL;
 		m_last = NULL;
+		m_size = 0;
 		delete o;
 	}
 

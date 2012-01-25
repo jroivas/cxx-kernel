@@ -1,6 +1,7 @@
 #include "timerx86.h"
 #include "port.h"
 #include "idtx86.h"
+#include "task.h"
 
 #define TIMER_ISR_NUMBER 0
 
@@ -26,10 +27,19 @@ void TimerX86::run(Regs *r)
 
 	//if (m_ticks%10==0) Platform::video()->printf("T");
 
-        Port::out(0x20, 0x20);
-
 	if (pm!=NULL && pm->isRunning()) {
 		if (pm->hasSlice()) pm->decSlice();
-		else pm->schedule();
+		else {
+			Port::out(0x20, 0x20);
+			pm->schedule();
+#if 0
+			Task *t = pm->schedule();
+			if (t!=NULL) {
+				//t->switchTo();
+			}
+#endif
+		}
 	}
+        //Port::out(0x20, 0x20);
+	//if (m_ticks%10==0) Platform::video()->printf("t");
 }

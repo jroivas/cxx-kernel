@@ -22,6 +22,7 @@ void Mutex::assign(ptr_val_t volatile *ptr)
 	m_ptr = ptr;
 }
 
+#if 0
 int Mutex::CAS(int cmp, int set)
 {
 	return Platform::CAS(m_ptr,cmp,set);
@@ -34,15 +35,6 @@ void Mutex::lock()
 	while (CAS(0, 1)==0);
 }
 
-bool Mutex::isLocked()
-{
-	if (m_ptr==NULL) return false;
-
-	if (*m_ptr==1) return true;
-
-	return false;
-}
-
 void Mutex::unlock()
 {
 	if (m_ptr==NULL) return;
@@ -52,16 +44,24 @@ void Mutex::unlock()
 
 	while (CAS(1, 0)==0);
 }
+#endif
+
+bool Mutex::isLocked()
+{
+	if (m_ptr==NULL) return false;
+
+	if (*m_ptr==1) return true;
+
+	return false;
+}
 
 bool Mutex::wait()
 {
 	if (m_ptr==NULL) return false;
-	//printf("Waiting\n");
 
 	while (*m_ptr==1) {
 		//Sleep
 	}
-	//printf("Waiting done\n");
 
 	return true;
 }

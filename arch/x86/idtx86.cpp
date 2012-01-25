@@ -12,10 +12,10 @@ IDTX86::Ptr idt_idtp;
 
 IDTX86::IDTX86() : IDT()
 {
-	idt_idtp.limit = (sizeof(Entry)*256)-1;
+	idt_idtp.limit = (sizeof(Entry)*INTERRUPTS)-1;
 	idt_idtp.base = (unsigned int)&idt;
 
-	Mem::set(&idt, 0, sizeof(Entry)*256);
+	Mem::set(&idt, 0, sizeof(Entry)*INTERRUPTS);
 
 	for (int i=0; i<IRQ_ROUTINES; i++) {
 		routines[i] = NULL;
@@ -219,8 +219,7 @@ extern "C" void irq_handler(Regs * r)
 {
 	if (r==NULL) {
 		VideoX86 tmp;
-		//tmp.clear();
-		tmp.printf("ERROR! ISR, regs. \n");
+		tmp.printf("ERROR! IRQ, regs. \n");
 
 		Platform p;
 		p.state()->seizeInterrupts();
@@ -229,6 +228,11 @@ extern "C" void irq_handler(Regs * r)
 
 	void (*routine)(Regs *r);
 	routine = NULL;
+
+	if (r->int_no<32) { 
+		Port::out(0x20, 0x20);
+		return;
+	}
 
 	routine = IDTX86::get()->routine(r->int_no - 32);
 	if (routine!=NULL) {
@@ -273,7 +277,7 @@ extern "C" void isr_handler(Regs * r)
 	}
 	if (r->int_no == 6) {
 		VideoX86 tmp;
-		tmp.printf("\nERROR! Invalid instruction: %x\n", debug_ptr);
+		tmp.printf("\nERROR! Invalid instruction: %x: EIP: %x\n", debug_ptr, r->eip);
 		Platform p;
 		p.state()->seizeInterrupts();
 		p.state()->halt();
