@@ -233,7 +233,7 @@ int Kernel::run()
 		for (int j=0; j<0x22; j++) { }
 */
 
-#if 0
+#if 1
 	FB::ModeConfig conf;
 	conf.width=800;
 	conf.height=600;
@@ -263,7 +263,6 @@ int Kernel::run()
 #endif
 #if 1
 		video->printf("C++ test kernel\n");
-		video->printf("Note to self: %x\n",0x1234);
 		platform->fb()->swap();
 		platform->fb()->blit();
 #endif
@@ -276,65 +275,10 @@ int Kernel::run()
 	ProcessManager *pm = Platform::processManager();
 	if (pm!=NULL && Platform::task()!=NULL) {
 		Task *kernel_task = Platform::task()->create((ptr_val_t)kernel_loop, 0, 0);
-		//Task *kernel_task = Platform::task();
-#if 0
-		Task *a_task = Platform::task()->create((ptr_val_t)&A_proc, 0, 0);
-		Task *b_task = Platform::task()->create((ptr_val_t)&B_proc, 0, 0);
-		Task *c_task = Platform::task()->create((ptr_val_t)&C_proc, 0, 0);
-
-		//kernel_task->setNice(0);
-		kernel_task->setSize(20);
-		a_task->setSize(100);
-		a_task->setPriority(40);
-		b_task->setNice(10);
-		c_task->setPriority(10);
-/*
-		kernel_task->setSlice(2);
-		a_task->setSlice(500);
-		c_task->setSlice(1000);
-*/
-
-		pm->addTask(kernel_task);
-		pm->addTask(a_task);
-		pm->addTask(b_task);
-		pm->addTask(c_task);
-#else
 		kernel_task->setSize(2);
 		kernel_task->setNice(40);
 		pm->setRunning();
 		pm->addTask(kernel_task);
-#endif
-
-#if 0
-		Task *a_task = Platform::task()->create((ptr_val_t)&A_proc, 0, 0);
-		Task *b_task = Platform::task()->create((ptr_val_t)&B_proc, 0, 0);
-		Task *c_task = Platform::task()->create((ptr_val_t)&C_proc, 0, 0);
-		a_task->setSize(100);
-		a_task->setPriority(40);
-		b_task->setNice(40);
-		c_task->setPriority(10);
-
-		pm->addTask(a_task);
-		pm->addTask(b_task);
-		pm->addTask(c_task);
-
-#endif
-#if 0
-		uint32_t mypid = pm->pid();
-		//kernel_task->setEntry(getEIP());
-		pm->setRunning();
-		Task *a_task = Platform::task()->clone(Task::CLONE_SHARE_STACK);
-		(void)a_task;
-		if (mypid == pm->pid()) {
-			//Parent
-			video->printf("parent %d\n",mypid);
-			//pm->addTask(a_task);
-			video->printf("parentb\n");
-		} else {
-			video->printf("task A\n");
-			//A_proc();
-		}
-#endif
 	}
 
 	while(1) {}

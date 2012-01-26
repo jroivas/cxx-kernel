@@ -81,6 +81,7 @@ int TaskX86::restore(volatile ptr_val_t *lock)
 
 Task *TaskX86::clone(TaskX86::CloneFlags flags)
 {
+	(void)flags;
 	TaskX86 *t = new TaskX86();
 	if (t==NULL) return NULL;
 	//FIXME
