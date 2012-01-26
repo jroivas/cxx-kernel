@@ -30,10 +30,11 @@ void Timer::run(Regs *r)
 	(void)r;
 }
 
-void Timer::handler(Regs *r)
+int Timer::handler(Regs *r)
 {
-        if (__global_timer==NULL) return;
+        if (__global_timer==NULL) return -1;
         __global_timer->run(r);
+	return 0;
 }
 
 void Timer::wait(unsigned long ticks_to_wait)

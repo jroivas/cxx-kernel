@@ -38,8 +38,9 @@ void KB::run(Regs *r)
 }
 #endif
 
-void KB::handler(Regs *r)
+int KB::handler(Regs *r)
 {
-        if (__global_kb==NULL) return;
+        if (__global_kb==NULL) return -1;
         __global_kb->run(r);
+	return 0;
 }

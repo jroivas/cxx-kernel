@@ -1,6 +1,8 @@
 #ifndef FB_H
 #define FB_H
 
+#include "mutex.h"
+
 class FB
 {
 public:
@@ -43,5 +45,6 @@ protected:
 	unsigned int m_size;
 	bool m_direct;
 	bool m_configured;
+	Mutex m;
 };
 #endif

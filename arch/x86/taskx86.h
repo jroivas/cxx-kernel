@@ -54,21 +54,35 @@ public:
 	void init(ptr_val_t addr, ptr_val_t stack, uint32_t flags);
 
 	void switchTo(volatile ptr_val_t *lock, ptr_t killer);
-	void save();
-	void restore(volatile ptr_val_t *lock);
+	int save();
+	int restore(volatile ptr_val_t *lock);
 
 	Task *clone(CloneFlags flags = CLONE_NORMAL);
 	Task *create(ptr_val_t addr, ptr_val_t stack, uint32_t flags);
 	void setTss(void *ptr) { Mem::copy((void*)&m_tss, ptr, sizeof(task_tss_t)); }
 	void setEntry(ptr_val_t addr);
 
-private:
 	task_tss_t m_tss;
-	class StateX86 {
+	class __attribute__((aligned(16))) StateX86 {
 	public:
-		uint32_t states[16];
-	};
+		union {
+			uint32_t states[32];
+			struct {
+				uint32_t edi;
+				uint32_t esi;
+				uint32_t ebx;
+				uint32_t ebp;
+				uint32_t esp;
+				uint32_t eip;
+
+				uint32_t fpu_flags;
+				uint8_t fpu_state[512+16] __attribute__((aligned(16)));
+			} r;
+		};
+	} __attribute__((aligned(16)));
+
 	StateX86 m_state;
+private:
 };
 
 #endif

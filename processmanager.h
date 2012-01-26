@@ -19,6 +19,7 @@ public:
 	void decSlice() { if (m_current==NULL) return; m_current->lock(); m_current->decSlice(); m_current->unlock(); }
 	uint32_t pid() { if (m_current==NULL)  return 0; return m_current->pid(); }
 	static void killer();
+	Task *clone();
 
 private:
 	void doKill();

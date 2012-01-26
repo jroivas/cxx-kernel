@@ -96,13 +96,20 @@ FB::ModeConfig *Vesa::query(FB::ModeConfig *prefer)
 {
 	(void)prefer;
 
+	m.lock();
 	BIOS *bios = BIOS::get();
 	vbe_info_t *info = (vbe_info_t *)bios->alloc(sizeof(vbe_info_t));
-	if (!getVESA(info)) return NULL;
+	if (!getVESA(info)) {
+		m.unlock();
+		return NULL;
+	}
 
 	uint16_t *loc = (uint16_t*)VBE_Ptr((uint32_t)info->video_mode_ptr);
 	//Platform::video()->printf("=== VBE2 %d %x %x\n",(loc<(uint16_t*)(info+sizeof(info))),loc,info+sizeof(info));
-	if (loc==NULL) return NULL;
+	if (loc==NULL) {
+		m.unlock();
+		return NULL;
+	}
 
 	//Platform::video()->printf("=== Has MMX? %s\n",mmx_has()?"YES":"NO");
 
@@ -125,10 +132,12 @@ FB::ModeConfig *Vesa::query(FB::ModeConfig *prefer)
 		bios->runInt(0x10, &r);
 		if ((r.eax&0xFF)!=0x4f) {
 			Platform::video()->printf("=== VBE2 mode info not supported\n");
+			m.unlock();
 			return NULL;
 		}
 		if ((r.eax&0xFF00)!=0) {
 			Platform::video()->printf("=== VBE2 mode info failed %d %d\n",i,loc[i]);
+			m.unlock();
 			return NULL;
 		}
 		if (modeinfo->memory_model!=4 && modeinfo->memory_model!=6) {
@@ -199,6 +208,7 @@ FB::ModeConfig *Vesa::query(FB::ModeConfig *prefer)
 	MM::instance()->free(conf);
 	if (bestdiff==-1) {
 		MM::instance()->free(res);
+		m.unlock();
 		return NULL;
 	}
 
@@ -234,6 +244,7 @@ FB::ModeConfig *Vesa::query(FB::ModeConfig *prefer)
 		for (int j=0; j<0x1ff; j++) ;
 	}
 #endif
+	m.unlock();
 
 	return res;
 }
@@ -280,6 +291,8 @@ void Vesa::blit()
 	if (!m_double_buffer) Mem::copy(m_current->base, m_backbuffer, m_size);
 	else memcpy_opt(m_current->base, m_buffer, m_size);
 #endif
+	m.lock();
 	memcpy_opt(m_current->base, m_buffer, m_size);
+	m.unlock();
 	//Mem::copy(m_current->base,m_buffer,m_size);
 }

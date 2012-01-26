@@ -8,6 +8,7 @@
 #include "ata.h"
 #include "processmanager.h"
 #include "task.h"
+#include "syscall.h"
 
 #ifdef ARCH_LINUX
 #include "arch/linux/virtualdisc.h"
@@ -24,7 +25,19 @@ void B_proc()
 
 void A_proc()
 {
+	uint32_t pid = Platform::processManager()->pid();
+	Platform::video()->printf("mypid %d %d\n",Platform::processManager()->pid(), pid);
+#if 0
+	ProcessManager *pm = Platform::processManager();
+	if (pid==Platform::processManager()->pid()) {
+		Task *t = pm->clone();
+		(void)t;
+		//if (t!=NULL) pm->addTask(t);
+	}
+#endif
+	//Platform::video()->printf("2mypid %d %d\n",Platform::processManager()->pid(), pid);
 	while (1) {
+		//Platform::video()->printf("A %d ",Platform::processManager()->pid());
 		Platform::video()->printf("A");
 		Timer::get()->wait(50);
 	}
@@ -32,8 +45,14 @@ void A_proc()
 
 void C_proc()
 {
+	uint32_t cnt=0;
 	while (1) {
 		Platform::video()->printf("C");
+		if (cnt++%5==0)  {
+			int32_t res = 0;
+			asm ("int $0x99": "=a"(res));
+			Platform::video()->printf("C %x\n",res);
+		}
 		Timer::get()->wait(500);
 	}
 }
@@ -72,7 +91,7 @@ void kernel_loop()
 		ProcessManager *pm = Platform::processManager();
 		pm->schedule();
 #endif
-		if (Platform::fb()!=NULL) {
+		if (Platform::fb()!=NULL && Platform::fb()->isConfigured()) {
 			Platform::fb()->swap();
 			Platform::fb()->blit();
 		}
@@ -214,7 +233,7 @@ int Kernel::run()
 		for (int j=0; j<0x22; j++) { }
 */
 
-#if 1
+#if 0
 	FB::ModeConfig conf;
 	conf.width=800;
 	conf.height=600;
@@ -251,6 +270,8 @@ int Kernel::run()
 	}
 #endif
 	video->printf("Done\n");
+	SysCall *sys = new SysCall();
+	(void)sys;
 
 	ProcessManager *pm = Platform::processManager();
 	if (pm!=NULL && Platform::task()!=NULL) {

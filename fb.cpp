@@ -5,6 +5,8 @@
 #include "arch/platform.h"
 #include "memcopy.h"
 
+static volatile ptr_val_t __fb_mutex = 0;
+
 FB::FB()
 {
 	m_current = NULL;
@@ -13,6 +15,7 @@ FB::FB()
 	m_double_buffer = true;
 	m_direct = false;
 	m_configured = false;
+	m.assign(&__fb_mutex);
 }
 
 FB::~FB()
@@ -22,15 +25,21 @@ FB::~FB()
 
 void FB::setSingleBuffer()
 {
+	m.lock();
+
 	m_double_buffer = false;
 	if (m_buffer!=NULL) {
 		MM::instance()->free(m_buffer);
 	}
 	m_buffer = NULL;
+
+	m.unlock();
 }
 
 void FB::setDirect()
 {
+	m.lock();
+
 	m_direct = true;
 	if (m_backbuffer!=NULL) {
 		MM::instance()->free(m_backbuffer);
@@ -40,11 +49,15 @@ void FB::setDirect()
 	}
 	m_backbuffer = m_current->base;
 	m_buffer = m_current->base;
+
+	m.unlock();
 }
 
 void FB::allocBuffers()
 {
 	if (m_direct) return;
+	m.lock();
+
 	m_size = m_current->bytes_per_line*(m_current->height);
 	m_backbuffer = (unsigned char*)MM::instance()->alloc(m_size, MM::AllocClear);
 	if (m_backbuffer!=NULL) {
@@ -84,10 +97,12 @@ void FB::allocBuffers()
 	}
 #endif
 	//Platform::video()->printf("Allocbuffers: %x %x %x sizes: %d\n",m_current->base,m_buffer,m_backbuffer,m_current->bytes_per_line*(m_current->height));
+	m.unlock();
 }
 
 void FB::freeBuffers()
 {
+	m.lock();
 	if (m_buffer!=NULL) {
 		MM::instance()->free(m_buffer);
 		m_buffer = NULL;
@@ -96,6 +111,7 @@ void FB::freeBuffers()
 		MM::instance()->free(m_backbuffer);
 		m_backbuffer = NULL;
 	}
+	m.unlock();
 }
 
 bool FB::configure(ModeConfig *mode)
@@ -125,10 +141,12 @@ void FB::swap()
 		return;
 	}
 
+	m.lock();
 	if (m_buffer!=NULL && !m_direct) {
 		memcpy_opt(m_buffer, m_backbuffer, m_size);
 		//Mem::copy(m_buffer, m_backbuffer, m_size);
 	}
+	m.unlock();
 }
 
 void FB::putPixel(int x, int y, unsigned char r, unsigned char g, unsigned char b, unsigned char a)
@@ -198,8 +216,10 @@ void FB::putPixel(int x, int y, unsigned int color)
 
 void FB::clear()
 {
+	m.lock();
 	if (m_backbuffer!=NULL) Mem::set(m_backbuffer, 0, m_size);
 	if (m_buffer!=NULL) Mem::set(m_buffer, 0, m_size);
+	m.unlock();
 	//swap();
 #if 0
 	unsigned char *dest = backbuffer+(current->height*current->bytes_per_line);

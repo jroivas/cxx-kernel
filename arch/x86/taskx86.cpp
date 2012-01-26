@@ -6,10 +6,11 @@
 
 #define DEFAULT_STACK_SIZE 0x1000
 
-extern "C" void saveProcess(uint32_t *stack);
-extern "C" void restoreProcess(volatile uint32_t *lock, uint32_t *stack);
+extern "C" int saveProcess(uint32_t *stack);
+extern "C" int restoreProcess(volatile uint32_t *lock, uint32_t *stack);
 extern "C" void changeProcess(volatile uint32_t *lock, uint32_t eip, uint32_t stack, uint32_t parm, uint32_t *killer);
 extern "C" uint32_t getEIP();
+extern "C" uint32_t getEIP2();
 extern "C" uint32_t getESP();
 extern "C" uint32_t getEBP();
 extern "C" uint32_t getCR3();
@@ -17,6 +18,7 @@ extern "C" uint32_t getCR3();
 TaskX86::TaskX86() : Task()
 {
 	setTss(getTss0());
+	Mem::set(&m_state, 0, sizeof(StateX86));
 }
 
 void TaskX86::setEntry(ptr_val_t addr)
@@ -60,31 +62,28 @@ void TaskX86::init(ptr_val_t addr, ptr_val_t stack, uint32_t flags)
 
 void TaskX86::switchTo(volatile ptr_val_t *lock, ptr_t killer)
 {
-        gdt_set_gate(6, (unsigned long) &m_tss, sizeof(task_tss_t) - 1, 0x89, 0x40);
+	gdt_set_gate(5, (unsigned long) &m_tss, sizeof(task_tss_t) - 1, 0x89, 0x40);
 	changeProcess((volatile uint32_t*)lock, m_tss.eip, m_tss.esp, 0, (uint32_t*)killer);
 }
 
-void TaskX86::save()
+int TaskX86::save()
 {
-	saveProcess((uint32_t*)&m_state);
+	return saveProcess((uint32_t*)&m_state);
 }
 
-void TaskX86::restore(volatile ptr_val_t *lock)
+int TaskX86::restore(volatile ptr_val_t *lock)
 {
 	//Platform::video()->printf("Stack: %x %x, diff: %d\n", m_state.states[4], m_stack, m_stack-m_state.states[4]);
 	//Platform::video()->printf("Stack: %x %x, diff: %d\n", m_tss.esp0, m_stack_syscall, m_stack_syscall-m_tss.esp0);
-        gdt_set_gate(6, (unsigned long) &m_tss, sizeof(task_tss_t) - 1, 0x89, 0x40);
-	restoreProcess((volatile uint32_t*)lock, (uint32_t*)&m_state);
+	gdt_set_gate(5, (unsigned long) &m_tss, sizeof(task_tss_t) - 1, 0x89, 0x40);
+	return restoreProcess((volatile uint32_t*)lock, (uint32_t*)&m_state);
 }
 
 Task *TaskX86::clone(TaskX86::CloneFlags flags)
 {
 	TaskX86 *t = new TaskX86();
-
-	ptr_val_t esp = 0;
-	if ((flags & CLONE_SHARE_STACK)>0) esp = m_tss.esp;
-
-	t->init(m_tss.eip, esp, m_tss.eflags);
+	if (t==NULL) return NULL;
+	//FIXME
 
 	return t;
 }

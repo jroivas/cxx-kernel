@@ -10,7 +10,7 @@ public:
 
 protected:
 	KB() { }
-	static void handler(Regs *r);
+	static int handler(Regs *r);
 	virtual void run(Regs *r) = 0;
 };
 

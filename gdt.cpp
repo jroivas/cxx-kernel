@@ -95,24 +95,24 @@ void gdt_init()
 	__gdt_ptr.base = (ptr_val_t)&__gdt;
 
 	Mem::set(&__tss0, 0, sizeof(tss_t));
-        __tss0.cs = (unsigned short)0x08; //FIXME
-        __tss0.ds = (unsigned short)0x10; //FIXME
-        __tss0.cs = (unsigned short)0x10; //FIXME
-        __tss0.es = (unsigned short)0x10; //FIXME
-        __tss0.gs = (unsigned short)0x10; //FIXME
-        __tss0.ss0 = (unsigned short)0x10; //FIXME
+        __tss0.cs = (unsigned short)0x08;
+        __tss0.ds = (unsigned short)0x10;
+        __tss0.cs = (unsigned short)0x10;
+        __tss0.es = (unsigned short)0x10;
+        __tss0.gs = (unsigned short)0x10;
+        __tss0.ss0 = (unsigned short)0x10;
         __tss0.esp0 = get_esp();
         __tss0.iopb = (unsigned short)sizeof(tss_t) - 1;
 
 	Mem::set(&__tss1, 0, sizeof(tss_t));
-        __tss0.cs = (unsigned short)0x08; //FIXME
-        __tss0.ds = (unsigned short)0x10; //FIXME
-        __tss0.cs = (unsigned short)0x10; //FIXME
-        __tss0.es = (unsigned short)0x10; //FIXME
-        __tss0.gs = (unsigned short)0x10; //FIXME
-        __tss0.ss0 = (unsigned short)0x10; //FIXME
-        __tss0.esp0 = get_esp();
-        __tss0.iopb = (unsigned short)sizeof(tss_t) - 1;
+        __tss1.cs = (unsigned short)0x18;
+        __tss1.ds = (unsigned short)0x20;
+        __tss1.cs = (unsigned short)0x20;
+        __tss1.es = (unsigned short)0x20;
+        __tss1.gs = (unsigned short)0x20;
+        __tss1.ss1 = (unsigned short)0x20;
+        __tss1.esp0 = get_esp();
+        __tss1.iopb = (unsigned short)sizeof(tss_t) - 1;
  
 	gdt_set_gate(0, 0, 0, 0, 0);
 	gdt_set_gate(1, 0, 0xFFFFFFFF, 0x9A, 0xCF);

@@ -13,7 +13,7 @@ public:
 	void sleep(unsigned long sec);
 	void msleep(unsigned long msec);
 	void usleep(unsigned long usec);
-        static void handler(Regs *r);
+        static int handler(Regs *r);
 
 protected:
         Timer();

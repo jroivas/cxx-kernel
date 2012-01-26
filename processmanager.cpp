@@ -42,11 +42,15 @@ void ProcessManager::addTask(Task *t)
 	//m.lock();
 	Platform::seizeInterrupts();
 
-	if (m_current!=NULL) m_current->lock();
+	Task *current = m_current;
+
+	if (current!=NULL) current->lock();
+
+	//t->lock();
 	if (t->pid()==0) {
 		t->setPid(m_pid++);
 	}
-	t->lock();
+	//t->lock();
 	//m_tasks->append(t);
 
 #if 0
@@ -56,18 +60,24 @@ void ProcessManager::addTask(Task *t)
 #endif
 	//if (m_current!=NULL) m_current->unlock();
 	
+	//Platform::video()->printf("Addtask: %x %x\n",t->pid(), t);
+
 	volatile ptr_val_t *lock = NULL;
-	if (m_current!=NULL) {
-		lock = m_current->getLock();
-		m_current->save();
-		m_tasks->append(m_current);
+	if (current!=NULL) {
+		lock = current->getLock();
+		m_tasks->append(current);
+		if (current->save()) {
+			//Platform::video()->printf("noo!\n");
+			Platform::continueInterrupts();
+			return;
+		}
 	}
 
 	//t->lock();
 	m_current = t;
 
-	t->unlock();
-	Platform::continueInterrupts();
+	//Platform::continueInterrupts();
+	//t->unlock();
 
 	t->switchTo(lock, (ptr_t)&ProcessManager::killer);
 
@@ -76,8 +86,8 @@ void ProcessManager::addTask(Task *t)
 
 void ProcessManager::doKill()
 {
-	Platform::video()->printf("Killing time!\n");
 	if (m_current == NULL) return;
+	Platform::video()->printf("Killing time!\n");
 
 	m_tasks->deleteAll(m_current);
 }
@@ -88,38 +98,63 @@ void ProcessManager::killer()
 	pm->doKill();
 }
 
+#define TEST_LOCK(x) bool __test_lock_##x = false; do { volatile ptr_val_t *__lock_val = x->getLock(); x->lock(); if (*__lock_val==1) __test_lock_##x=true; } while (!__test_lock_##x);
+//#define TEST_LOCK(x) 
+
 Task *ProcessManager::schedule()
 {
 	Platform::seizeInterrupts();
+	Task *current = m_current;
 
-	//Platform::video()->printf("Curr %x %d\n",m_current, m_current==NULL?0:m_current->pid());
-	if (m_current!=NULL) {
-		m_current->lock();
-		m_tasks->append(m_current);
+	if (current!=NULL) {
+		//current->lock();
+		TEST_LOCK(current);
 	}
+	//Platform::video()->printf("Curr %x %d\n",current, current==NULL?0:current->pid());
 
 	void *tmp = m_tasks->takeFirst();
 	if (tmp==NULL) {
+		current->unlock();
 		Platform::continueInterrupts();
 		return NULL;
 	}
 
 	Task *next = (Task*)tmp;
-	next->lock();
-
-	volatile ptr_val_t *lock = NULL;
-	if (m_current!=NULL) {
-		lock = m_current->getLock();
+	if (next==current) {
+		current->unlock();
+		Platform::continueInterrupts();
+		return current;
 	}
-
-	m_current->save();
+	if (current!=NULL) {
+		m_tasks->append(current);
+	}
 
 	m_current = next;
 
+	if (*(next->getLock())==1) {
+		Platform::video()->printf("NEXT ALREADY LOCKED: %d %x!\n",next->pid(), next);
+		while(1);
+	}
+
+	//next->lock();
+	TEST_LOCK(next);
+
+	volatile ptr_val_t *lock = NULL;
+	if (current!=NULL) {
+		lock = current->getLock();
+	}
+
+	if (current->save()) {
+		next->unlock();
+		current->unlock();
+		Platform::continueInterrupts();
+		return current;
+	}
+
+
 #if 1
-	uint32_t approx = (MAX_PRIORITY - m_current->priority()) + m_current->nice();
+	uint32_t approx = (MAX_PRIORITY - next->priority()) + next->nice();
 	if (approx==0) approx++;
-	//m_pool_slice = SCHEDULING_GRANULARITY/approx;
 	if (m_tasks->size()>0) {
 		m_pool_slice = SCHEDULING_GRANULARITY/m_tasks->size()/approx;
 		if (m_pool_slice<SCHEDULING_GRANULARITY_MIN) m_pool_slice = SCHEDULING_GRANULARITY_MIN;
@@ -132,11 +167,18 @@ Task *ProcessManager::schedule()
 
 #ifdef DEBUG
 	Platform::video()->printf("\n::: %s slice: %5d,  %d\n",next->name(), m_pool_slice, m_tasks->size());
+	Platform::video()->printf("\n:::%d\n",next->pid());
 #endif
+
+	//Platform::continueInterrupts();
 	next->unlock();
-	Platform::continueInterrupts();
 
 	next->restore(lock);
 
-	return m_current;
+	return current;
+}
+
+Task *ProcessManager::clone()
+{
+	return NULL;
 }

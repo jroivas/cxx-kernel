@@ -26,8 +26,8 @@ public:
 	virtual void init(ptr_val_t addr, ptr_val_t stack, uint32_t flags) = 0;
 
 	virtual void switchTo(volatile ptr_val_t *lock, ptr_t killer) = 0;
-	virtual void save() = 0;
-	virtual void restore(volatile ptr_val_t *lock) = 0;
+	virtual int save() = 0;
+	virtual int restore(volatile ptr_val_t *lock) = 0;
 
 	void setName(const char *n) { for (uint32_t i=0; i<TASK_NAME_LEN-1; i++) { m_name[i] = n[i]; } m_name[TASK_NAME_LEN-1]=0; }
 	const char *name() { return m_name; }
@@ -66,10 +66,11 @@ protected:
 
 	uint32_t m_size;
 	uint32_t m_slice;
-	char m_name[TASK_NAME_LEN];
 	uint32_t m_pid;
 	volatile ptr_val_t m_lock;
+	char m_name[TASK_NAME_LEN];
 	Mutex m_m;
+	bool m_userSpace;
 };
 
 inline void Task::lock() {

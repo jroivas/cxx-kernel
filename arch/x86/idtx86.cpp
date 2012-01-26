@@ -193,6 +193,7 @@ IRQ_GATE_DEF(12);
 IRQ_GATE_DEF(13);
 IRQ_GATE_DEF(14);
 IRQ_GATE_DEF(15);
+IRQ_GATE_DEF(121);
 void IDTX86::initIRQ()
 {
 	remapIRQ();
@@ -213,9 +214,10 @@ void IDTX86::initIRQ()
 	IRQ_GATE(13);
 	IRQ_GATE(14);
 	IRQ_GATE(15);
+	IRQ_GATE(121);
 }
 
-extern "C" void irq_handler(Regs * r)
+extern "C" int irq_handler(Regs * r)
 {
 	if (r==NULL) {
 		VideoX86 tmp;
@@ -226,17 +228,18 @@ extern "C" void irq_handler(Regs * r)
 		p.state()->halt();
 	}
 
-	void (*routine)(Regs *r);
+	int (*routine)(Regs *r);
 	routine = NULL;
 
 	if (r->int_no<32) { 
 		Port::out(0x20, 0x20);
-		return;
+		return -1;
 	}
 
-	routine = IDTX86::get()->routine(r->int_no - 32);
+	routine = IDTX86::get()->routine(r->int_no);
+	int res = 0;
 	if (routine!=NULL) {
-		routine(r);
+		res = routine(r);
 	}
 
 	IDTX86::Handler *handler = IDTX86::handler(r->int_no);
@@ -253,11 +256,12 @@ extern "C" void irq_handler(Regs * r)
 	}
 
 	Port::out(0x20, 0x20);
+	return res;
 }
 
 extern uint32_t debug_ptr;
 extern uint32_t debug_ptr_cr2;
-extern "C" void isr_handler(Regs * r)
+extern "C" int isr_handler(Regs * r)
 {
 	if (r==NULL) {
 		VideoX86 tmp;
@@ -286,7 +290,7 @@ extern "C" void isr_handler(Regs * r)
 		// Got it
 		VideoX86 tmp;
 		//tmp.clear();
-		tmp.printf("ERROR! Exception %d\n",r->int_no);
+		tmp.printf("ERROR! Exception %d EIP: %x\n",r->int_no, r->eip);
 
 		Platform p;
 		p.state()->seizeInterrupts();
@@ -299,4 +303,5 @@ extern "C" void isr_handler(Regs * r)
 		//handler->bottom_half(r->int_no, handler->data); //FIXME
 		handler = handler->next;
 	}
+	return 0;
 }

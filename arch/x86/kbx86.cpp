@@ -3,7 +3,7 @@
 #include "idt.h"
 #include "video.h"
 
-#define KB_IRQ_NUMBER 1
+#define KB_IRQ_NUMBER 33
 
 KBX86::KBX86() : KB()
 {

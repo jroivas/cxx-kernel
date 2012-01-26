@@ -6,7 +6,7 @@
 #include "idt.h"
 
 #define INTERRUPTS 256
-#define IRQ_ROUTINES 16
+#define IRQ_ROUTINES 256
 #define ISR_HANDLERS 256
 
 class IDTX86 : public IDT

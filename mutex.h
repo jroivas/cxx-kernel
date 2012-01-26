@@ -15,14 +15,6 @@ public:
 	void assign(ptr_val_t volatile *ptr);
 	void lock();
 	void unlock();
-#if 0
-	inline void lock() {
-		Platform_CAS(m_ptr, 0, 1);
-	}
-	inline void unlock() {
-		Platform_CAS(m_ptr, 1, 0);
-	}
-#endif
 	bool isLocked();
 	bool wait();
 	void abort();
@@ -41,8 +33,10 @@ private:
 inline void Mutex::lock() {
 	if (m_ptr==NULL) return;
 
-	//Platform_CAS(m_ptr, 0, 1);
-	while (Platform_CAS(m_ptr, 0, 1)==0);
+	/*
+	while (Platform_CAS(m_ptr, 0, 1)==0) ;
+	*/
+	Platform_CAS(m_ptr, 0, 1);
 }
 
 inline void Mutex::unlock() {

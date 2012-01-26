@@ -21,7 +21,7 @@ idt_load:
 	lidt [idt_idtp]
 	ret
 
-__irq_common:
+__irq_timer:
 	pusha
 
 	push ds
@@ -35,13 +35,12 @@ __irq_common:
 	mov fs, ax
 	mov gs, ax
 
-	mov eax, esp
-	push eax
+	mov ecx, esp
+	push ecx
 
-	mov eax, irq_handler
-	call eax
+	call irq_handler
 
-	pop eax
+	add esp, 4
 
 	pop gs
 	pop fs
@@ -50,6 +49,56 @@ __irq_common:
 
 	popa
 	add esp, 8
+
+	iret
+
+__irq_common:
+	push eax
+	mov eax, esp
+	push ecx
+	push edx
+	push ebx
+	push eax
+	push ebp
+	push esi
+	push edi
+
+	push ds
+	push es
+	push fs
+	push gs
+
+	mov ax, KERNEL_SPACE
+	mov ds, ax
+	mov es, ax
+	mov fs, ax
+	mov gs, ax
+
+	mov ecx, esp
+	push ecx
+
+	call irq_handler
+
+	add esp, 4
+
+	pop gs
+	pop fs
+	pop es
+	pop ds
+
+	;popa
+	pop edi
+	pop esi
+	pop ebp
+	pop ebx
+	pop ebx
+	pop edx
+	pop ecx
+	;pop eax
+	add esp, 4 ;discard eax
+
+	add esp, 8
+
 	iret
 
 __isr_common:
@@ -66,13 +115,12 @@ __isr_common:
 	mov fs, ax
 	mov gs, ax
 
-	mov eax, esp
-	push eax
+	mov ecx, esp
+	push ecx
 
-	mov eax, isr_handler
-	call eax
+	call isr_handler
 
-	pop eax
+	add esp, 4
 
 	pop gs
 	pop fs
@@ -81,7 +129,19 @@ __isr_common:
 
 	popa
 	add esp, 8
+
 	iret
+
+%macro __irq_init_save_eax 1
+
+[global __irq%1]
+
+__irq%1:
+	cli
+	push dword 0
+	push dword (%1 + 32)
+	jmp __irq_timer
+%endmacro
 
 %macro __irq_init 1
 
@@ -89,12 +149,12 @@ __isr_common:
 
 __irq%1:
 	cli
-	push byte 0
-	push byte (%1 + 32)
+	push dword 0
+	push dword (%1 + 32)
 	jmp __irq_common
 %endmacro
 
-__irq_init 0
+__irq_init_save_eax 0
 __irq_init 1
 __irq_init 2
 __irq_init 3
@@ -110,6 +170,7 @@ __irq_init 12
 __irq_init 13
 __irq_init 14
 __irq_init 15
+__irq_init 121
 
 %macro __isr_init 1
 
@@ -117,8 +178,8 @@ __irq_init 15
 
 __isr%1:
 	cli
-	push byte 0
-	push byte %1
+	push dword 0
+	push dword %1
 	jmp __isr_common
 %endmacro
 
@@ -130,8 +191,8 @@ __isr%1:
 	cli
 	pop eax
 	mov [debug_ptr],eax
-	push byte 0
-	push byte %1
+	push dword 0
+	push dword %1
 	jmp __isr_common
 	jmp $
 %endmacro
@@ -146,7 +207,7 @@ __isr%1:
 	mov eax, cr2
 	mov [debug_ptr_cr2], eax
 	pop eax
-	push byte %1
+	push dword %1
 	jmp __isr_common
 %endmacro
 

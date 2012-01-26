@@ -18,4 +18,5 @@ Task::Task()
 
 	m_lock = 0;
 	m_m.assign(&m_lock);
+	m_userSpace = false;
 }

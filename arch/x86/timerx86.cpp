@@ -3,7 +3,8 @@
 #include "idtx86.h"
 #include "task.h"
 
-#define TIMER_ISR_NUMBER 0
+//#define TIMER_ISR_NUMBER 0
+#define TIMER_ISR_NUMBER 32
 
 TimerX86::TimerX86() : Timer()
 {
@@ -30,8 +31,8 @@ void TimerX86::run(Regs *r)
 	if (pm!=NULL && pm->isRunning()) {
 		if (pm->hasSlice()) pm->decSlice();
 		else {
-			Port::out(0x20, 0x20);
 			pm->schedule();
+			Port::out(0x20, 0x20);
 #if 0
 			Task *t = pm->schedule();
 			if (t!=NULL) {

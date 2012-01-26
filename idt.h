@@ -3,7 +3,7 @@
 
 #include "regs.h"
 
-typedef void (*idt_routine_t)(Regs *r);
+typedef int (*idt_routine_t)(Regs *r);
 typedef void (*idt_handler_t)(unsigned int num, void *data);
 
 class IDT
