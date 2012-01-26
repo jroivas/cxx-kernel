@@ -44,7 +44,7 @@ extern "C" uint64_t my__udivdi3(uint64_t num, uint64_t den)
 
 extern "C" uint64_t my__umoddi3(uint64_t num, uint64_t den)
 {
-  uint64_t v;
+  uint64_t v = 0;
 
   (void) __udivmoddi4(num, den, &v);
   return v;
@@ -74,7 +74,7 @@ extern "C" int64_t my__divdi3(int64_t num, int64_t den)
 extern "C" int64_t my__moddi3(int64_t num, int64_t den)
 {
   int minus = 0;
-  int64_t v;
+  int64_t v = 0;
 
   if ( num < 0 ) {
     num = -num;

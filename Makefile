@@ -73,6 +73,9 @@ idt.o: idt.cpp idt.h
 timer.o: timer.cpp timer.h
 	$(CXX) -c $(CXXFLAGS) -o $@ $< 
 
+kernel.o: kernel.cpp kernel.h
+	$(CXX) -c $(CXXFLAGS) -o $@ $< 
+
 
 arch_x86:
 	make ARCH=x86 -C arch
