@@ -48,29 +48,31 @@ arm-qemu: arm
 
 linux: config_h_pre config_h_linux config_h_post kernel_linux
 
-run: run_iso
+run: run_iso_x86
+
+run_x86: run
 
 run_qemu: kernel
 	qemu -kernel kernel
 
-kernel_linux: link2.ld arch_linux $(OBJS) $(LIBS) 3rdparty_libs
-	$(CXX) -o kernel_linux $(OBJS) arch/platform.o arch/linux/*.o $(THIRDPARTY) -lc -lpthread -lX11
+kernel_linux: link2.ld arch_$(ARCH) $(OBJS) $(LIBS) 3rdparty_libs
+	$(CXX) -o kernel_$(ARCH) $(OBJS) arch/platform.o arch/$(ARCH)/*.o $(THIRDPARTY) -lc -lpthread -lX11
 
-kernel_x86: link2.ld arch_x86 $(OBJS) arch/x86/x86.a $(LIBS) 3rdparty_libs
-	$(LD) -m elf_i386 -nostdlib -T link2.ld -o kernel $(OBJS) arch/platform.o arch/x86/*.o $(THIRDPARTY)
+kernel_$(ARCH): link2.ld arch_$(ARCH) $(OBJS) arch/$(ARCH)/$(ARCH).a $(LIBS) 3rdparty_libs
+	$(LD) -m elf_i386 -nostdlib -T link2.ld -o kernel_$(ARCH) $(OBJS) arch/platform.o arch/$(ARCH)/*.o $(THIRDPARTY)
 	#$(CXX) -m32 -Xlinker -T -Xlinker link2.ld -ffreestanding -fno-builtin -nostdlib -s  -o  kernel $(OBJS) arch/platform.o arch/$(ARCH)/*.o $(THIRDPARTY)
 
-kernel_arm: link_arm.ld arch_arm $(OBJS) arch/arm/arm.a $(LIBS) 3rdparty_libs
-	$(LD) -m armelf -nostdlib -T link_arm.ld -o kernel $(OBJS) arch/platform.o arch/arm/*.o $(THIRDPARTY)
+kernel_arm: link_$(ARCH).ld arch_$(ARCH) $(OBJS) arch/$(ARCH)/$(ARCH).a $(LIBS) 3rdparty_libs
+	$(LD) -m armelf -nostdlib -T link_arm.ld -o kernel_$(ARCH) $(OBJS) arch/platform.o arch/$(ARCH)/*.o $(THIRDPARTY)
 
-kernel.iso: kernel menu.lst stage2_eltorito
+kernel.iso: kernel_x86 menu.lst stage2_eltorito
 	mkdir -p isofiles/boot/grub
-	cp -f kernel isofiles/boot/kernel
+	cp -f kernel_x86 isofiles/boot/kernel
 	cp -f stage2_eltorito isofiles/boot/grub/
 	cp -f menu.lst isofiles/boot/grub/
 	genisoimage -R -b boot/grub/stage2_eltorito -no-emul-boot -quiet -boot-load-size 4 -boot-info-table -o kernel.iso ./isofiles
 
-run_iso: all kernel.iso test.img
+run_iso_x86: all kernel.iso test.img
 	#qemu -serial mon:stdio -no-kvm -cdrom kernel.iso
 	#qemu -serial mon:stdio -cdrom kernel.iso -hda test.img
 	kvm -serial mon:stdio -cdrom kernel.iso -hda test.img
@@ -116,5 +118,5 @@ clean:
 	rm -f config.h
 	make -C arch clean
 	make -C 3rdparty clean
-	rm -f kernel kernel.iso *.o *.a
+	rm -f kernel kernel_linux kernel.iso *.o *.a
 	rm -f 3drparty/font/*.o 

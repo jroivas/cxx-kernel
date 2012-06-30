@@ -15,3 +15,6 @@ invalid:
 
 clean:
 	make ARCH=all -f Makefile.arches clean
+
+run_x86:
+	make ARCH=x86 -f Makefile.arches run
