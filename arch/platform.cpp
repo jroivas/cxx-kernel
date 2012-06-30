@@ -38,7 +38,7 @@ static ProcessManager *__platform_pm = NULL;
 
 Platform::Platform()
 {
-	#ifdef __arm__
+	#ifdef ARCH_ARM
 	current = PlatformARM;
 	m_state = new StateARM();
 	#endif

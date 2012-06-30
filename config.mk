@@ -1,28 +1,22 @@
 # General build configuration
 
-#CROSS_COMPILE=
-CROSS_COMPILE=~/bin/arm-2010q1/bin/arm-none-eabi-
-#CXX=$(CROSS_COMPILE)clang++
-#CC=$(CROSS_COMPILE)clang
-LD=$(CROSS_COMPILE)ld
-AS=$(CROSS_COMPILE)as
-#TUNE=-m32 -mtune=pentium-mmx -mno-sse -mmmx
-TUNE=
-#TUNE=-m32 -mno-sse -mmmx
-CC=$(CROSS_COMPILE)gcc
-CXX=$(CROSS_COMPILE)g++
+#ifeq (,$(filter _%,$(notdir $(CURDIR))))
+#include target.mk
+ifneq (all,$(ARCH))
+#CURDIR=$(dir $(lastword $(MAKEFILE_LIST)))/
+#$(error joope $(CURDIR) $(dir $(lastword $(MAKEFILE_LIST))) )
+#ifneq ($(findstring $(CURDIR)config_$(ARCH).mk, $(wildcard *.mk)),)
+#$(error found $(CUDRDIR)config_$(ARCH).mk)
+CFILE=$(TOPDIR)/config_$(ARCH).mk
+#CFILE=$(CURDIR)/config_$(ARCH).mk
+#include $(CUDRDIR)config_$(ARCH).mk
+#ifneq ($(findstring $(CFILE), $(wildcard $(CURDIR)*.mk)),)
+ifneq ($(findstring $(CFILE), $(wildcard $(TOPDIR)/*.mk)),)
+include $(CFILE)
+endif
+endif
 
-CFLAGS=-DNO_SYS_HEADERS -D__FREESTAND__ $(TUNE) -ffreestanding -fno-builtin -fno-exceptions -Wall -Werror -Wextra -fomit-frame-pointer -finline-functions -nostdinc -nostdlib -fno-stack-protector
-CXXFLAGS=-DNO_SYS_HEADERS -D__FREESTAND__ $(TUNE) -ffreestanding -fno-builtin -fno-rtti -fno-exceptions -Wall -Werror -Wextra -fomit-frame-pointer -finline-functions
+#else
+#VPATH = $(SRCDIR)
 
-#x86: CXXFLAGS:=-m32
-
-#CFLAGS=-DNO_SYS_HEADERS -D__FREESTAND__ -m32 $(TUNE) -ffreestanding -fno-builtin -fno-exceptions -Wall -Werror -Wextra -fomit-frame-pointer -finline-functions -nostdinc -nostdlib -fno-stack-protector
-#CXXFLAGS=-DNO_SYS_HEADERS -D__FREESTAND__ -m32 $(TUNE) -ffreestanding -fno-builtin -fno-rtti -fno-exceptions -Wall -Werror -Wextra -fomit-frame-pointer -finline-functions
-
-#CXXFLAGS_CC=-D__FREESTAND__ -m32 -ffreestanding -fno-builtin -fno-rtti -fno-exceptions -fomit-frame-pointer -finline-functions
-CXXFLAGSO=$(CXXFLAGS)
-#CXXFLAGSO=-O0 $(CXXFLAGS)
-#CXXFLAGSO=$(CXXFLAGS)
-
-#ARCH=x86
+#endif

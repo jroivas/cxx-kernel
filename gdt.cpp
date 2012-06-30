@@ -121,7 +121,7 @@ void gdt_init()
 	gdt_set_gate(4, 0, 0xFFFFFFFF, 0xF2, 0xCF);
         gdt_set_gate(5, (unsigned long) &__tss0, sizeof(tss_t) - 1, 0x89, 0x40);
         gdt_set_gate(6, (unsigned long) &__tss1, sizeof(tss_t) - 1, 0xE9, 0x40);
- 
+
 	gdt_flush();
 	tss_flush();
 
