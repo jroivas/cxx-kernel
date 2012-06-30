@@ -7,7 +7,7 @@ THIRDPARTY=3rdparty/my_x86emu/x86emu.o 3rdparty/font/boot_font.o
 #LIBS=arch/arch.a
 LIBS=
 
-.PHONY: all clean x86 linux
+.PHONY: all clean x86 arm arm-qemu linux
 
 all: x86
 
@@ -21,10 +21,17 @@ config_h_post:
 config_h_x86:
 	echo '#define ARCH_x86' >> config.h
 
+config_h_arm:
+	echo '#define ARCH_ARM' >> config.h
+
 config_h_linux:
 	echo '#define ARCH_LINUX' >> config.h
 
 x86: config_h_pre config_h_x86 config_h_post kernel_x86 kernel.iso
+
+arm: config_h_pre config_h_arm config_h_post kernel_arm
+
+arm-qemu: arm
 
 linux: config_h_pre config_h_linux config_h_post kernel_linux
 
@@ -39,6 +46,9 @@ kernel_linux: link2.ld arch_linux $(OBJS) $(LIBS) 3rdparty_libs
 kernel_x86: link2.ld arch_x86 $(OBJS) arch/x86/x86.a $(LIBS) 3rdparty_libs
 	$(LD) -m elf_i386 -nostdlib -T link2.ld -o kernel $(OBJS) arch/platform.o arch/x86/*.o $(THIRDPARTY)
 	#$(CXX) -m32 -Xlinker -T -Xlinker link2.ld -ffreestanding -fno-builtin -nostdlib -s  -o  kernel $(OBJS) arch/platform.o arch/$(ARCH)/*.o $(THIRDPARTY)
+
+kernel_arm: link_arm.ld arch_arm $(OBJS) arch/arm/arm.a $(LIBS)
+	$(LD) -m armelf -nostdlib -T link_arm.ld -o kernel $(OBJS) arch/platform.o arch/arm/*.o
 
 kernel.iso: kernel menu.lst stage2_eltorito
 	mkdir -p isofiles/boot/grub
@@ -80,6 +90,9 @@ kernel.o: kernel.cpp kernel.h
 
 arch_x86:
 	make ARCH=x86 -C arch
+
+arch_arm:
+	make ARCH=arm -C arch
 
 arch_linux:
 	make ARCH=linux -C arch

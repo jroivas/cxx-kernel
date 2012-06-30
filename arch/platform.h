@@ -19,6 +19,9 @@
 #ifdef ARCH_x86
 #include "x86/pagingx86.h"
 #endif
+#ifdef ARCH_ARM
+#include "arm/pagingarm.h"
+#endif
 #ifdef ARCH_LINUX
 #include "linux/paginglinux.h"
 #endif

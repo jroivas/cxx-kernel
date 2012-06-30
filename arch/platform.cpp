@@ -14,6 +14,10 @@
 #include "x86/taskx86.h"
 #endif
 
+#ifdef ARCH_ARM
+#include "arm/statesarm.h"
+#endif
+
 #ifdef ARCH_LINUX
 #include "linux/idtlinux.h"
 #include "linux/timerlinux.h"
@@ -36,7 +40,7 @@ Platform::Platform()
 {
 	#ifdef __arm__
 	current = PlatformARM;
-	m_state = NULL;
+	m_state = new StateARM();
 	#endif
 
 	#ifdef ARCH_x86

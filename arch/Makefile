@@ -14,4 +14,5 @@ compile_arch:
 clean:
 	rm -rf *.o *.a
 	make -C x86 clean
+	make -C arm clean
 	make -C linux clean

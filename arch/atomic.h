@@ -16,6 +16,10 @@
 inline int Platform_CAS(ptr_val_t volatile *m_ptr, int cmp, int set) {
 	// FIXME implement this properly
 
+	(void)m_ptr;
+	(void)cmp;
+	(void)set;
+
 	#ifdef ARCH_x86
 	int res = cmp;
 	asm volatile(

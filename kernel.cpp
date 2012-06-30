@@ -45,6 +45,7 @@ void A_proc()
 
 void C_proc()
 {
+#ifdef ARCH_x86
 	uint32_t cnt=0;
 	while (1) {
 		Platform::video()->printf("C");
@@ -55,6 +56,7 @@ void C_proc()
 		}
 		Timer::get()->wait(500);
 	}
+#endif
 }
 
 

@@ -15,6 +15,9 @@ uint64_t my__umoddi3(uint64_t num, uint64_t den);
 int64_t my__divdi3(int64_t num, int64_t den);
 int64_t my__moddi3(int64_t num, int64_t den);
 
+unsigned int __aeabi_uidiv(unsigned int num, unsigned int den);
+int __aeabi_idiv(int num, int den);
+
 #ifdef __cplusplus
 }
 #endif
