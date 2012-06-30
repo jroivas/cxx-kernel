@@ -69,6 +69,49 @@ restoreProcess:
 	push edx
 	ret
 
+[global restoreUserProcess]
+restoreUserProcess:
+	mov ecx, [esp+4] ;lock
+	mov eax, [esp+8] ;save stack
+
+	cmp byte [eax+24], 1
+	mov edx, cr0
+	je .restoreProcess_usesfpu
+	or eax, 0x8
+	jmp .restoreProcess_fpu_over
+.restoreProcess_usesfpu:
+	and edx, 0xfffffff7
+.restoreProcess_fpu_over:
+	mov cr0, edx
+
+	mov edi, [eax]
+	mov esi, [eax+4]
+	mov ebx, [eax+8]
+	mov ebp, [eax+12]
+	mov esp, [eax+16]
+	mov edx, [eax+20]
+
+	cmp ecx, 0
+	jz .restoreProcess_no_lock
+.restoreProcess_retry_lock:
+	;mov eax, 1
+	;mov edi, 0
+	;lock cmpxchg [ecx], edi
+	;jnz .restoreProcess_retry_lock
+
+	mov dword [ecx], 0
+.restoreProcess_no_lock:
+
+	mov al, 0x20
+	out 0x20, al
+
+	xor eax,eax
+	inc eax
+
+	sti
+	push edx
+	ret
+
 [global changeProcess]
 changeProcess:
 	; FIXME

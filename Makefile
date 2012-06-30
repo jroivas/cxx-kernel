@@ -49,7 +49,8 @@ kernel.iso: kernel menu.lst stage2_eltorito
 
 run_iso: all kernel.iso test.img
 	#qemu -serial mon:stdio -no-kvm -cdrom kernel.iso
-	qemu -serial mon:stdio -cdrom kernel.iso -hda test.img
+	#qemu -serial mon:stdio -cdrom kernel.iso -hda test.img
+	kvm -serial mon:stdio -cdrom kernel.iso -hda test.img
 
 test.img:
 	qemu-img info test.img || qemu-img create -f raw test.img 256M

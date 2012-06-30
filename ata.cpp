@@ -97,7 +97,7 @@ protected:
 	bool prepareAccess(uint16_t sectors, uint32_t addr, uint32_t addr_hi=0);
 	bool poll(bool extra=false);
 
-	inline void setHi() { write(control(), 0x80+m_irq?0:0x2); }
+	inline void setHi() { write(control(), (0x80+m_irq)?0:0x2); }
 	inline void setLo() { write(control(), m_irq?0:0x2); }
 
 	uint8_t getStatus();

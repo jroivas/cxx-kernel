@@ -281,6 +281,7 @@ int Kernel::run()
 		pm->addTask(kernel_task);
 	}
 
+	//TODO: Setup initial task
 	while(1) {}
 
 	return 0;

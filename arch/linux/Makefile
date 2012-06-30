@@ -1,5 +1,5 @@
 include ../../config.mk
-CXXFLAGS:=$(CXXFLAGS) -I../../
+CXXFLAGS:=$(CXXFLAGS) -I../../ -I../
 
 OBJS=loader.o paginglinux.o idtlinux.o timerlinux.o stateslinux.o videolinux.o x11.o virtualdisc.o
 
