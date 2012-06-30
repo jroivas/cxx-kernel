@@ -75,3 +75,10 @@ void __cxa_finalize(void *f)
 	}
 }
 #endif
+
+#ifdef ARCH_ARM
+extern "C" int __aeabi_atexit(void* object, void (*destroyer)(void*), void* dso_handle)
+{
+	return __cxa_atexit(destroyer, object, dso_handle);
+}
+#endif
