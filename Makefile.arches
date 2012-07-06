@@ -56,7 +56,7 @@ run_qemu: kernel
 kernel_linux: link2.ld arch_$(ARCH) $(OBJS) $(LIBS) 3rdparty_libs
 	$(CXX) -o kernel_$(ARCH) $(OBJS) arch/platform.o arch/$(ARCH)/*.o $(THIRDPARTY) -lc -lpthread -lX11
 
-kernel_$(ARCH): link2.ld arch_$(ARCH) $(OBJS) arch/$(ARCH)/$(ARCH).a $(LIBS) 3rdparty_libs
+kernel_x86: link2.ld arch_$(ARCH) $(OBJS) arch/$(ARCH)/$(ARCH).a $(LIBS) 3rdparty_libs
 	$(LD) -m elf_i386 -nostdlib -T link2.ld -o kernel_$(ARCH) $(OBJS) arch/platform.o arch/$(ARCH)/*.o $(THIRDPARTY)
 	#$(CXX) -m32 -Xlinker -T -Xlinker link2.ld -ffreestanding -fno-builtin -nostdlib -s  -o  kernel $(OBJS) arch/platform.o arch/$(ARCH)/*.o $(THIRDPARTY)
 
