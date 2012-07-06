@@ -48,9 +48,7 @@ arm-qemu: arm
 
 linux: config_h_pre config_h_linux config_h_post kernel_linux
 
-run: run_iso_x86
-
-run_x86: run
+run_$(ARCH): run_iso_$(ARCH)
 
 run_qemu: kernel
 	qemu -kernel kernel
@@ -72,10 +70,13 @@ kernel.iso: kernel_x86 menu.lst stage2_eltorito
 	cp -f menu.lst isofiles/boot/grub/
 	genisoimage -R -b boot/grub/stage2_eltorito -no-emul-boot -quiet -boot-load-size 4 -boot-info-table -o kernel.iso ./isofiles
 
-run_iso_x86: all kernel.iso test.img
+run_iso_x86: x86 kernel.iso test.img
 	#qemu -serial mon:stdio -no-kvm -cdrom kernel.iso
 	#qemu -serial mon:stdio -cdrom kernel.iso -hda test.img
 	kvm -serial mon:stdio -cdrom kernel.iso -hda test.img
+
+run_iso_arm: arm kernel_arm test.img
+	qemy-system-arm kernel_arm -hda test.img
 
 test.img:
 	qemu-img info test.img || qemu-img create -f raw test.img 256M

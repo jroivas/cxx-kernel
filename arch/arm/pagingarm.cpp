@@ -7,6 +7,7 @@
 #define BITS(x) ((Bits*)x)
 
 #define KERNEL_PRE_POS     0x20000000
+#define KERNEL_PRE_POS     0x20000000
 #define KERNEL_INIT_SIZE   0x000FFFFF
 #define HEAP_START         0x30000000
 #define HEAP_END           0x3FFFFFFF
@@ -29,20 +30,44 @@ struct MemoryMap
         unsigned long type;
 };
 
-
+#if 0
 extern "C" void pagingEnable();
 extern "C" void pagingDisable();
 extern "C" void pagingDirectoryChange(ptr_t a);
+extern "C" void copyPhysicalPage(ptr_val_t a, ptr_val_t b);
+#endif
+extern unsigned int kernel_end;
+
+extern "C" void pagingEnable()
+{
+	asm("mrc p15, 0, r0, c1, c0, 0");
+	asm("orr r0, r0, #0x1");
+	asm("mrc p15, 0, r0, c1, c0, 0");
+}
+
+extern "C" void pagingDisable()
+{
+	// Do we really want to do this?
+	asm("mrc p15, 0, r0, c1, c0, 0");
+	//asm("and r0, r0, #0xfffffffe");
+	asm("bic r0, r0, #0x1");
+	asm("mrc p15, 0, r0, c1, c0, 0");
+}
+
+extern "C" void setPagingDirectory(unsigned int table)
+{
+	asm("ldr r0, %[table]" : : [table] "imm" (table) );
+	asm("mcr p15, 0, r0, c2, c0, 0");
+}
 
 //Mutex for locking mapping and prevent theading/SMP problems
 ptr32_val_t __page_mapping_mutex          = 0;
 ptr32_val_t __page_mapping_static_mutex   = 0;
 
-extern "C" void copyPhysicalPage(ptr_val_t a, ptr_val_t b);
-
 void Page::copyPhys(Page p)
 {
-	copyPhysicalPage(getAddress(), p.getAddress());
+	(void)p;
+	//copyPhysicalPage(getAddress(), p.getAddress());
 }
 
 void Page::alloc(PageType type)
@@ -94,8 +119,193 @@ bool PageTable::copyTo(PageTable *table)
 	return true;
 }
 
+ptr32_val_t roundTo4k(ptr32_val_t s)
+{
+	while (s%4096!=0) s++;
+	return s;
+}
+
+
+#if 0
+ptr32_val_t firstLevelTableSection(ptr32_val_t section, ptr32_val_t domain, PageDir::MMUPermissions permissions)
+{
+	//0x000-0xFFF
+	ptr32_val_t val = 0;
+	val |= (section & 0xFFF) << 20;
+	val |= 2; //Section desc
+
+	switch(permissions) {
+		case MMU_NO_NO:
+			// Should set System=0 and Rom=0 in CP15
+			break;
+		case MMU_RO_NO:
+			// Should set System=1 and Rom=0 in CP15
+			break;
+		case MMU_RO_RO:
+			// Should set System=0 and Rom=1 in CP15
+			break;
+		case MMU_RW_NO:
+			//01
+			val |= (1<<10);
+			break;
+		case MMU_RW_RO:
+			//10
+			val |= (2<<10);
+			break;
+		case MMU_RW_RW:
+			//11
+			val |= (3<<10);
+			break;
+	};
+
+	val |= (domain & 0x1f) << 5;
+
+	return val;
+}
+
+ptr32_val_t firstLevelTableCoarse(ptr32_val_t addr, ptr32_val_t domain)
+{
+	ptr32_val_t val = 0;
+	val |= (addr & 0xFFFFF800);
+	val |= 1; //Coarse page desc
+
+	val |= (domain & 0x1f) << 5;
+
+	return val;
+}
+
+ptr32_val_t secondLevelTable(ptr32_val_t addr, ptr32_val_t level, MMUPermissions permissions)
+{
+	ptr32_val_t val = 0;
+	if (level==0x1) {
+		val |= (addr & 0xFFFF0000);
+	}
+	else if (level==0x2) {
+		val |= (addr & 0xFFFFF000);
+	}
+	else if (level==0x3) {
+		val |= (addr & 0xFFFFFC00);
+	}
+	else {
+		//ERROR!!! Handle?
+		return 0;
+	}
+	val |= level;
+
+	ptr32_val_t per = 0;
+	switch(permissions) {
+		case MMU_NO_NO:
+			// Should set System=0 and Rom=0 in CP15
+			break;
+		case MMU_RO_NO:
+			// Should set System=1 and Rom=0 in CP15
+			break;
+		case MMU_RO_RO:
+			// Should set System=0 and Rom=1 in CP15
+			break;
+		case MMU_RW_NO:
+			//01
+			per = 1;
+			break;
+		case MMU_RW_RO:
+			//10
+			per = 2;
+			break;
+		case MMU_RW_RW:
+			//11
+			per = 3;
+			break;
+	};
+	val |= (per<<4);
+	if (level!=0x3) {
+		val |= (per<<6);
+		val |= (per<<8);
+		val |= (per<<10);
+	}
+
+	return val;
+}
+#endif
+
+PageDir::PageDir(uint32_t physLoc);
+{
+	phys = physLoc;
+	uint32_t tmp = phys;
+	for (uint32_t i = 0; i<0x1000; i++) {
+		*((uint32_t*)tmp) = 0;
+		tmp += 4;
+	}
+}
+
+uint32_t PageDir::permissions(PageDir::MMUPermissions permissions)
+{
+	uint32_t tmp = 0;
+	switch(permissions) {
+		case MMU_NO_NO:
+			// Should set System=0 and Rom=0 in CP15
+			break;
+		case MMU_RO_NO:
+			// Should set System=1 and Rom=0 in CP15
+			break;
+		case MMU_RO_RO:
+			// Should set System=0 and Rom=1 in CP15
+			break;
+		case MMU_RW_NO:
+			//01
+			tmp = 1;
+			break;
+		case MMU_RW_RO:
+			//10
+			tmp = 2;
+			break;
+		case MMU_RW_RW:
+			//11
+			tmp = 3;
+			break;
+	};
+
+	return tmp;
+}
+
+ptr32_val_t PageDir::createSection(ptr32_t section, ptr32_val_t addr, ptr32_val_t domain, PageDir::MMUPermissions section_permissions)
+{
+	ptr32_val_t val = 0;
+
+	//uint32_t section = (addr >> 20) & 0xFFF;
+	section &= 0xFFF;
+
+	val |= (addr & 0xFFF00000);
+	val |= 2; //Section desc
+
+	val |= (permissions(section_permissions)<<10);
+	val |= (domain & 0x1f) << 5;
+
+	ptr_t pos = phys;
+	pos[section] = val;
+
+	return val;
+}
+
+//Just returns te value, need to set in table
+ptr32_val_t PageDir::createCoarseTable(ptr32_t section, ptr32_val_t addr, ptr32_val_t domain, PageDir::MMUPermissions section_permissions)
+{
+	ptr32_val_t val = 0;
+
+	section &= 0xFFF;
+	
+	val |= (addr & 0xFFFFF800);
+	val |= 1; //Coarse page desc
+
+	val |= (domain & 0x1f) << 5;
+
+	return val;
+}
+//B3-13
+
+/*
 extern uint32_t kernel_end;
 extern uint32_t my_kernel_end;
+*/
 PagingPrivate::PagingPrivate()
 {
 	m.assign(&__page_mapping_mutex);
@@ -106,7 +316,23 @@ PagingPrivate::PagingPrivate()
 	is_ok = false;
 
 	// Map free space after kernel
-	__free_page_address = (ptr8_t)my_kernel_end;
+	//__free_page_address = (ptr8_t)my_kernel_end;
+	__free_page_address = (ptr8_t)kernel_end;
+	__free_page_address = (ptr8_t)roundTo4k((ptr32_val_t)__free_page_address);
+	ptr32_t pagingDir = (ptr32_t)__free_page_address;
+
+	// Ok, setting the first level paging dir
+	setPagingDirectory((ptr32_val_t)pagingDir);
+	ptr32_t pd = pagindDir;
+	ptr32_val_t tmp = firstLevelTableSection(0, 0, MMU_RW_RW);
+	*pd++ = tmp;
+#if 0
+	tmp = firstLevelTableSection(1, 0, MMU_RW_RW);
+	*pd++ = tmp;
+#endif
+
+	//Reserve it
+	__free_page_address += 4096*4;
 }
 
 PagingPrivate::~PagingPrivate()
@@ -115,6 +341,7 @@ PagingPrivate::~PagingPrivate()
 
 bool PagingPrivate::init(void *platformData)
 {
+	(void)platformData;
 	if (data!=NULL) return false;
 	is_ok = false;
 
@@ -122,6 +349,8 @@ bool PagingPrivate::init(void *platformData)
 	pagingDisable(); //Safety
 #endif
 
+
+#if 0
 	if (platformData!=NULL) {
 		MultibootInfo *info = (MultibootInfo*)platformData;
 		MemoryMap *mmap = (MemoryMap*)(info->mmap_addr);
@@ -155,76 +384,13 @@ bool PagingPrivate::init(void *platformData)
 	ptr_val_t mem_end_page = (ptr_val_t)__mem_size;
 	pageCnt = mem_end_page/PAGE_SIZE;
 
-#if 0
-	{
-		//ptr_val_t pc = pageCnt;
-		ptr_val_t pc = __mem_size;
-		unsigned short *tmp =(unsigned short *)(0xB8000+80*2);
-		if (pc==0) {
-			*tmp = 0x1730;
-		}
-		while (pc>0) {
-			*tmp++ = 0x1730+(pc%10);
-			pc/=10;
-		}
-		//while(1);
-	}
-#endif
 	data = (void*)new Bits(pageCnt);
-#if 0
-	if (data==NULL) {
-		unsigned short *tmp = (unsigned short *)(0xB8050);
-		*tmp++ = 0x1745; //E
-		*tmp++ = 0x1753; //R
-		*tmp++ = 0x1753; //R
-		*tmp++ = 0x174d; //M
-		while(1);
-		return false;
-	}
-	//BITS(data)->clearAll();
-#endif
-
-#if 0
-	if (platformData!=NULL) {
-		MultibootInfo *info = (MultibootInfo*)platformData;
-		MemoryMap *mmap = (MemoryMap*)(info->mmap_addr);
-		ptr32_val_t  info_end = info->mmap_addr + info->mmap_length;
-		while ((ptr32_val_t )(mmap) + mmap->size < info_end) {
-			if ((mmap->base_addr_low + mmap->length_low) > __mem_size) {
-				__mem_size = mmap->base_addr_low + mmap->length_low;
-			}
-
-			unsigned long addr = mmap->base_addr_low / 0x1000;
-			unsigned long limit = mmap->length_low / 0x1000;
-
-			while (addr<0x120 && limit>0) {
-				addr++;
-				limit--;
-			}
-
-			if (mmap->type == 1) {
-				while (limit>0) {
-					//BITS(data)->set(addr/PAGE_SIZE);
-					//BITS(data)->set(addr);
-					addr++;
-					limit--;
-				}
-			}
-			else if (mmap->type == 2 || mmap->type == 3) {
-				//Skip
-			}
-			else {
-				break;
-			}
-			mmap = (MemoryMap *)(((ptr32_val_t)mmap) + mmap->size + sizeof(ptr32_val_t));
-		}
-	}
-#endif
 
 	directory = (void*)new PageDir();
 	while (directory==NULL) ;
+#endif
 
-#if 1
+#if 0
 	//for (uint32_t i=HEAP_START; i<HEAP_END; i+=PAGE_SIZE) {
 	for (uint32_t i=HEAP_START; i<HEAP_START+KERNEL_INIT_SIZE; i+=PAGE_SIZE) {
 		PDIR(directory)->getPage(i, PageDir::PageDoReserve);
@@ -237,21 +403,6 @@ bool PagingPrivate::init(void *platformData)
 #endif
 
 #if 0
-	{
-		//ptr_val_t pc = pageCnt;
-		//ptr_val_t pc = (ptr_val_t)__free_page_address;
-		ptr_val_t pc = (ptr_val_t)get_esp();
-		unsigned short *tmp =(unsigned short *)(0xB8000+80*2);
-		if (pc==0) {
-			*tmp = 0x1730;
-		}
-		while (pc>0) {
-			*tmp++ = 0x1730+(pc%10);
-			pc/=10;
-		}
-		while(1);
-	}
-#endif
 	// Identify mapping
 	uint32_t i = 0;
 	while (i<(ptr_val_t)0x10000) {
@@ -283,7 +434,8 @@ bool PagingPrivate::init(void *platformData)
 		identityMapFrame(PDIR(directory)->getPage(i, PageDir::PageDoReserve), i, MapPageKernel, MapPageRW);
 		i += PAGE_SIZE;
 	}
-#if 1
+#endif
+#if 0
 	i = (ptr_val_t)__free_page_address;
 	ptr_val_t start = i;
 	while (i<(ptr_val_t)start+KERNEL_INIT_SIZE) {
@@ -301,9 +453,9 @@ bool PagingPrivate::init(void *platformData)
 	for (uint32_t i=USER_HEAP_START; i<USER_HEAP_START+KERNEL_INIT_SIZE; i+=PAGE_SIZE) {
 		mapFrame(PDIR(directory)->getPage(i, PageDir::PageDoReserve), MapPageUser, MapPageRW);
 	}
-#endif
 
 	pagingDirectoryChange(PDIR(directory)->getPhys());
+#endif
 
 	pagingEnable();
 

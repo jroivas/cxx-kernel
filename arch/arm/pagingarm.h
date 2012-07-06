@@ -5,7 +5,7 @@
 #include "paging.h"
 
 #define PAGES_PER_TABLE 1024
-#define TABLES_PER_DIRECTORY 1024
+#define TABLES_PER_FIRST_DIRECTORY 0x1000
 #define PAGE_CNT 1024
 #define PAGING_SIZE (sizeof(ptr32_t)*PAGE_CNT) // A little bit more portable
 #define PAGE_SIZE PAGING_SIZE
@@ -63,20 +63,28 @@ private:
 class PageDir
 {
 public:
-	enum PageReserve {
-		PageDontReserve = 0,
-		PageDoReserve
+	enum MMUPermissions {
+		MMU_NO_NO = 0,
+		MMU_RO_NO,
+		MMU_RO_RO,
+		MMU_RW_NO,
+		MMU_RW_RO,
+		MMU_RW_RW
 	};
-	PageDir();
+
+	PageDir(uint32_t physLoc);
 	ptr_t getPhys() { return phys; }
 
-	PageTable *getTable(uint32_t i);
-	Page *getPage(ptr_val_t addr, PageReserve reserve=PageDoReserve);
+	//PageTable *getTable(uint32_t i);
+	//Page *getPage(ptr_val_t addr, PageReserve reserve=PageDoReserve);
+	Page *getPage();
 	void copyTo(PageDir *dir);
+	ptr32_val_t createSection(ptr32_val_t addr, ptr32_val_t domain, PageDir::MMUPermissions section_permissions);
 
 private:
-	PageTable *tables[TABLES_PER_DIRECTORY];
-	volatile uint32_t tablesPhys[TABLES_PER_DIRECTORY];
+	uint32_t permissions(MMUPermissions permissions);
+	//FirstLevelPageTable *tables[TABLES_PER_FIRST_DIRECTORY];
+	//volatile uint32_t tablesPhys[TABLES_PER_DIRECTORY];
 	ptr_t phys;
 };
 

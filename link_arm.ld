@@ -2,13 +2,34 @@ ENTRY(loaderstart)
 SECTIONS
 {
  . = 0x10000;
- .text : { *(.text) }
+ .text : {
+	*(.text)
+	*(.data)
+	*(.bss)
+
+	rodata = .;
+
+	start_ctors = .;
+	*(.ctor*)
+	end_ctors = .;
+
+	start_dtors = .;
+	*(.dtor*)
+	end_dtors = .;
+
+	*(.rodata*)
+
+ 	end = .; _end = .; __end = .; kernel_end = .;
+ }
+/*
  .data : { *(.data) }
  .bss : { *(.bss) }
+*/
 /*
  . = . + 0x1000;
  stack_top = .;
 */
+/*
   .rodata :
   {
 	rodata = .;
@@ -25,4 +46,5 @@ SECTIONS
 	*(.gnu.linkonce.r*)
 	. = ALIGN(4096);
  }
+*/
 }
