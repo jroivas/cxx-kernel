@@ -4,6 +4,7 @@
 #include "idt.h"
 #include "timer.h"
 #include "kb.h"
+#include "mm.h"
 #include "fb.h"
 #include "ata.h"
 #include "processmanager.h"
@@ -103,6 +104,29 @@ void kernel_loop()
 	}
 }
 
+#if 0
+volatile unsigned int * const UGGA = (unsigned int *)0x101f1000;
+void print_uart0(const char *s) {
+ while(*s != '\0') { /* Loop until end of string */
+ *UGGA = (unsigned int)(*s); /* Transmit char */
+ s++; /* Next char */
+ }
+}
+
+void printnum(uint32_t n)
+{
+	if (n==0) {
+		print_uart0("(null)");
+	}
+	while (n>0) {
+		uint8_t m=n%10;
+		n/=10;
+ 		*UGGA = (unsigned int)(m+'0');
+	}
+	print_uart0("\n");
+}
+#endif
+
 Kernel::Kernel()
 {
 	platform = new Platform();
@@ -142,7 +166,7 @@ int Kernel::run()
 	if (platform->state()==NULL) return 1;
 	platform->state()->startInterrupts();
 	if (video!=NULL) {
-		video->clear();
+		//video->clear();
 		video->printf("Ticks: %lu!\n",Timer::get()->getTicks());
 		video->printf("Hello world!\n");
 		video->printf("\nC++ kernel.\n");
@@ -155,13 +179,14 @@ int Kernel::run()
                 volatile int b = 5;
                 for (int i=0; i<0x1FFFFFF; i++) { b = b + i; }
 		video->printf("Ticks: %lu!\n",Timer::get()->getTicks());
-                Timer::get()->wait(100);
+                //Timer::get()->wait(100);
 		video->printf("Ticks: %lu!\n",Timer::get()->getTicks());
-                Timer::get()->msleep(50);
-		video->printf("Ticks msleep(50): %lu!\n",Timer::get()->getTicks());
+                //Timer::get()->msleep(50);
+		//video->printf("Ticks msleep(50): %lu!\n",Timer::get()->getTicks());
 
 		//delete video;
 	}
+	video->printf("PCI\n");
 	PCI *p = Platform::pci();
 	if (p!=NULL) {
 		if (p->isAvailable()) video->printf("Found PCI\n");
@@ -245,13 +270,18 @@ int Kernel::run()
 	if (platform->fb()==NULL) return 1;
 	FB::ModeConfig *vconf = platform->fb()->query(&conf);
 	if (vconf!=NULL) {
+	video->printf("FB3\n");
 		platform->fb()->configure(vconf);
+	video->printf("FB3.2\n");
+		platform->fb()->swap();
+		platform->fb()->blit();
 #if 1
 		for (int j=0; j<120; j++) {
 			platform->fb()->putPixel(j,10,255,255,255);
 		}
 		platform->fb()->swap();
 		platform->fb()->blit();
+	video->printf("FB5\n");
 #if 1
 		for (int j=100; j<120; j++) {
 			for (int i=100; i<200; i++) {
@@ -259,8 +289,6 @@ int Kernel::run()
 				platform->fb()->putPixel(j,100+i,0,0,255);
 			}
 		}
-		platform->fb()->swap();
-		platform->fb()->blit();
 #endif
 #endif
 #if 1

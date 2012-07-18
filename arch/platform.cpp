@@ -15,7 +15,11 @@
 #endif
 
 #ifdef ARCH_ARM
+#include "arm/idtarm.h"
 #include "arm/statesarm.h"
+#include "arm/videoarm.h"
+#include "arm/timerarm.h"
+#include "arm/armfb.h"
 #endif
 
 #ifdef ARCH_LINUX
@@ -98,6 +102,9 @@ int Platform::CAS(ptr_val_t volatile *m_ptr, int cmp, int set)
 Timer *Platform::timer()
 {
 	if (__platform_timer==NULL) {
+		#ifdef ARCH_ARM
+		__platform_timer = new TimerARM();
+		#endif
 		#ifdef ARCH_x86
 		__platform_timer = new TimerX86();
 		#endif
@@ -112,6 +119,9 @@ Timer *Platform::timer()
 Video *Platform::video()
 {
 	if (__platform_video==NULL) {
+		#ifdef ARCH_ARM
+		__platform_video = new VideoARM();
+		#endif
 		#ifdef ARCH_x86
 		__platform_video = new VideoX86();
 		#endif
@@ -125,6 +135,9 @@ Video *Platform::video()
 IDT *Platform::idt()
 {
 	if (__platform_idt==NULL) {
+		#ifdef ARCH_ARM
+		__platform_idt = new IDTARM();
+		#endif
 		#ifdef ARCH_x86
 		__platform_idt = new IDTX86();
 		#endif
@@ -148,6 +161,9 @@ KB *Platform::kb()
 FB *Platform::fb()
 {
 	if (__platform_fb==NULL) {
+		#ifdef ARCH_ARM
+		__platform_fb = new ARMFB();
+		#endif
 		#ifdef ARCH_x86
 		__platform_fb = new Vesa();
 		#endif

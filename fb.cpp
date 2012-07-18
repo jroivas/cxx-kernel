@@ -59,7 +59,8 @@ void FB::allocBuffers()
 	m.lock();
 
 	m_size = m_current->bytes_per_line*(m_current->height);
-	m_backbuffer = (unsigned char*)MM::instance()->alloc(m_size, MM::AllocClear);
+	//m_backbuffer = (unsigned char*)MM::instance()->alloc(m_size, MM::AllocClear);
+	m_backbuffer = (unsigned char*)MM::instance()->alloc(m_size);
 	if (m_backbuffer!=NULL) {
 		m_backbuffer[0] = 0xfe;
 		m_backbuffer[m_size/2] = 0xed;
@@ -136,6 +137,7 @@ void FB::swap()
 {
 	if (m_buffer == NULL) return;
 	if (m_backbuffer == NULL) return;
+	if (m_direct) return;
 	if (!m_double_buffer) {
 		m_buffer = m_backbuffer;
 		return;
@@ -149,13 +151,32 @@ void FB::swap()
 	m.unlock();
 }
 
+#if 0
+void printD(uint32_t d)
+{
+	char aa[5];
+	while (d>0) {
+		uint32_t i = d%10;
+		d/=10;
+		aa[0] = '0'+i;
+		aa[1] = 0;
+		Video::get()->printf(aa);
+	}
+	Video::get()->printf("\n");
+}
+#endif
+
 void FB::putPixel(int x, int y, unsigned char r, unsigned char g, unsigned char b, unsigned char a)
 {
 	if (m_backbuffer==NULL) return;
 	if (m_current==NULL) return;
 
+/*
 	x %= m_current->width;
 	y %= m_current->height;
+*/
+	if (x>m_current->width) x = m_current->width;
+	if (y>m_current->height) y = m_current->height;
 
 	switch (m_current->depth) {
 		case 16:

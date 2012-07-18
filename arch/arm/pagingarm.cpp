@@ -15,8 +15,8 @@
 #define USER_HEAP_END      0x4FFFFFFF
 
 static ptr8_t  __free_page_address = (ptr8_t)KERNEL_PRE_POS;
-static ptr8_t  __heap_address      = (ptr8_t)HEAP_START;
-static ptr8_t  __user_heap_address = (ptr8_t)USER_HEAP_START;
+//static ptr8_t  __heap_address      = (ptr8_t)HEAP_START;
+//static ptr8_t  __user_heap_address = (ptr8_t)USER_HEAP_START;
 static ptr32_val_t __mem_size      = 0;
 
 /* Memory mapping structure */
@@ -125,6 +125,12 @@ ptr32_val_t roundTo4k(ptr32_val_t s)
 	return s;
 }
 
+ptr32_val_t roundTo1k(ptr32_val_t s)
+{
+	while (s%1024!=0) s++;
+	return s;
+}
+
 
 #if 0
 ptr32_val_t firstLevelTableSection(ptr32_val_t section, ptr32_val_t domain, PageDir::MMUPermissions permissions)
@@ -227,14 +233,29 @@ ptr32_val_t secondLevelTable(ptr32_val_t addr, ptr32_val_t level, MMUPermissions
 }
 #endif
 
-PageDir::PageDir(uint32_t physLoc);
+PageDir::PageDir(uint32_t physLoc)
 {
-	phys = physLoc;
-	uint32_t tmp = phys;
+	phys = (ptr_t)physLoc;
+	uint32_t tmp = physLoc;
 	for (uint32_t i = 0; i<0x1000; i++) {
 		*((uint32_t*)tmp) = 0;
 		tmp += 4;
 	}
+	free_pos = 0;
+	free_page_section = 1;
+	free_page_pos = 0;
+}
+
+uint32_t PageDir::getPage()
+{
+	if (free_page_pos<1024) {
+		uint32_t p = free_page_pos;
+		free_page_pos += 16;
+		uint32_t table = getCoarseTable(free_pos);
+		(void)p;
+		(void)table;
+	}
+	return 0;
 }
 
 uint32_t PageDir::permissions(PageDir::MMUPermissions permissions)
@@ -267,7 +288,7 @@ uint32_t PageDir::permissions(PageDir::MMUPermissions permissions)
 	return tmp;
 }
 
-ptr32_val_t PageDir::createSection(ptr32_t section, ptr32_val_t addr, ptr32_val_t domain, PageDir::MMUPermissions section_permissions)
+ptr32_val_t PageDir::createSection(ptr32_val_t section, ptr32_val_t addr, ptr32_val_t domain, PageDir::MMUPermissions section_permissions)
 {
 	ptr32_val_t val = 0;
 
@@ -286,20 +307,42 @@ ptr32_val_t PageDir::createSection(ptr32_t section, ptr32_val_t addr, ptr32_val_
 	return val;
 }
 
+ptr32_val_t PageDir::setCoarseTable(ptr32_val_t section, ptr32_val_t val)
+{
+	section &= 0xFFF;
+
+	ptr_t pos = phys;
+	pos[section] = val;
+
+	return val;
+}
+
+ptr32_val_t PageDir::getCoarseTable(ptr32_val_t section)
+{
+	ptr_t pos = phys;
+	ptr32_val_t val = pos[section];
+	return (val & 0xFFF00000);
+}
+
 //Just returns te value, need to set in table
-ptr32_val_t PageDir::createCoarseTable(ptr32_t section, ptr32_val_t addr, ptr32_val_t domain, PageDir::MMUPermissions section_permissions)
+ptr32_val_t PageDir::createCoarseTable(ptr32_val_t addr, ptr32_val_t domain, PageDir::MMUPermissions section_permissions)
 {
 	ptr32_val_t val = 0;
 
-	section &= 0xFFF;
-	
 	val |= (addr & 0xFFFFF800);
 	val |= 1; //Coarse page desc
 
 	val |= (domain & 0x1f) << 5;
 
+	ptr32_val_t per = permissions(section_permissions);
+	val |= (per<<4);
+	val |= (per<<6);
+	val |= (per<<8);
+	val |= (per<<10);
+
 	return val;
 }
+
 //B3-13
 
 /*
@@ -317,22 +360,42 @@ PagingPrivate::PagingPrivate()
 
 	// Map free space after kernel
 	//__free_page_address = (ptr8_t)my_kernel_end;
+
+	// Create the table, we're spending some memory here...
 	__free_page_address = (ptr8_t)kernel_end;
 	__free_page_address = (ptr8_t)roundTo4k((ptr32_val_t)__free_page_address);
 	ptr32_t pagingDir = (ptr32_t)__free_page_address;
 
+	PageDir *pdir = new PageDir((ptr32_val_t)pagingDir);
+	pdir->incFreePos();
+
+	// Get the free addr
+
 	// Ok, setting the first level paging dir
 	setPagingDirectory((ptr32_val_t)pagingDir);
-	ptr32_t pd = pagindDir;
-	ptr32_val_t tmp = firstLevelTableSection(0, 0, MMU_RW_RW);
+	ptr32_t pd = pagingDir;
+	ptr32_val_t tmp = pdir->createSection(0, 0, 0, PageDir::MMU_RW_RW);
 	*pd++ = tmp;
-#if 0
-	tmp = firstLevelTableSection(1, 0, MMU_RW_RW);
+#if 1
+	tmp = pdir->createSection(1, 0, 0, PageDir::MMU_RW_RW);
+	*pd++ = tmp;
+	tmp = pdir->createSection(2, 0, 0, PageDir::MMU_RW_RW);
 	*pd++ = tmp;
 #endif
 
 	//Reserve it
 	__free_page_address += 4096*4;
+
+
+	// Round it
+	__free_page_address = (ptr8_t)roundTo1k((ptr32_val_t)__free_page_address);
+	ptr_val_t first_coarse = (ptr_val_t)__free_page_address;
+	__free_page_address += 1024;
+	ptr_val_t cc = pdir->createCoarseTable(first_coarse, 0, PageDir::MMU_RW_RW);
+	pdir->incFreePos();
+	pdir->setCoarseTable(pdir->getFreePos(), cc);
+
+	directory = (void*)pdir;
 }
 
 PagingPrivate::~PagingPrivate()
@@ -345,7 +408,7 @@ bool PagingPrivate::init(void *platformData)
 	if (data!=NULL) return false;
 	is_ok = false;
 
-#if 1
+#if 0
 	pagingDisable(); //Safety
 #endif
 
@@ -457,9 +520,11 @@ bool PagingPrivate::init(void *platformData)
 	pagingDirectoryChange(PDIR(directory)->getPhys());
 #endif
 
+#if 0
 	pagingEnable();
 
 	is_ok = true;
+#endif
 	return true;
 }
 
@@ -582,6 +647,11 @@ void PagingPrivate::freePage(void *ptr)
 
 bool PagingPrivate::mapPhys(void *phys, ptr_t virt, unsigned int flags)
 {
+	(void)phys;
+	(void)virt;
+	(void)flags;
+#if 0
+#if 1
 	ptr_val_t i = 0;
 #if 1
 	if (flags&PAGING_MAP_USER) {
@@ -617,11 +687,16 @@ bool PagingPrivate::mapPhys(void *phys, ptr_t virt, unsigned int flags)
 		*virt = i;
 	}
 	return res;
+#endif
+#endif
+	return false;
 }
 
 /* Map physical page to virtual */
 bool PagingPrivate::map(ptr_t virt, unsigned int flags, unsigned int cnt)
 {
+	(void)flags;
+#if 0
 	ptr_val_t i = 0;
 	ptr_val_t vptr = 0;
 	unsigned int left = cnt;
@@ -660,6 +735,16 @@ bool PagingPrivate::map(ptr_t virt, unsigned int flags, unsigned int cnt)
 	if (virt!=NULL) {
 		*virt = vptr;
 	}
+#endif
+	ptr_val_t vptr = (ptr_val_t)roundTo1k((ptr32_val_t)__free_page_address);
+	while (cnt>0) {
+		__free_page_address += PAGE_SIZE;
+		cnt--;
+	}
+		
+	if (virt!=NULL) {
+		*virt = vptr;
+	}
 
 	return true;
 }
@@ -667,6 +752,8 @@ bool PagingPrivate::map(ptr_t virt, unsigned int flags, unsigned int cnt)
 /* Unmap memory at ptr */
 void *PagingPrivate::unmap(void *ptr)
 {
+	(void)ptr;
+#if 0
 	ptr_val_t i = (ptr_val_t)ptr;
 	i/=PAGE_SIZE;
 
@@ -681,11 +768,13 @@ void *PagingPrivate::unmap(void *ptr)
 
 		BITS(data)->clear(i);
 	}
+#endif
 	return NULL;
 }
 
 ptr8_t PagingPrivate::freePageAddress()
 {
+#if 0
 	ptr_val_t i = (ptr_val_t)__free_page_address/PAGE_SIZE;
 	if (!BITS(data)->isSet(i)) {
 #if 0
@@ -694,11 +783,13 @@ ptr8_t PagingPrivate::freePageAddress()
 		BITS(data)->set(i);
 #endif
 	}
+#endif
 	return __free_page_address;
 }
 
 void PagingPrivate::incFreePageAddress(ptr_val_t size)
 {
+#if 0
 	ptr_val_t i = (ptr_val_t)__free_page_address/PAGE_SIZE;
 	if (!BITS(data)->isSet(i)) {
 #if 0
@@ -707,6 +798,7 @@ void PagingPrivate::incFreePageAddress(ptr_val_t size)
 		BITS(data)->set(i);
 #endif
 	}
+#endif
 	__free_page_address += size;
 }
 
@@ -714,6 +806,7 @@ void PagingPrivate::pageAlign(ptr_val_t align)
 {
 	/* Align to proper boundaries */
 #if 1
+#if 0
 	while (((ptr32_val_t)__free_page_address & (align-1))!=0) {
 		BITS(data)->set((ptr_val_t)__free_page_address/PAGE_SIZE);
 		__free_page_address++;
@@ -725,6 +818,7 @@ void PagingPrivate::pageAlign(ptr_val_t align)
 		incFreePageAddress(1);
 	}
 #endif
+#endif
 }
 
 ptr_val_t PagingPrivate::memSize()
@@ -732,6 +826,7 @@ ptr_val_t PagingPrivate::memSize()
 	return __mem_size;
 }
 
+#if 0
 PageDir::PageDir()
 {
 	for (int i=0; i<TABLES_PER_DIRECTORY; i++) {
@@ -793,11 +888,12 @@ void PageDir::copyTo(PageDir *dir)
 		}
 	}
 }
+#endif
 
+static Paging p;
 void paging_mmap_init(MultibootInfo *info)
 {
 	/* Initialize paging */
-	Paging p;
 	p.init((void*)info);
 }
 

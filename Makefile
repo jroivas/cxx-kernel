@@ -17,4 +17,7 @@ clean:
 	make ARCH=all -f Makefile.arches clean
 
 run_x86:
-	make ARCH=x86 -f Makefile.arches run
+	make ARCH=x86 -f Makefile.arches run_x86
+
+run_arm:
+	make ARCH=arm -f Makefile.arches run_arm

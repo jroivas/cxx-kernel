@@ -30,7 +30,8 @@ public:
 	unsigned char *data();
 	void setSingleBuffer();
 	void setDirect();
-	void putPixel(int x, int y, unsigned char r, unsigned char g, unsigned char b, unsigned char a=255);
+	//void putPixel(int x, int y, unsigned char r, unsigned char g, unsigned char b, unsigned char a=255);
+	void putPixel(int x, int y, unsigned char r, unsigned char g, unsigned char b, unsigned char a=0);
 	void putPixel(int x, int y, unsigned int color);
 	bool isConfigured() { return m_configured; }
 

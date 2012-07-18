@@ -7,11 +7,10 @@ interrupt_vector_table:
 	b . @IRQ
 	b . @FIQ
 
-.comm stack 0x10000
-loaderstart:
+.global _start
 _start:
 	.globl _start
-	ldr sp, =stack+0x10000
-	bl main
+	ldr sp, =stack_top
+	bl _main
 1:
 	b 1b

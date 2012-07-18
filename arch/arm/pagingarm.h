@@ -77,15 +77,24 @@ public:
 
 	//PageTable *getTable(uint32_t i);
 	//Page *getPage(ptr_val_t addr, PageReserve reserve=PageDoReserve);
-	Page *getPage();
+	//Page *getPage();
+	uint32_t getPage();
 	void copyTo(PageDir *dir);
-	ptr32_val_t createSection(ptr32_val_t addr, ptr32_val_t domain, PageDir::MMUPermissions section_permissions);
+	ptr32_val_t createSection(ptr32_val_t section, ptr32_val_t addr, ptr32_val_t domain, PageDir::MMUPermissions section_permissions);
+	ptr32_val_t setCoarseTable(ptr32_val_t section, ptr32_val_t val);
+	ptr32_val_t getCoarseTable(ptr32_val_t section);
+	ptr32_val_t createCoarseTable(ptr32_val_t addr, ptr32_val_t domain, PageDir::MMUPermissions section_permissions);
+	uint32_t getFreePos() { return free_pos; }
+	uint32_t incFreePos() { return ++free_pos; }
 
 private:
 	uint32_t permissions(MMUPermissions permissions);
 	//FirstLevelPageTable *tables[TABLES_PER_FIRST_DIRECTORY];
 	//volatile uint32_t tablesPhys[TABLES_PER_DIRECTORY];
 	ptr_t phys;
+	uint32_t free_pos;
+	uint32_t free_page_section;
+	uint32_t free_page_pos;
 };
 
 void paging_mmap_init(MultibootInfo *info);
