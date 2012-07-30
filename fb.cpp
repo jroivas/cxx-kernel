@@ -59,8 +59,8 @@ void FB::allocBuffers()
 	m.lock();
 
 	m_size = m_current->bytes_per_line*(m_current->height);
-	//m_backbuffer = (unsigned char*)MM::instance()->alloc(m_size, MM::AllocClear);
-	m_backbuffer = (unsigned char*)MM::instance()->alloc(m_size);
+	m_backbuffer = (unsigned char*)MM::instance()->alloc(m_size, MM::AllocClear);
+	//m_backbuffer = (unsigned char*)MM::instance()->alloc(m_size);
 	if (m_backbuffer!=NULL) {
 		m_backbuffer[0] = 0xfe;
 		m_backbuffer[m_size/2] = 0xed;
