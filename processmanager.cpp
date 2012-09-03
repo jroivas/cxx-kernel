@@ -133,7 +133,7 @@ Task *ProcessManager::schedule()
 
 	if (*(next->getLock())==1) {
 		Platform::video()->printf("NEXT ALREADY LOCKED: %d %x!\n",next->pid(), next);
-		while(1);
+		while(1) ;
 	}
 
 	//next->lock();

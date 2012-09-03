@@ -1,11 +1,20 @@
 
-all: x86 arm linux
+all: 
+	@echo "*** Please select your target:"
+	@echo "make arm     -  QEMU ARM"
+	@echo "make arm-pi  -  Raspberry Pi ARM"
+	@echo "make linux   -  Native Linux binary"
+	@echo "make x86     -  X86 bootable"
+	@echo "*****************************"
 
 x86:
 	make ARCH=x86 -f Makefile.arches
 
 arm:
-	make ARCH=arm -f Makefile.arches
+	make ARCH=arm PLATFORM=qemu -f Makefile.arches
+
+arm-pi:
+	make ARCH=arm PLATFORM=pi -f Makefile.arches
 
 linux:
 	make ARCH=linux -f Makefile.arches

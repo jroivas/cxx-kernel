@@ -45,7 +45,7 @@ inline void Mutex::unlock() {
 	// If already unlocked return
 	if (*m_ptr==0) return;
 
-	while (Platform_CAS(m_ptr, 1, 0)==0);
+	while ((Platform_CAS(m_ptr, 1, 0))==0) ;
 /*
 	Platform_CAS(m_ptr, 1, 0);
 */
