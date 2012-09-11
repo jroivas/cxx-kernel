@@ -59,7 +59,9 @@ kernel_x86: link2.ld arch_$(ARCH) $(OBJS) arch/$(ARCH)/$(ARCH).a $(LIBS) 3rdpart
 	#$(CXX) -m32 -Xlinker -T -Xlinker link2.ld -ffreestanding -fno-builtin -nostdlib -s  -o  kernel $(OBJS) arch/platform.o arch/$(ARCH)/*.o $(THIRDPARTY)
 
 kernel_arm: link_$(ARCH).ld arch_$(ARCH) $(OBJS) arch/$(ARCH)/$(ARCH).a $(LIBS) 3rdparty_libs
-	$(LD) -m armelf -nostdlib -T link_arm.ld -o kernel_$(ARCH) $(OBJS) arch/platform.o arch/$(ARCH)/*.o $(THIRDPARTY)
+	#$(LD) -m armelf -nostdlib -T link_$(ARCH)$(PLATFORM).ld -o kernel_$(ARCH)$(PLATFORM) $(OBJS) arch/platform.o arch/$(ARCH)/*.o $(THIRDPARTY)
+	$(LD) --no-undefined -nostdlib -T link_$(ARCH)$(PLATFORM).ld -o kernel_$(ARCH)$(PLATFORM) $(OBJS) arch/platform.o arch/$(ARCH)/*.o $(THIRDPARTY)
+	#~/bin/arm-2008q3/bin/arm-none-eabi-objcopy kernel_armpi -O binary kernel.img
 
 kernel.iso: kernel_x86 menu.lst stage2_eltorito
 	mkdir -p isofiles/boot/grub
@@ -75,7 +77,7 @@ run_x86: x86 kernel.iso test.img
 
 run_arm: arm kernel_arm test.img
 	#qemu-system-arm kernel_arm -hda test.img
-	qemu-system-arm -serial mon:stdio -M versatilepb -m 128M -kernel kernel_arm
+	qemu-system-arm -serial mon:stdio -M versatilepb -m 128M -kernel kernel_armqemu
 	#qemu-system-arm -serial mon:stdio -m 128M -kernel kernel_arm
 	#qemu-system-arm  -M versatilepb -m 8M -kernel kernel_arm
 
@@ -123,5 +125,5 @@ clean:
 	rm -f config.h
 	make -C arch clean
 	make -C 3rdparty clean
-	rm -f kernel kernel_linux kernel.iso *.o *.a
+	rm -f kernel_* kernel.iso *.o *.a
 	rm -f 3drparty/font/*.o 

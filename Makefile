@@ -29,4 +29,4 @@ run_x86:
 	make ARCH=x86 -f Makefile.arches run_x86
 
 run_arm:
-	make ARCH=arm -f Makefile.arches run_arm
+	make ARCH=arm PLATFORM=qemu -f Makefile.arches run_arm

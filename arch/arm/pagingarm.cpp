@@ -6,8 +6,8 @@
 #define PDIR(x) ((PageDir*)x)
 #define BITS(x) ((Bits*)x)
 
-#define KERNEL_PRE_POS     0x20000000
-#define KERNEL_PRE_POS     0x20000000
+//#define KERNEL_PRE_POS     0x20000000
+#define KERNEL_PRE_POS     0x200000 //FIXME
 #define KERNEL_INIT_SIZE   0x000FFFFF
 #define HEAP_START         0x30000000
 #define HEAP_END           0x3FFFFFFF
@@ -362,7 +362,8 @@ PagingPrivate::PagingPrivate()
 	//__free_page_address = (ptr8_t)my_kernel_end;
 
 	// Create the table, we're spending some memory here...
-	__free_page_address = (ptr8_t)kernel_end;
+	if (kernel_end>(ptr_val_t)__free_page_address)
+		__free_page_address = (ptr8_t)kernel_end;
 	__free_page_address = (ptr8_t)roundTo4k((ptr32_val_t)__free_page_address);
 	ptr32_t pagingDir = (ptr32_t)__free_page_address;
 
@@ -372,6 +373,7 @@ PagingPrivate::PagingPrivate()
 	// Get the free addr
 
 	// Ok, setting the first level paging dir
+	//FIXME:
 	setPagingDirectory((ptr32_val_t)pagingDir);
 	ptr32_t pd = pagingDir;
 	ptr32_val_t tmp = pdir->createSection(0, 0, 0, PageDir::MMU_RW_RW);

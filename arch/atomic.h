@@ -40,7 +40,16 @@ inline int Platform_CAS(ptr_val_t volatile *m_ptr, int cmp, int set) {
 		return 1;
 	}
 	#endif
+
+	#ifdef ARCH_ARM
+	//if ((int)*m_ptr==cmp) {
+		*m_ptr=set;
+		return 1;
+	//}
+	#endif
+
 	return 0;
 }
 #endif
+
 #endif

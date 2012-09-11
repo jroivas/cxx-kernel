@@ -3,7 +3,8 @@ CXXFLAGS:=$(CXXFLAGS) -I../ -I.
 CXXFLAGSO:=$(CXXFLAGSO) -I../ -I.
 
 
-all: platform.o compile_arch
+#all: platform.o compile_arch
+all: compile_arch platform.o
 
 platform.o: platform.cpp
 

@@ -3,6 +3,7 @@
 #include "gdt.h"
 #include "types.h"
 #include "kernel.h"
+#include "arch/arm/gpio.h"
 
 #define PL110_CR_EN             0x001
 #define PL110_CR_PWR            0x800
@@ -27,6 +28,24 @@ typedef struct _PL110MMIO
 
 extern "C" void _main(unsigned long multiboot, unsigned long magic)
 {
+	uint32_t base = 0x20200000;
+	*((uint32_t *)(base+4)) = (1<<18);
+#if 0
+	//while (1) {
+	for (int aa=1; aa<5; aa++) {
+		*((uint32_t *)(base+40)) = (1<<16);
+		volatile uint32_t pp=0x3F0000;
+		while (pp>10) pp--;
+		*((uint32_t *)(base+28)) = (1<<16);
+		pp=0x3F0000;
+		while (pp>10) pp--;
+	}
+	{
+		volatile uint32_t pp=0x3F0000;
+		while (pp>10) pp--;
+	}
+#endif
+
 	(void)magic;
 	if (magic == 0x1BADB002) {
 		return;
@@ -36,6 +55,21 @@ extern "C" void _main(unsigned long multiboot, unsigned long magic)
 #if 0
 	unsigned short *tmp = (unsigned short *)(0xB8000);
 	*tmp = 0x1744; //D
+#endif
+	//while (1) {
+#if 0
+	for (int aa=1; aa<5; aa++) {
+		*((uint32_t *)(base+40)) = (1<<16);
+		volatile uint32_t pp=0xF0000;
+		while (pp>10) pp--;
+		*((uint32_t *)(base+28)) = (1<<16);
+		pp=0xF0000;
+		while (pp>10) pp--;
+	}
+	{
+		volatile uint32_t pp=0x3F0000;
+		while (pp>10) pp--;
+	}
 #endif
 	gdt_init();
 
@@ -51,10 +85,49 @@ extern "C" void _main(unsigned long multiboot, unsigned long magic)
 	}
 	}
 
+#if 0
+	//while (1) {
+	for (int aa=1; aa<5; aa++) {
+		*((uint32_t *)(base+40)) = (1<<16);
+		volatile uint32_t pp=0x2F000;
+		while (pp>10) pp--;
+		*((uint32_t *)(base+28)) = (1<<16);
+		pp=0x2F000;
+		while (pp>10) pp--;
+	}
+	{
+		volatile uint32_t pp=0x2F000;
+		while (pp>10) pp--;
+	}
+#endif
+
 	paging_init((MultibootInfo *)multiboot);
 
+#if 0
+	for (int aa=1; aa<5; aa++) {
+		*((uint32_t *)(base+40)) = (1<<16);
+		volatile uint32_t pp=0x3F0000;
+		while (pp>10) pp--;
+		*((uint32_t *)(base+28)) = (1<<16);
+		pp=0x3F0000;
+		while (pp>10) pp--;
+	}
+#endif
 
 	/* Run the kernel */
+
+#if 0
+	for (int aa=1; aa<5; aa++) {
+		*((uint32_t *)(base+40)) = (1<<16);
+		volatile uint32_t pp=0x2F000;
+		while (pp>10) pp--;
+		*((uint32_t *)(base+28)) = (1<<16);
+		pp=0x2F000;
+		while (pp>10) pp--;
+	}
+	*((uint32_t *)(base+40)) = (1<<16);
+	while(1) ;
+#endif
 	Kernel *k = new Kernel();
 	k->run();
 
