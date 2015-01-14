@@ -49,6 +49,7 @@ SECTIONS
 		code = .;
 		*(.text*)
 		*(.gnu.linkonce.t*)
+
 		. = ALIGN(4096);
 /*
 		. = ALIGN(4096);
@@ -74,6 +75,10 @@ SECTIONS
 		start_dtors = .;
 		*(.dtor*)
 		end_dtors = .;
+
+		init_array_start = .;
+		KEEP (*(.init_array*))
+		init_array_end = .;
 
 		*(.rodata*)
 /*

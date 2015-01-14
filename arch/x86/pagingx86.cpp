@@ -97,14 +97,11 @@ bool PageTable::copyTo(PageTable *table)
 
 extern uint32_t kernel_end;
 extern uint32_t my_kernel_end;
-PagingPrivate::PagingPrivate()
+PagingPrivate::PagingPrivate() : data(NULL), pageCnt(0), is_ok(false)
 {
 	m.assign(&__page_mapping_mutex);
 	m_static.assign(&__page_mapping_static_mutex);
-	data = NULL;
-	pageCnt = 0;
 	__mem_size = 0;
-	is_ok = false;
 
 	// Map free space after kernel
 	__free_page_address = (ptr8_t)my_kernel_end;

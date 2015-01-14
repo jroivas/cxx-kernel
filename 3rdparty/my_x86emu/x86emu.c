@@ -889,7 +889,7 @@ static uint32_t
 decode_rl_address(struct x86emu *emu)
 {
 	if (emu->x86.mode & SYSMODE_PREFIX_ADDR) {
-		uint32_t offset, sib;
+		uint32_t offset = 0, sib = 0;
 		(void)sib;
 		/* 32-bit addressing */
 		switch (emu->cur_rl) {
@@ -968,6 +968,7 @@ decode_rl_address(struct x86emu *emu)
 			offset = emu->x86.R_BX;
 			break;
 		default:
+                        offset = 0;
 			x86emu_halt_sys(emu);
 		}
 		if (emu->cur_mod == 1)

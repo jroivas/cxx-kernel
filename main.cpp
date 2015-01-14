@@ -28,28 +28,32 @@ typedef struct _PL110MMIO
 
 extern "C" void _main(unsigned long multiboot, unsigned long magic)
 {
-	uint32_t base = 0x20200000;
-	*((uint32_t *)(base+4)) = (1<<18);
+/*
+#ifndef NATIVE_LINUX
+    long base = 0x20200000;
+    *((long *)(base+4)) = (1<<18);
+#endif
+*/
 #if 0
-	//while (1) {
-	for (int aa=1; aa<5; aa++) {
-		*((uint32_t *)(base+40)) = (1<<16);
-		volatile uint32_t pp=0x3F0000;
-		while (pp>10) pp--;
-		*((uint32_t *)(base+28)) = (1<<16);
-		pp=0x3F0000;
-		while (pp>10) pp--;
-	}
-	{
-		volatile uint32_t pp=0x3F0000;
-		while (pp>10) pp--;
-	}
+    //while (1) {
+    for (int aa=1; aa<5; aa++) {
+        *((uint32_t *)(base+40)) = (1<<16);
+        volatile uint32_t pp=0x3F0000;
+        while (pp>10) pp--;
+        *((uint32_t *)(base+28)) = (1<<16);
+        pp=0x3F0000;
+        while (pp>10) pp--;
+    }
+    {
+        volatile uint32_t pp=0x3F0000;
+        while (pp>10) pp--;
+    }
 #endif
 
-	(void)magic;
-	if (magic == 0x1BADB002) {
-		return;
-	}
+    (void)magic;
+    if (magic == 0x1BADB002) {
+            return;
+    }
 
 
 #if 0
@@ -71,19 +75,28 @@ extern "C" void _main(unsigned long multiboot, unsigned long magic)
 		while (pp>10) pp--;
 	}
 #endif
-	gdt_init();
+    gdt_init();
 
-	extern void (* start_ctors)();
-	extern void (* end_ctors)();
+    extern void (* start_ctors)();
+    extern void (* end_ctors)();
 
-	if (start_ctors!=NULL) {
-	void (**constructor)() = & start_ctors;
-	while (constructor<&end_ctors) {
-		//*(tmp) = 0x2730+((unsigned int)constructor%10);
-		((void (*) (void)) (*constructor)) ();
-		constructor++;
-	}
-	}
+    extern void (* init_array_start)();
+    extern void (* init_array_end)();
+
+    if (start_ctors!=NULL) {
+        void (**constructor)() = & start_ctors;
+        while (constructor<&end_ctors) {
+            ((void (*) (void)) (*constructor)) ();
+            ++constructor;
+        }
+    }
+    if (init_array_start != NULL) {
+        void (**constructor)() =  &init_array_start;
+        while (constructor < &init_array_end) {
+            ((void (*) (void)) (*constructor)) ();
+            ++constructor;
+        }
+    }
 
 #if 0
 	//while (1) {
@@ -101,17 +114,20 @@ extern "C" void _main(unsigned long multiboot, unsigned long magic)
 	}
 #endif
 
-	paging_init((MultibootInfo *)multiboot);
+    //unsigned short *tmp = (unsigned short *)(0xB8000);
+    //*tmp = 0x1745; //E
+    paging_init((MultibootInfo *)multiboot);
 
+    //*tmp = 0x1746; //F
 #if 0
-	for (int aa=1; aa<5; aa++) {
-		*((uint32_t *)(base+40)) = (1<<16);
-		volatile uint32_t pp=0x3F0000;
-		while (pp>10) pp--;
-		*((uint32_t *)(base+28)) = (1<<16);
-		pp=0x3F0000;
-		while (pp>10) pp--;
-	}
+    for (int aa=1; aa<5; aa++) {
+            *((uint32_t *)(base+40)) = (1<<16);
+            volatile uint32_t pp=0x3F0000;
+            while (pp>10) pp--;
+            *((uint32_t *)(base+28)) = (1<<16);
+            pp=0x3F0000;
+            while (pp>10) pp--;
+    }
 #endif
 
 	/* Run the kernel */
@@ -128,10 +144,10 @@ extern "C" void _main(unsigned long multiboot, unsigned long magic)
 	*((uint32_t *)(base+40)) = (1<<16);
 	while(1) ;
 #endif
-	Kernel *k = new Kernel();
-	k->run();
+    Kernel *k = new Kernel();
+    k->run();
 
-	delete k;
+    delete k;
 }
 
 extern "C" void _atexit()

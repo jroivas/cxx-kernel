@@ -7,7 +7,8 @@ static Paging __operator_paging;
 void *operator new(size_t size)
 {
 	if (__operator_paging.isOk()) {
-		return MM::instance()->alloc(size);
+		void *r= MM::instance()->alloc(size);
+                return r;
 	} else {
 		//__operator_paging.lock();
 		void *res = __operator_paging.allocStatic(size, NULL);

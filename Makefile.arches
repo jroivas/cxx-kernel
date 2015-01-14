@@ -8,7 +8,8 @@ include config_$(ARCH).mk
 endif
 
 CXXFLAGS:=$(CXXFLAGS) -I. -Iarch
-CXXFLAGSO:=-O2 $(CXXFLAGSO) -I. -Iarch
+#CXXFLAGSO:=-O2 $(CXXFLAGSO) -I. -Iarch
+CXXFLAGSO:=$(CXXFLAGSO) -I. -Iarch
 OBJS=arch/loader.o kernel.o video.o main.o cxa.o mutex.o local.o operators.o mm.o paging.o gdt.o string.o idt.o timer.o kb.o fb.o math.o states.o setjmp.o bits.o font.o pci.o ata.o storage.o task.o list.o processmanager.o syscall.o
 ifeq (x86,$(ARCH))
 THIRDPARTY=3rdparty/my_x86emu/x86emu.o 3rdparty/font/boot_font.o
@@ -56,6 +57,7 @@ kernel_linux: link2.ld arch_$(ARCH) $(OBJS) $(LIBS) 3rdparty_libs
 
 kernel_x86: link2.ld arch_$(ARCH) $(OBJS) arch/$(ARCH)/$(ARCH).a $(LIBS) 3rdparty_libs
 	$(LD) -m elf_i386 -nostdlib -T link2.ld -o kernel_$(ARCH) $(OBJS) arch/platform.o arch/$(ARCH)/*.o $(THIRDPARTY)
+	#$(LD) -m elf_i386 -nostdlib -T link2.ld -o kernel_$(ARCH) /usr/lib/gcc/x86_64-linux-gnu/4.9/crtbegin.o /usr/lib/x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/4.9/crtbegin.o $(OBJS) arch/platform.o arch/$(ARCH)/*.o $(THIRDPARTY)
 	#$(CXX) -m32 -Xlinker -T -Xlinker link2.ld -ffreestanding -fno-builtin -nostdlib -s  -o  kernel $(OBJS) arch/platform.o arch/$(ARCH)/*.o $(THIRDPARTY)
 
 kernel_arm: link_$(ARCH).ld arch_$(ARCH) $(OBJS) arch/$(ARCH)/$(ARCH).a $(LIBS) 3rdparty_libs

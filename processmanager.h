@@ -26,8 +26,10 @@ private:
 	uint32_t approxPool(Task *t, uint32_t base=0);
 	bool m_running;
 	List *m_tasks;
+/*
 	List *m_tasks_hi;
 	List *m_tasks_lo;
+*/
 	List *m_task_pool[TASK_POOLS];
 	uint32_t m_pool_index;
 	uint32_t m_pool_target;
