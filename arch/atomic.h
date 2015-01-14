@@ -1,7 +1,6 @@
 #ifndef _ATOMIC_H
 #define _ATOMIC_H
 
-#include "config.h"
 #include "types.h"
 
 #if 0

@@ -3570,6 +3570,7 @@ x86emuOp_xlat(struct x86emu *emu)
 static void 
 x86emuOp_esc_coprocess_d8(struct x86emu *emu)
 {
+    (void)emu;
 }
 /* opcode=0xd9 */
 static void 
@@ -3868,6 +3869,7 @@ x86emuOp_out_word_DX_AX(struct x86emu *emu)
 static void
 x86emuOp_lock(struct x86emu *emu)
 {
+    (void)emu;
 }
 /*opcode 0xf1 ILLEGAL OPERATION */
 

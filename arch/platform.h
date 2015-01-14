@@ -1,7 +1,6 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
-#include "config.h"
 #include "types.h"
 
 #include "states.h"

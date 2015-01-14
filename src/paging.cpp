@@ -1,7 +1,6 @@
 #include "paging.h"
 #include "types.h"
 #include "arch/platform.h"
-#include "config.h"
 
 //Mutex for locking
 ptr32_val_t __page_mapping_alloc_mutex = 0;

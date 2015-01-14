@@ -1,7 +1,6 @@
 #ifndef CXA_H
 #define CXA_H
 
-#include "config.h"
 #ifdef __cplusplus
 extern "C"  {
 #endif

@@ -1,4 +1,3 @@
-#include "config.h"
 #include "types.h"
 #include "kernel.h"
 #include "idt.h"

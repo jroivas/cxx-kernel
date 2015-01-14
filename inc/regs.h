@@ -1,8 +1,6 @@
 #ifndef REGS_H
 #define REGS_H
 
-#include "config.h"
-
 class Regs
 {
 public:

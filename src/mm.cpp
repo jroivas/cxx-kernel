@@ -1,5 +1,4 @@
 #include "mm.h"
-#include "config.h"
 
 //#ifdef ARCH_LINUX
 #ifdef USE_LINUX

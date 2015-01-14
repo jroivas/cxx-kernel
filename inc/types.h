@@ -1,7 +1,7 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-#include "../config.h"
+//#include "../config.h"
 
 #ifndef NULL
 #define NULL 0
