@@ -47,8 +47,8 @@ extern int64_t my__moddi3(int64_t num, int64_t den);
 #include <sys/types.h>
 #include <sys/endian.h>
 #else
-#include <../../types.h>
-#include <../../math.h>
+#include <../../inc/types.h>
+#include <../../inc/math.h>
 #endif
 
 #ifdef _KERNEL
@@ -56,7 +56,7 @@ extern int64_t my__moddi3(int64_t num, int64_t den);
 #include <machine/setjmp.h>
 #else
 //#include <setjmp.h>
-#include <../../setjmp.h>
+#include <../../inc/setjmp.h>
 #endif
 
 /*
