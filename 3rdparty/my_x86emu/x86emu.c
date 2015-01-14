@@ -932,7 +932,7 @@ decode_rl_address(struct x86emu *emu)
 			offset += fetch_long_imm(emu);
 		return offset;
 	} else {
-		uint16_t offset;
+		uint16_t offset = 0;
 
 		/* 16-bit addressing */
 		switch (emu->cur_rl) {
