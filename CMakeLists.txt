@@ -96,6 +96,24 @@ add_custom_command(OUTPUT kernel.bin
 add_custom_target(kernel ALL
     DEPENDS kernel.bin
     )
-#ADD_CUSTOM_COMMAND (TARGET kernel.bin
-#    POST_BUILD
-#    COMMAND "${GCC_LD} ${LINKFLAGS} -o kernel.bin ${CMAKE_BINARY_DIR}/libkernel.bin.a")
+
+if (ARCH STREQUAL "x86")
+    add_custom_command(OUTPUT kernel.iso
+        COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/isofiles/boot/grub
+        COMMAND cp -f kernel.bin ${CMAKE_CURRENT_BINARY_DIR}/isofiles/boot/kernel
+        COMMAND cp -f ${CMAKE_CURRENT_SOURCE_DIR}/stage2_eltorito ${CMAKE_CURRENT_BINARY_DIR}/isofiles/boot/grub
+        COMMAND cp -f ${CMAKE_CURRENT_SOURCE_DIR}/menu.lst ${CMAKE_CURRENT_BINARY_DIR}/isofiles/boot/grub
+        COMMAND rm -f ${CMAKE_CURRENT_BINARY_DIR}/kernel.iso
+        COMMAND genisoimage -R -b boot/grub/stage2_eltorito -no-emul-boot -quiet -boot-load-size 4 -boot-info-table -o ${CMAKE_CURRENT_BINARY_DIR}/kernel.iso ${CMAKE_CURRENT_BINARY_DIR}/isofiles
+        DEPENDS menu.lst
+        DEPENDS stage2_eltorito
+        DEPENDS kernel.bin
+        )
+    add_custom_target(kernel_image ALL
+        DEPENDS kernel.iso
+        )
+    add_custom_target(run
+        COMMAND kvm -serial mon:stdio -cdrom ${CMAKE_CURRENT_BINARY_DIR}/kernel.iso
+        DEPENDS kernel_image
+        )
+endif()

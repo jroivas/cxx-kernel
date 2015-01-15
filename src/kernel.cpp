@@ -168,34 +168,12 @@ int Kernel::run()
     if (platform==NULL) return 1;
     if (platform->state()==NULL) return 1;
     platform->state()->startInterrupts();
-#if 0
-	uint32_t base = 0x20200000;
-	//*((uint32_t *)(base+4)) = (1<<18);
-	while (1) {
-	//for (int aa=1; aa<5; aa++) {
-		*((uint32_t *)(base+40)) = (1<<16);
-		volatile uint32_t pp=0xF000;
-		while (pp>10) pp--;
-		*((uint32_t *)(base+28)) = (1<<16);
-		pp=0xF000;
-		while (pp>10) pp--;
-	}
-	/*
-	GPIO *gpio = new GPIO(0x20200000);
-	gpio->write(4, 1<<18);
-	while (1) {
-		gpio->write(40, 1<<16);
-		for (volatile uint32_t pp=0; pp<0x3F0000; pp++) ;
-		gpio->write(28, 1<<16);
-		for (volatile uint32_t pp=0; pp<0x3F0000; pp++) ;
-	}
-	*/
-#endif
+
     if (video != NULL) {
         //video->clear();
         video->printf("Ticks: %lu!\n",Timer::get()->getTicks());
         video->printf("Hello world!\n");
-        video->printf("\nC++ kernel.\n");
+        video->printf("\nC++ kernel !!!\n");
         video->printf("And a TAB\t test!\n");
         video->printf("Removing letter A\bB and continuing.\n");
         video->printf("\b\b\bABCDEFG\n");
@@ -290,7 +268,7 @@ int Kernel::run()
 		for (int j=0; j<0x22; j++) { }
 */
 
-#if 1
+#if 0
     FB::ModeConfig conf;
     conf.width=800;
     conf.height=600;
