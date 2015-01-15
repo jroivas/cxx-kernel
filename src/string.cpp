@@ -4,49 +4,51 @@
 
 void *Mem::copy(void *dest, void *src, size_t size)
 {
-	if (dest==src) return dest;
-	char *d = (char*)dest;
-	char *s = (char*)src;
-	for (size_t i=0; i<size; i++) {
-		*d++=*s++;
-	}
-	return dest;
+    if (dest == src) return dest;
+
+    char *d = (char*)dest;
+    char *s = (char*)src;
+    for (size_t i=0; i<size; i++) {
+        *d++=*s++;
+    }
+    return dest;
 }
 
 void *Mem::move(void *dest, void *src, size_t size)
 {
-	if (dest==NULL || src==NULL) return NULL;
-	if (dest==src) return dest;
-	if (dest>src) {
-		char *d = ((char*)dest)+size-1;
-		char *s = ((char*)src)+size-1;
-		for (size_t i=0; i<size; i++) {
-			*d = *s;
-			d--;
-			s--;
-		}
-	} else return Mem::copy(dest,src,size);
+    if (dest == NULL || src == NULL) return NULL;
+    if (dest == src) return dest;
 
-	return dest;
+    if (dest > src) {
+        char *d = ((char*)dest)+size-1;
+        char *s = ((char*)src)+size-1;
+        for (size_t i=0; i<size; i++) {
+            *d = *s;
+            d--;
+            s--;
+        }
+    } else return Mem::copy(dest,src,size);
+
+    return dest;
 }
 
 void *Mem::set(void *s, unsigned char c, size_t size)
 {
-	unsigned char *d = (unsigned char*)s;
-	for (size_t i=0; i<size; i++) {
-		*d++ = c;
-	}
-	return s;
+    unsigned char *d = (unsigned char*)s;
+    for (size_t i=0; i<size; i++) {
+        *d++ = c;
+    }
+    return s;
 }
 
 void *Mem::setw(void *s, unsigned short c, size_t size)
 {
-	unsigned short *d = (unsigned short*)s;
-	for (size_t i=0; i<size; i++) {
-		*d = c;
-		d++;
-	}
-	return s;
+    unsigned short *d = (unsigned short*)s;
+    for (size_t i=0; i<size; i++) {
+        *d = c;
+        d++;
+    }
+    return s;
 }
 
 

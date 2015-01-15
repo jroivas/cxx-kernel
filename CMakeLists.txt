@@ -72,7 +72,12 @@ set(CMAKE_LINKER "${GCC_LD}")
 #set_target_properties(kernel.bin PROPERTIES LINKER_LANGUAGE LD PREFIX "" SUFFIX "" LINK_FLAGS "${LINKFLAGS}")
 
 add_custom_command(OUTPUT kernel.bin
-    COMMAND ${GCC_LD} ${LINKFLAGS} -o kernel.bin $<TARGET_FILE:loader> $<TARGET_FILE:core> $<TARGET_FILE:mm> $<TARGET_FILE:tables> $<TARGET_FILE:kbfb> $<TARGET_FILE:tmp1> $<TARGET_FILE:bits> $<TARGET_FILE:tmp2> $<TARGET_FILE:tmp3> $<TARGET_FILE:tmp4> $<TARGET_FILE:base> $<TARGET_FILE:arch_asm> $<TARGET_FILE:arch_setjmp> $<TARGET_FILE:arch> $<TARGET_FILE:bits> $<TARGET_FILE:arch_late> $<TARGET_FILE:tmp4> $<TARGET_FILE:arch_asm_late> $<TARGET_FILE:x86emu> $<TARGET_FILE:arch_setjmp> $<TARGET_FILE:tmp1> $<TARGET_FILE:font>
+    COMMAND ${GCC_LD} ${LINKFLAGS} -o kernel.bin $<TARGET_FILE:loader> $<TARGET_FILE:core> $<TARGET_FILE:mm>
+        $<TARGET_FILE:tables> $<TARGET_FILE:kbfb> $<TARGET_FILE:coretools> $<TARGET_FILE:bits> $<TARGET_FILE:font>
+        $<TARGET_FILE:storage> $<TARGET_FILE:task> $<TARGET_FILE:base> $<TARGET_FILE:arch_asm>
+        $<TARGET_FILE:arch_setjmp> $<TARGET_FILE:arch> $<TARGET_FILE:bits> $<TARGET_FILE:arch_late>
+        $<TARGET_FILE:task> $<TARGET_FILE:arch_asm_late> $<TARGET_FILE:x86emu>
+        $<TARGET_FILE:arch_setjmp> $<TARGET_FILE:coretools> $<TARGET_FILE:font_3pp>
     DEPENDS kernel
     base
     loader
@@ -87,10 +92,10 @@ add_custom_command(OUTPUT kernel.bin
     tables
     kbfb
     bits
-    tmp1
-    tmp2
-    tmp3
-    tmp4
+    coretools
+    font_3pp
+    storage
+    task
     )
 
 add_custom_target(kernel ALL
@@ -114,6 +119,6 @@ if (ARCH STREQUAL "x86")
         )
     add_custom_target(run
         COMMAND kvm -serial mon:stdio -cdrom ${CMAKE_CURRENT_BINARY_DIR}/kernel.iso
-        DEPENDS kernel_image
+        DEPENDS kernel.iso
         )
 endif()

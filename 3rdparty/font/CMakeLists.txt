@@ -1,3 +1,3 @@
-add_library(font
+add_library(font_3pp
     boot_font.c
     )

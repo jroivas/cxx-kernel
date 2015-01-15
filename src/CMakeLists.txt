@@ -15,7 +15,6 @@ set(MM_FILES
 
 set(TABLES_FILES
     gdt.cpp
-    string.cpp
     idt.cpp
     )
 
@@ -28,25 +27,27 @@ set(KBFB_FILES
 set(BITS_FILES
     bits.cpp
     )
-set(TMP1_FILES
+
+set(CORETOOLS_FILES
     math.cpp
     states.cpp
     setjmp.cpp
+    string.cpp
+    list.cpp
     )
 
-set(TMP2_FILES
+set(FONT_FILES
     font.cpp
     )
 
-set(TMP3_FILES
+set(STORAGE_FILES
     ata.cpp
     pci.cpp
     storage.cpp
     )
 
-set(TMP4_FILES
+set(TASK_FILES
     task.cpp
-    list.cpp
     processmanager.cpp
     )
 
@@ -60,7 +61,7 @@ add_library(mm STATIC ${MM_FILES})
 add_library(tables STATIC ${TABLES_FILES})
 add_library(kbfb STATIC ${KBFB_FILES})
 add_library(bits STATIC ${BITS_FILES})
-add_library(tmp1 STATIC ${TMP1_FILES})
-add_library(tmp2 STATIC ${TMP2_FILES})
-add_library(tmp3 STATIC ${TMP3_FILES})
-add_library(tmp4 STATIC ${TMP4_FILES})
+add_library(coretools STATIC ${CORETOOLS_FILES})
+add_library(font STATIC ${FONT_FILES})
+add_library(storage STATIC ${STORAGE_FILES})
+add_library(task STATIC ${TASK_FILES})
