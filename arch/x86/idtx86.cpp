@@ -12,19 +12,19 @@ IDTX86::Ptr idt_idtp;
 
 IDTX86::IDTX86() : IDT()
 {
-	idt_idtp.limit = (sizeof(Entry)*INTERRUPTS)-1;
-	idt_idtp.base = (unsigned int)&idt;
+    idt_idtp.limit = (sizeof(Entry)*INTERRUPTS)-1;
+    idt_idtp.base = (unsigned int)&idt;
 
-	Mem::set(&idt, 0, sizeof(Entry)*INTERRUPTS);
+    Mem::set(&idt, 0, sizeof(Entry)*INTERRUPTS);
 
-	for (int i=0; i<IRQ_ROUTINES; i++) {
-		routines[i] = NULL;
-	}
-	for (int i=0; i<ISR_HANDLERS; i++) {
-		handlers[i] = NULL;
-	}
+    for (int i=0; i<IRQ_ROUTINES; i++) {
+        routines[i] = NULL;
+    }
+    for (int i=0; i<ISR_HANDLERS; i++) {
+        handlers[i] = NULL;
+    }
 
-	load();
+    load();
 }
 
 void IDTX86::load()
@@ -219,44 +219,44 @@ void IDTX86::initIRQ()
 
 extern "C" int irq_handler(Regs * r)
 {
-	if (r==NULL) {
-		VideoX86 tmp;
-		tmp.printf("ERROR! IRQ, regs. \n");
+    if (r==NULL) {
+        VideoX86 tmp;
+        tmp.printf("ERROR! IRQ, regs. \n");
 
-		Platform p;
-		p.state()->seizeInterrupts();
-		p.state()->halt();
-	}
+        Platform p;
+        p.state()->seizeInterrupts();
+        p.state()->halt();
+    }
 
-	int (*routine)(Regs *r);
-	routine = NULL;
+    int (*routine)(Regs *r);
+    routine = NULL;
 
-	if (r->int_no<32) { 
-		Port::out(0x20, 0x20);
-		return -1;
-	}
+    if (r->int_no<32) { 
+        Port::out(0x20, 0x20);
+        return -1;
+    }
 
-	routine = IDTX86::get()->routine(r->int_no);
-	int res = 0;
-	if (routine!=NULL) {
-		res = routine(r);
-	}
+    routine = IDTX86::get()->routine(r->int_no);
+    int res = 0;
+    if (routine != NULL) {
+        res = routine(r);
+    }
 
-	IDTX86::Handler *handler = IDTX86::handler(r->int_no);
-	while (handler!=NULL) {
-		if (handler->high_half!=NULL) {
-			handler->high_half(r->int_no, handler->data);
-		}
-		//handler->bottom_half(r->int_no, handler->data); //FIXME
-		handler = handler->next;
-	}
+    IDTX86::Handler *handler = IDTX86::handler(r->int_no);
+    while (handler != NULL) {
+        if (handler->high_half!=NULL) {
+            handler->high_half(r->int_no, handler->data);
+        }
+        //handler->bottom_half(r->int_no, handler->data); //FIXME
+        handler = handler->next;
+    }
 
-	if (r->int_no >= 40) {
-		Port::out(0xA0, 0x20);
-	}
+    if (r->int_no >= 40) {
+        Port::out(0xA0, 0x20);
+    }
 
-	Port::out(0x20, 0x20);
-	return res;
+    Port::out(0x20, 0x20);
+    return res;
 }
 
 extern uint32_t debug_ptr;

@@ -8,19 +8,34 @@ if (ARCH STREQUAL "x86")
         )
     set(ARCH_FILES
         ${ARCH_FILES}
-        x86/atax86.cpp
         x86/bios.cpp
         x86/idtx86.cpp
         x86/kbx86.cpp
         x86/pagingx86.cpp
-        x86/pcix86.cpp
         x86/port.cpp
         x86/statesx86.cpp
         x86/timerx86.cpp
-        x86/vesa.cpp
         x86/videox86.cpp
         x86/x86.cpp
         )
+    if (PCI)
+        set(ARCH_FILES
+            ${ARCH_FILES}
+            x86/pcix86.cpp
+            )
+    endif()
+    if (GRAPHICS)
+        set(ARCH_FILES
+            ${ARCH_FILES}
+            x86/vesa.cpp
+            )
+    endif()
+    if (STORAGE)
+        set(ARCH_FILES
+            ${ARCH_FILES}
+            x86/atax86.cpp
+            )
+    endif()
     set(ARCH_LATE_FILES
         x86/taskx86.cpp
         )
@@ -59,10 +74,20 @@ if (ARCH STREQUAL "LINUX")
         linux/timerlinux.cpp
         linux/stateslinux.cpp
         )
+    if (GRAPHICS)
+        set(ARCH_FILES
+            ${ARCH_FILES}
+            linux/x11.cpp
+        )
+    endif()
+    if (STORAGE)
+        set(ARCH_FILES
+            ${ARCH_FILES}
+            linux/virtualdisc.cpp
+        )
+    endif()
     set(ARCH_LATE_FILES
         linux/videolinux.cpp
-        linux/virtualdisc.cpp
-        linux/x11.cpp
         )
 endif()
 
@@ -82,9 +107,11 @@ if (ARCH STREQUAL "ARM")
     set(ARCH_LATE_FILES
         arm/videoarm.cpp
         )
-    add_library(arch_asm_late STATIC
-        arm/qemu/armfb.cpp
-        )
+    if (GRAPHICS)
+        add_library(arch_asm_late STATIC
+            arm/qemu/armfb.cpp
+            )
+    endif()
 endif()
 
 add_library(loader STATIC

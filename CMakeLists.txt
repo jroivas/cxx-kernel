@@ -40,13 +40,11 @@ if (ARCH STREQUAL "x86")
     set(LINKFLAGS "-nostdlib")
     set(LINKFLAGS ${LINKFLAGS} -melf_i386)
     set(LINKFLAGS ${LINKFLAGS} -T${CMAKE_CURRENT_SOURCE_DIR}/link_x86.ld)
-    set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -m32")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
-
 elseif (ARCH STREQUAL "ARM")
     enable_language(ASM-ATT)
     add_definitions(-DARCH_ARM)
-    #set(LINKFLAGS ${LINKFLAGS} -marmelf)
     set(LINKFLAGS ${LINKFLAGS} -nostdlib)
     set(LINKFLAGS ${LINKFLAGS} --no-undefined)
     set(LINKFLAGS ${LINKFLAGS} -nostdlib)
@@ -64,19 +62,8 @@ else()
     message(FATAL_ERROR ${ARCH_ERROR_MSG})
 endif()
 
-#set(CMAKE_LINKER "${GCC_LD}")
-#set(CMAKE_C_LINK_EXECUTABLE "<CMAKE_LINKER> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>")
-#set(CMAKE_C_LINK_EXECUTABLE "<CMAKE_LINKER> <LINK_FLAGS> <OBJECTS> -o <TARGET>")
-add_subdirectory(src)
-add_subdirectory(arch)
-add_subdirectory(3rdparty)
-
-
 set(CMAKE_CXX_LINKER_PREFERENCE_PROPAGATES 0)
 set(CMAKE_LINKER "${GCC_LD}")
-
-#set_target_properties(kernel.bin PROPERTIES LINKER_LANGUAGE C PREFIX "" SUFFIX "" LINK_FLAGS "${LINKFLAGS}")
-#set_target_properties(kernel.bin PROPERTIES LINKER_LANGUAGE LD PREFIX "" SUFFIX "" LINK_FLAGS "${LINKFLAGS}")
 
 set(extra_pre "")
 set(extra_mid "")
@@ -96,19 +83,69 @@ if (ARCH STREQUAL "x86")
 elseif(ARCH STREQUAL "LINUX")
     set(extra_libs -lc -lpthread -lX11)
 elseif(ARCH STREQUAL "ARM")
-    set(extra_late $<TARGET_FILE:arch_asm_late>)
-    set(extra_deps arch_asm_late)
+    if (GRAPHICS)
+        set(extra_late $<TARGET_FILE:arch_asm_late>)
+        set(extra_deps arch_asm_late)
+    endif()
     #FIXME HACK: For some reason linking lib does not work with arm
     set(extra_loader ${CMAKE_BINARY_DIR}/arch/CMakeFiles/loader.dir/arm/loader.s.o)
 endif()
 
+if (GRAPHICS)
+    set(graphics_files $<TARGET_FILE:graphics>)
+    set(graphics_deps graphics)
+    add_definitions(-DFEATURE_GRAPHICS)
+else()
+    set(graphics_files "")
+    set(graphics_deps "")
+endif()
+
+
+if (STORAGE)
+    set(storage_files $<TARGET_FILE:storage>)
+    set(storage_deps storage)
+    add_definitions(-DFEATURE_STORAGE)
+    set(PCI True)
+else()
+    set(storage_files "")
+    set(storage_deps "")
+endif()
+
+if (PCI)
+    add_definitions(-DFEATURE_PCI)
+endif()
+
+add_subdirectory(src)
+add_subdirectory(arch)
+add_subdirectory(3rdparty)
+
+
 add_custom_command(OUTPUT kernel.bin
-    COMMAND ${GCC_LD} ${LINKFLAGS} -o kernel.bin $<TARGET_FILE:loader> ${extra_loader} $<TARGET_FILE:core> $<TARGET_FILE:mm>
-        $<TARGET_FILE:tables> $<TARGET_FILE:kb> $<TARGET_FILE:graphics> $<TARGET_FILE:coretools> $<TARGET_FILE:bits> $<TARGET_FILE:font>
-        $<TARGET_FILE:storage> $<TARGET_FILE:task> $<TARGET_FILE:base> ${extra_pre}
-        ${extra_mid} $<TARGET_FILE:arch> $<TARGET_FILE:bits> $<TARGET_FILE:arch_late>
-        $<TARGET_FILE:task> ${extra_late} ${emu}
-        ${extra_mid} $<TARGET_FILE:coretools> $<TARGET_FILE:font_3pp>
+    COMMAND ${GCC_LD} ${LINKFLAGS} -o kernel.bin
+        $<TARGET_FILE:loader>
+        ${extra_loader}
+        $<TARGET_FILE:core>
+        $<TARGET_FILE:mm>
+        $<TARGET_FILE:tables>
+        $<TARGET_FILE:kb>
+        ${graphics_files}
+        $<TARGET_FILE:coretools>
+        $<TARGET_FILE:bits>
+        $<TARGET_FILE:font>
+        ${storage_files}
+        $<TARGET_FILE:task>
+        $<TARGET_FILE:base>
+        ${extra_pre}
+        ${extra_mid}
+        $<TARGET_FILE:arch>
+        $<TARGET_FILE:bits>
+        $<TARGET_FILE:arch_late>
+        $<TARGET_FILE:task>
+        ${extra_late}
+        ${emu}
+        ${extra_mid}
+        $<TARGET_FILE:coretools>
+        $<TARGET_FILE:font_3pp>
         ${extra_libs}
     DEPENDS kernel
     loader
@@ -116,13 +153,13 @@ add_custom_command(OUTPUT kernel.bin
     mm
     tables
     kb
-    graphics
+    ${graphics_deps}
     coretools
     bits
     font
     font_3pp
     task
-    storage
+    ${storage_deps}
     base
     arch
     arch_late
@@ -156,6 +193,12 @@ endif()
 if (ARCH STREQUAL "ARM")
     add_custom_target(run
         COMMAND qemu-system-arm -serial mon:stdio -M versatilepb -m 128M -kernel kernel.bin
+        DEPENDS kernel.bin
+        )
+endif()
+if (ARCH STREQUAL "LINUX")
+    add_custom_target(run
+        COMMAND ./kernel.bin
         DEPENDS kernel.bin
         )
 endif()

@@ -94,8 +94,10 @@ void kernel_loop()
         pm->schedule();
 #endif
         if (Platform::fb()!=NULL && Platform::fb()->isConfigured()) {
+#ifdef FEATURE_GRAPHICS
                 Platform::fb()->swap();
                 Platform::fb()->blit();
+#endif
         }
 
         /* Update screen */
@@ -186,6 +188,7 @@ int Kernel::run()
 
         //delete video;
     }
+#ifdef FEATURE_STORAGE
     video->printf("PCI\n");
     PCI *pcidev = Platform::pci();
     if (pcidev != NULL) {
@@ -210,32 +213,7 @@ int Kernel::run()
                 buffer[cc] = 0;
         }
 
-#if 0
-        ata->select(dev);
-        buffer[0] = 0x42;
-        buffer[1] = 0;
-        buffer[2] = 0x12;
-        buffer[3] = 0x32;
-        buffer[4] = 0x24;
-        buffer[42] = 0xFE;
-        video->printf("Writing...\n");
-        if (ata->write(dev, buffer, 1, 0)) {
-                video->printf("Done %d.\n", 0);
-        }
-#endif
-#if 0
-        for (uint32_t sec=1; sec<4; sec++) {
-                buffer[1] = (sec%0xFF);
-                if (ata->write(dev, buffer, 1,  sec)) {
-                        //video->printf("Done %d.\n", sec);
-                } else {
-                        video->printf("Fail %d.\n", sec);
-                }
-        }
-#endif
         video->printf("Reading...\n");
-        //ata->read(dev, buffer, 1,  0);
-        //ata->read(dev, buffer, 1,  2);
         for (uint32_t sec=0; sec<6; sec++) {
                 if (ata->read(dev, buffer, 1,  sec)) {
                         video->printf("ATA: Ok %d. %x %x %x\n", sec, buffer[0], buffer[1], buffer[2]);
@@ -243,7 +221,9 @@ int Kernel::run()
         }
         video->printf("Done.\n");
     }
+#endif
 #ifdef ARCH_LINUX
+#ifdef STORAGE
     VirtualDisc *vd = new VirtualDisc();
     vd->append("test.img");
     ATA::Device *dev = vd->getDevice();
@@ -258,13 +238,14 @@ int Kernel::run()
             video->printf("Done.\n");
     }
 #endif
+#endif
 
 /*
     for (int i=0; i<0x5FFFFFF; i++) 
         for (int j=0; j<0x22; j++) { }
 */
 
-#if 0
+#ifdef FEATURE_GRAPHICS
     FB::ModeConfig conf;
     conf.width=800;
     conf.height=600;

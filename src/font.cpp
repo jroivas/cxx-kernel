@@ -13,7 +13,7 @@ void KernelFont::drawFont(FB *fb, int x, int y, unsigned char c)
     if (fb == NULL) return;
     if (current == NULL) return;
 
-#if 1
+#ifdef FEATURE_GRAPHICS
     for (int32_t i=0; i<RAWFONT(current)->height; i++) {
         int32_t p = RAWFONT(current)->width;
         unsigned char ch = RAWFONT(current)->data[(unsigned int)c*RAWFONT(current)->height+i];
@@ -24,15 +24,9 @@ void KernelFont::drawFont(FB *fb, int x, int y, unsigned char c)
         }
     }
 #else
-    for (int32_t i=0; i<RAWFONT(current).height; i++) {
-        int32_t p = RAWFONT(current).width;
-        unsigned char ch = RAWFONT(current).data[(unsigned int)c*RAWFONT(current).height+i];
-        for (int32_t j=0; j<RAWFONT(current).width; j++) {
-            if (ch & (1<<(--p))) {
-                fb->putPixel(x+j,y+i,font_color);
-            }
-        }
-    }
+    (void)x;
+    (void)y;
+    (void)c;
 #endif
 }
 

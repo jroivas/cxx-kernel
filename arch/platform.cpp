@@ -101,7 +101,7 @@ int Platform::CAS(ptr_val_t volatile *m_ptr, int cmp, int set)
 
 Timer *Platform::timer()
 {
-    if (__platform_timer==NULL) {
+    if (__platform_timer == NULL) {
         #ifdef ARCH_ARM
         __platform_timer = new TimerARM();
         #endif
@@ -118,7 +118,7 @@ Timer *Platform::timer()
 
 Video *Platform::video()
 {
-    if (__platform_video==NULL) {
+    if (__platform_video == NULL) {
         #ifdef ARCH_ARM
         __platform_video = new VideoARM();
         #endif
@@ -134,7 +134,7 @@ Video *Platform::video()
 
 IDT *Platform::idt()
 {
-    if (__platform_idt==NULL) {
+    if (__platform_idt == NULL) {
         #ifdef ARCH_ARM
         __platform_idt = new IDTARM();
         #endif
@@ -151,7 +151,7 @@ IDT *Platform::idt()
 KB *Platform::kb()
 {
     #ifdef ARCH_x86
-    if (__platform_kb==NULL) {
+    if (__platform_kb == NULL) {
         __platform_kb = new KBX86();
     }
     #endif
@@ -160,7 +160,8 @@ KB *Platform::kb()
 
 FB *Platform::fb()
 {
-    if (__platform_fb==NULL) {
+    #ifdef FEATURE_GRAPHICS
+    if (__platform_fb == NULL) {
         #ifdef ARCH_ARM
         __platform_fb = new ARMFB();
         #endif
@@ -171,25 +172,30 @@ FB *Platform::fb()
         __platform_fb = new X11();
         #endif
     }
+    #endif
     return __platform_fb;
 }
 
 PCI *Platform::pci()
 {
+    #ifdef FEATURE_PCI
     #ifdef ARCH_x86
-    if (__platform_pci==NULL) {
+    if (__platform_pci == NULL) {
         __platform_pci = new PCIX86();
     }
+    #endif
     #endif
     return __platform_pci;
 }
 
 ATA *Platform::ata()
 {
+    #ifdef FEATURE_STORAGE
     #ifdef ARCH_x86
-    if (__platform_ata==NULL) {
+    if (__platform_ata == NULL) {
         __platform_ata = new ATAX86();
     }
+    #endif
     #endif
     return __platform_ata;
 }
@@ -197,7 +203,7 @@ ATA *Platform::ata()
 Task *Platform::task()
 {
     #ifdef ARCH_x86
-    if (__platform_task==NULL) {
+    if (__platform_task == NULL) {
         __platform_task = new TaskX86();
     }
     #endif
@@ -206,7 +212,7 @@ Task *Platform::task()
 
 ProcessManager *Platform::processManager()
 {
-    if (__platform_pm==NULL) {
+    if (__platform_pm == NULL) {
         __platform_pm = new ProcessManager();
     }
     return __platform_pm;
