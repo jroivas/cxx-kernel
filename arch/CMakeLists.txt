@@ -36,6 +36,34 @@ if (ARCH STREQUAL "x86")
         x86/pages.asm
         x86/process.asm
         )
+
+    add_library(arch_setjmp STATIC
+        ${ARCH_SETJMP_FILES}
+        )
+    add_library(arch_asm STATIC
+        ${ARCH_ASM_FILES}
+        )
+    add_library(arch_asm_late STATIC
+        ${ARCH_ASM_LATE_FILES}
+        )
+endif()
+
+if (ARCH STREQUAL "LINUX")
+    set(LOADER_FILES
+        linux/loader.cpp
+        )
+    set(ARCH_FILES
+        ${ARCH_FILES}
+        linux/paginglinux.cpp
+        linux/idtlinux.cpp
+        linux/timerlinux.cpp
+        linux/stateslinux.cpp
+        )
+    set(ARCH_LATE_FILES
+        linux/videolinux.cpp
+        linux/virtualdisc.cpp
+        linux/x11.cpp
+        )
 endif()
 
 add_library(loader STATIC
@@ -46,13 +74,4 @@ add_library(arch STATIC
     )
 add_library(arch_late STATIC
     ${ARCH_LATE_FILES}
-    )
-add_library(arch_setjmp STATIC
-    ${ARCH_SETJMP_FILES}
-    )
-add_library(arch_asm STATIC
-    ${ARCH_ASM_FILES}
-    )
-add_library(arch_asm_late STATIC
-    ${ARCH_ASM_LATE_FILES}
     )

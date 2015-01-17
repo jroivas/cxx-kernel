@@ -30,9 +30,9 @@ void A_proc()
 #if 0
     ProcessManager *pm = Platform::processManager();
     if (pid==Platform::processManager()->pid()) {
-            Task *t = pm->clone();
-            (void)t;
-            //if (t!=NULL) pm->addTask(t);
+        Task *t = pm->clone();
+        (void)t;
+        //if (t!=NULL) pm->addTask(t);
     }
 #endif
     //Platform::video()->printf("2mypid %d %d\n",Platform::processManager()->pid(), pid);
@@ -62,45 +62,45 @@ void C_proc()
 
 void kernel_loop()
 {
-	//Platform::video()->printf("KERNEL1\n");
+    //Platform::video()->printf("KERNEL1\n");
 #if 1
-	ProcessManager *pm = Platform::processManager();
-	Task *a_task = Platform::task()->create((ptr_val_t)&A_proc, 0, 0);
-	Task *b_task = Platform::task()->create((ptr_val_t)&B_proc, 0, 0);
-	Task *c_task = Platform::task()->create((ptr_val_t)&C_proc, 0, 0);
-	a_task->setName("A task");
-	a_task->setSize(100);
-	a_task->setPriority(40);
-	b_task->setName("B task");
-	b_task->setNice(10);
-	c_task->setPriority(10);
-	c_task->setName("C task");
+    ProcessManager *pm = Platform::processManager();
+    Task *a_task = Platform::task()->create((ptr_val_t)&A_proc, 0, 0);
+    Task *b_task = Platform::task()->create((ptr_val_t)&B_proc, 0, 0);
+    Task *c_task = Platform::task()->create((ptr_val_t)&C_proc, 0, 0);
+    a_task->setName("A task");
+    a_task->setSize(100);
+    a_task->setPriority(40);
+    b_task->setName("B task");
+    b_task->setNice(10);
+    c_task->setPriority(10);
+    c_task->setName("C task");
 
-	pm->addTask(a_task);
-	pm->addTask(b_task);
-	pm->addTask(c_task);
+    pm->addTask(a_task);
+    pm->addTask(b_task);
+    pm->addTask(c_task);
 #endif
 
-	uint32_t start = Platform::timer()->getTicks();
-	(void)start;
-	while (1) {
-		//FIXME
+    uint32_t start = Platform::timer()->getTicks();
+    (void)start;
+    while (1) {
+        //FIXME
 #if 0
-		uint32_t end = Platform::timer()->getTicks();
-		Platform::video()->printf("Diff: %d\n",end-start);
+        uint32_t end = Platform::timer()->getTicks();
+        Platform::video()->printf("Diff: %d\n",end-start);
 #endif
 #if 0
-		ProcessManager *pm = Platform::processManager();
-		pm->schedule();
+        ProcessManager *pm = Platform::processManager();
+        pm->schedule();
 #endif
-		if (Platform::fb()!=NULL && Platform::fb()->isConfigured()) {
-			Platform::fb()->swap();
-			Platform::fb()->blit();
-		}
+        if (Platform::fb()!=NULL && Platform::fb()->isConfigured()) {
+                Platform::fb()->swap();
+                Platform::fb()->blit();
+        }
 
-		/* Update screen */
-		Timer::get()->wait(1);
-	}
+        /* Update screen */
+        Timer::get()->wait(1);
+    }
 }
 
 #if 0
@@ -114,15 +114,15 @@ void print_uart0(const char *s) {
 
 void printnum(uint32_t n)
 {
-	if (n==0) {
-		print_uart0("(null)");
-	}
-	while (n>0) {
-		uint8_t m=n%10;
-		n/=10;
- 		*UGGA = (unsigned int)(m+'0');
-	}
-	print_uart0("\n");
+    if (n==0) {
+        print_uart0("(null)");
+    }
+    while (n>0) {
+        uint8_t m=n%10;
+        n/=10;
+        *UGGA = (unsigned int)(m+'0');
+    }
+    print_uart0("\n");
 }
 #endif
 
@@ -159,10 +159,9 @@ Kernel::~Kernel()
 }
 
 #ifdef ARCH_ARM
-#include "arch/arm/gpio.h"	
+#include "arch/arm/gpio.h"
 #endif
 
-//extern const struct gfb_font bold8x16;
 int Kernel::run()
 {
     if (platform==NULL) return 1;
@@ -173,7 +172,7 @@ int Kernel::run()
         //video->clear();
         video->printf("Ticks: %lu!\n",Timer::get()->getTicks());
         video->printf("Hello world!\n");
-        video->printf("\nC++ kernel 0.03!!!\n");
+        video->printf("\nC++ kernel 0.04!!!\n");
         video->printf("And a TAB\t test!\n");
         video->printf("Removing letter A\bB and continuing.\n");
         video->printf("\b\b\bABCDEFG\n");
@@ -183,10 +182,7 @@ int Kernel::run()
         volatile int b = 5;
         for (int i=0; i<0x1FFFFFF; i++) { b = b + i; }
         video->printf("Ticks: %lu!\n",Timer::get()->getTicks());
-        //Timer::get()->wait(100);
         video->printf("Ticks: %lu!\n",Timer::get()->getTicks());
-        //Timer::get()->msleep(50);
-        //video->printf("Ticks msleep(50): %lu!\n",Timer::get()->getTicks());
 
         //delete video;
     }
@@ -244,7 +240,7 @@ int Kernel::run()
                 if (ata->read(dev, buffer, 1,  sec)) {
                         video->printf("ATA: Ok %d. %x %x %x\n", sec, buffer[0], buffer[1], buffer[2]);
                 }
-        }	
+        }
         video->printf("Done.\n");
     }
 #ifdef ARCH_LINUX
@@ -258,14 +254,14 @@ int Kernel::run()
                     if (vd->read(dev, buffer, 1,  sec)) {
                             video->printf("VIRTUAL: Ok %d. %x %x %x\n", sec, buffer[0], buffer[1], buffer[2]);
                     }
-            }	
+            }
             video->printf("Done.\n");
     }
 #endif
 
 /*
-	for (int i=0; i<0x5FFFFFF; i++) 
-		for (int j=0; j<0x22; j++) { }
+    for (int i=0; i<0x5FFFFFF; i++) 
+        for (int j=0; j<0x22; j++) { }
 */
 
 #if 0
@@ -313,11 +309,11 @@ int Kernel::run()
 
     ProcessManager *pm = Platform::processManager();
     if (pm!=NULL && Platform::task()!=NULL) {
-            Task *kernel_task = Platform::task()->create((ptr_val_t)kernel_loop, 0, 0);
-            kernel_task->setSize(2);
-            kernel_task->setNice(40);
-            pm->setRunning();
-            pm->addTask(kernel_task);
+        Task *kernel_task = Platform::task()->create((ptr_val_t)kernel_loop, 0, 0);
+        kernel_task->setSize(2);
+        kernel_task->setNice(40);
+        pm->setRunning();
+        pm->addTask(kernel_task);
     }
 
     //TODO: Setup initial task

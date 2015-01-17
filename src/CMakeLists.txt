@@ -6,6 +6,7 @@ set(CORE_FILES
     local.cpp
     mutex.cpp
     operators.cpp
+    timer.cpp
     )
 
 set(MM_FILES
@@ -18,9 +19,11 @@ set(TABLES_FILES
     idt.cpp
     )
 
-set(KBFB_FILES
-    timer.cpp
+set(KB_FILES
     kb.cpp
+    )
+
+set(GRAPHICS_FILES
     fb.cpp
     )
 
@@ -59,7 +62,8 @@ add_library(core STATIC ${CORE_FILES})
 add_library(base STATIC ${BASE_FILES})
 add_library(mm STATIC ${MM_FILES})
 add_library(tables STATIC ${TABLES_FILES})
-add_library(kbfb STATIC ${KBFB_FILES})
+add_library(kb STATIC ${KB_FILES})
+add_library(graphics STATIC ${GRAPHICS_FILES})
 add_library(bits STATIC ${BITS_FILES})
 add_library(coretools STATIC ${CORETOOLS_FILES})
 add_library(font STATIC ${FONT_FILES})
