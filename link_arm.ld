@@ -4,10 +4,10 @@ SECTIONS
  . = 0x10000;
  /*.startup . : { arch/loader.o(.text) }*/
  .text : {
-	*(.text*)
+    *(.text*)
 /*
-	*(.data)
-	*(.bss)
+    *(.data)
+    *(.bss)
 */
 
 
@@ -15,18 +15,22 @@ SECTIONS
  .data : { *(.data) }
  .bss : { *(.bss) }
  .rodata : {
-	rodata = .;
+    rodata = .;
 
-	start_ctors = .;
-	*(.ctor*)
-	*(.init_array*) /* For ARM */
-	end_ctors = .;
+    start_ctors = .;
+    *(.ctor*)
+    *(.init_array*) /* For ARM */
+    end_ctors = .;
 
-	start_dtors = .;
-	*(.dtor*)
-	end_dtors = .;
+    init_array_start = .;
+    KEEP (*(.init_array*))
+    init_array_end = .;
 
-	*(.rodata*)
+    start_dtors = .;
+    *(.dtor*)
+    end_dtors = .;
+
+    *(.rodata*)
  }
 
  . = . + 0x20000; /* Stack */
@@ -44,19 +48,19 @@ SECTIONS
 /*
   .rodata :
   {
-	rodata = .;
+    rodata = .;
 
-	start_ctors = .;
-	*(.ctor*)
-	end_ctors = .;
+    start_ctors = .;
+    *(.ctor*)
+    end_ctors = .;
 
-	start_dtors = .;
-	*(.dtor*)
-	end_dtors = .;
+    start_dtors = .;
+    *(.dtor*)
+    end_dtors = .;
 
-	*(.rodata*)
-	*(.gnu.linkonce.r*)
-	. = ALIGN(4096);
+    *(.rodata*)
+    *(.gnu.linkonce.r*)
+    . = ALIGN(4096);
  }
 */
 }

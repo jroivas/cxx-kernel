@@ -1,6 +1,6 @@
 #include "mm.h"
 #include "string.h"
-#include "../platform.h"
+#include "platform.h"
 #include "armfb.h"
 
 typedef struct _PL110MMIO

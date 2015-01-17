@@ -66,6 +66,27 @@ if (ARCH STREQUAL "LINUX")
         )
 endif()
 
+if (ARCH STREQUAL "ARM")
+    set(LOADER_FILES
+        arm/loader.s
+        )
+    set(ARCH_FILES
+        ${ARCH_FILES}
+        arm/arm.cpp
+        arm/pagingarm.cpp
+        arm/idtarm.cpp
+        arm/timerarm.cpp
+        arm/statesarm.cpp
+        arm/gpio.cpp
+        )
+    set(ARCH_LATE_FILES
+        arm/videoarm.cpp
+        )
+    add_library(arch_asm_late STATIC
+        arm/qemu/armfb.cpp
+        )
+endif()
+
 add_library(loader STATIC
     ${LOADER_FILES}
     )

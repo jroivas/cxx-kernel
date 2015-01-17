@@ -34,11 +34,9 @@ endif()
 if (ARCH STREQUAL "x86")
     set(CMAKE_ASM_NASM_OBJECT_FORMAT elf32)
     enable_language(ASM_NASM)
-    SET(CMAKE_ASM-NASM_COMPILER_ARG1 "-f elf32")
+    set(CMAKE_ASM-NASM_COMPILER_ARG1 "-f elf32")
     include_directories(${CMAKE_SOURCE_DIR}/3rdparty/my_x86emu)
     add_definitions(-DARCH_x86)
-    #set(LINKFLAGS "-Wl,--script=${CMAKE_SOURCE_DIR}/link_x86.ld -Wl,--omagic ${LINKFLAGS}")
-    #set(LINKFLAGS "-m elf_i386 -T link_x86.ld")
     set(LINKFLAGS "-nostdlib")
     set(LINKFLAGS ${LINKFLAGS} -melf_i386)
     set(LINKFLAGS ${LINKFLAGS} -T${CMAKE_CURRENT_SOURCE_DIR}/link_x86.ld)
@@ -46,8 +44,19 @@ if (ARCH STREQUAL "x86")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
 
 elseif (ARCH STREQUAL "ARM")
-    set(LINKFLAGS "-nostdlib")
+    enable_language(ASM-ATT)
     add_definitions(-DARCH_ARM)
+    #set(LINKFLAGS ${LINKFLAGS} -marmelf)
+    set(LINKFLAGS ${LINKFLAGS} -nostdlib)
+    set(LINKFLAGS ${LINKFLAGS} --no-undefined)
+    set(LINKFLAGS ${LINKFLAGS} -nostdlib)
+    set(LINKFLAGS ${LINKFLAGS} -T${CMAKE_CURRENT_SOURCE_DIR}/link_armqemu.ld)
+    set(CROSS_COMPILE $(HOME)/bin/arm-2008q3/bin/arm-none-eabi-)
+    set(CMAKE_C_COMPILER "${CROSS_COMPILE}gcc")
+    set(CMAKE_CXX_COMPILER "${CROSS_COMPILE}g++")
+    set(GCC_LD "${CROSS_COMPILE}ld")
+    set(CMAKE_ASM-ATT_COMPILER "${CROSS_COMPILE}as")
+    add_definitions(-DPLATFORM_qemu=1)
 elseif (ARCH STREQUAL "LINUX")
     add_definitions(-DARCH_LINUX)
     set(GCC_LD g++)
@@ -75,6 +84,7 @@ set(extra_late "")
 set(emu "")
 set(extra_deps "")
 set(extra_libs "")
+set(extra_loader "")
 
 if (ARCH STREQUAL "x86")
     set(extra_pre $<TARGET_FILE:arch_asm>)
@@ -85,10 +95,15 @@ if (ARCH STREQUAL "x86")
     )
 elseif(ARCH STREQUAL "LINUX")
     set(extra_libs -lc -lpthread -lX11)
+elseif(ARCH STREQUAL "ARM")
+    set(extra_late $<TARGET_FILE:arch_asm_late>)
+    set(extra_deps arch_asm_late)
+    #FIXME HACK: For some reason linking lib does not work with arm
+    set(extra_loader ${CMAKE_BINARY_DIR}/arch/CMakeFiles/loader.dir/arm/loader.s.o)
 endif()
 
 add_custom_command(OUTPUT kernel.bin
-    COMMAND ${GCC_LD} ${LINKFLAGS} -o kernel.bin $<TARGET_FILE:loader> $<TARGET_FILE:core> $<TARGET_FILE:mm>
+    COMMAND ${GCC_LD} ${LINKFLAGS} -o kernel.bin $<TARGET_FILE:loader> ${extra_loader} $<TARGET_FILE:core> $<TARGET_FILE:mm>
         $<TARGET_FILE:tables> $<TARGET_FILE:kb> $<TARGET_FILE:graphics> $<TARGET_FILE:coretools> $<TARGET_FILE:bits> $<TARGET_FILE:font>
         $<TARGET_FILE:storage> $<TARGET_FILE:task> $<TARGET_FILE:base> ${extra_pre}
         ${extra_mid} $<TARGET_FILE:arch> $<TARGET_FILE:bits> $<TARGET_FILE:arch_late>
@@ -136,5 +151,11 @@ if (ARCH STREQUAL "x86")
     add_custom_target(run
         COMMAND kvm -serial mon:stdio -cdrom ${CMAKE_CURRENT_BINARY_DIR}/kernel.iso
         DEPENDS kernel.iso
+        )
+endif()
+if (ARCH STREQUAL "ARM")
+    add_custom_target(run
+        COMMAND qemu-system-arm -serial mon:stdio -M versatilepb -m 128M -kernel kernel.bin
+        DEPENDS kernel.bin
         )
 endif()
