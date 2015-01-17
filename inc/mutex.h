@@ -9,45 +9,45 @@ class Mutex;
 class Mutex
 {
 public:
-	Mutex();
-	~Mutex();
+    Mutex();
+    ~Mutex();
 
-	void assign(ptr_val_t volatile *ptr);
-	void lock();
-	void unlock();
-	bool isLocked();
-	bool wait();
-	void abort();
+    void assign(ptr_val_t volatile *ptr);
+    void lock();
+    void unlock();
+    bool isLocked();
+    bool wait();
+    void abort();
 
 private:
-	Mutex(ptr_val_t volatile *ptr);
+    Mutex(ptr_val_t volatile *ptr);
 #if 0
-	inline int CAS(int cmp, int set) {
-		return Platform::CAS(m_ptr,cmp,set);
-	}
+    inline int CAS(int cmp, int set) {
+            return Platform::CAS(m_ptr,cmp,set);
+    }
 #endif
-	ptr_val_t volatile *m_ptr;
+    ptr_val_t volatile *m_ptr;
 };
 
 #if 1
 inline void Mutex::lock() {
-	if (m_ptr==NULL) return;
+    if (m_ptr == NULL) return;
 
-	/*
-	while (Platform_CAS(m_ptr, 0, 1)==0) ;
-	*/
-	Platform_CAS(m_ptr, 0, 1);
+    /*
+    while (Platform_CAS(m_ptr, 0, 1)==0) ;
+    */
+    Platform_CAS(m_ptr, 0, 1);
 }
 
 inline void Mutex::unlock() {
-	if (m_ptr==NULL) return;
+    if (m_ptr == NULL) return;
 
-	// If already unlocked return
-	if (*m_ptr==0) return;
+    // If already unlocked return
+    if (*m_ptr == 0) return;
 
-	while ((Platform_CAS(m_ptr, 1, 0))==0) ;
+    while ((Platform_CAS(m_ptr, 1, 0))==0) ;
 /*
-	Platform_CAS(m_ptr, 1, 0);
+    Platform_CAS(m_ptr, 1, 0);
 */
 }
 #endif

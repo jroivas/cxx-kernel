@@ -14,9 +14,9 @@
 #include "arch/linux/virtualdisc.h"
 #endif
 
-extern "C" uint32_t getEIP();
 void B_proc()
 {
+    Platform::video()->printf("v_proc pid %d\n",Platform::processManager()->pid());
     while (1) {
         Platform::video()->printf("B");
         Timer::get()->wait(100);
@@ -26,7 +26,7 @@ void B_proc()
 void A_proc()
 {
     uint32_t pid = Platform::processManager()->pid();
-    Platform::video()->printf("mypid %d %d\n",Platform::processManager()->pid(), pid);
+    Platform::video()->printf("a_proc pid %d %d\n",Platform::processManager()->pid(), pid);
 #if 0
     ProcessManager *pm = Platform::processManager();
     if (pid==Platform::processManager()->pid()) {
@@ -35,9 +35,7 @@ void A_proc()
         //if (t!=NULL) pm->addTask(t);
     }
 #endif
-    //Platform::video()->printf("2mypid %d %d\n",Platform::processManager()->pid(), pid);
     while (1) {
-        //Platform::video()->printf("A %d ",Platform::processManager()->pid());
         Platform::video()->printf("A");
         Timer::get()->wait(50);
     }
@@ -45,11 +43,12 @@ void A_proc()
 
 void C_proc()
 {
+    Platform::video()->printf("c_proc pid %d\n",Platform::processManager()->pid());
 #ifdef ARCH_x86
     uint32_t cnt=0;
     while (1) {
         Platform::video()->printf("C");
-        if (cnt++%5==0)  {
+        if (++cnt % 5 == 0)  {
             int32_t res = 0;
             asm ("int $0x99": "=a"(res));
             Platform::video()->printf("C %x\n",res);
@@ -62,17 +61,20 @@ void C_proc()
 
 void kernel_loop()
 {
-    //Platform::video()->printf("KERNEL1\n");
 #if 1
     ProcessManager *pm = Platform::processManager();
+
     Task *a_task = Platform::task()->create((ptr_val_t)&A_proc, 0, 0);
     Task *b_task = Platform::task()->create((ptr_val_t)&B_proc, 0, 0);
     Task *c_task = Platform::task()->create((ptr_val_t)&C_proc, 0, 0);
+
     a_task->setName("A task");
     a_task->setSize(100);
     a_task->setPriority(40);
+
     b_task->setName("B task");
     b_task->setNice(10);
+
     c_task->setPriority(10);
     c_task->setName("C task");
 
@@ -93,47 +95,24 @@ void kernel_loop()
         ProcessManager *pm = Platform::processManager();
         pm->schedule();
 #endif
-        if (Platform::fb()!=NULL && Platform::fb()->isConfigured()) {
 #ifdef FEATURE_GRAPHICS
+        if (Platform::fb()!=NULL && Platform::fb()->isConfigured()) {
                 Platform::fb()->swap();
                 Platform::fb()->blit();
-#endif
         }
+#endif
 
         /* Update screen */
         Timer::get()->wait(1);
     }
 }
 
-#if 0
-volatile unsigned int * const UGGA = (unsigned int *)0x101f1000;
-void print_uart0(const char *s) {
- while(*s != '\0') { /* Loop until end of string */
- *UGGA = (unsigned int)(*s); /* Transmit char */
- s++; /* Next char */
- }
-}
-
-void printnum(uint32_t n)
-{
-    if (n==0) {
-        print_uart0("(null)");
-    }
-    while (n>0) {
-        uint8_t m=n%10;
-        n/=10;
-        *UGGA = (unsigned int)(m+'0');
-    }
-    print_uart0("\n");
-}
-#endif
-
 Kernel::Kernel()
 {
     platform = new Platform();
     video = Video::get();
 
-    if (IDT::get()==NULL) {
+    if (IDT::get() == NULL) {
         delete platform;
         delete video;
         video = NULL;
@@ -143,13 +122,14 @@ Kernel::Kernel()
     IDT::get()->initISR();
     IDT::get()->initIRQ();
 
-    if (Timer::get()==NULL) {
+    if (Timer::get() == NULL) {
         delete platform;
         delete video;
         video = NULL;
         platform = NULL;
         return;
     }
+
     Timer::get()->setFrequency(KERNEL_FREQUENCY);
     KB::get();
 }
@@ -160,6 +140,7 @@ Kernel::~Kernel()
     video = NULL;
 }
 
+// XXX
 #ifdef ARCH_ARM
 #include "arch/arm/gpio.h"
 #endif
@@ -184,10 +165,10 @@ int Kernel::run()
         volatile int b = 5;
         for (int i=0; i<0x1FFFFFF; i++) { b = b + i; }
         video->printf("Ticks: %lu!\n",Timer::get()->getTicks());
+        for (int i=0; i<0x1FFFFF; i++) { b = b + i; }
         video->printf("Ticks: %lu!\n",Timer::get()->getTicks());
-
-        //delete video;
     }
+
 #ifdef FEATURE_STORAGE
     video->printf("PCI\n");
     PCI *pcidev = Platform::pci();
@@ -200,50 +181,47 @@ int Kernel::run()
     if (ata != NULL) {
         ata->init();
         ATA::Device *dev = ata->getDevice();
-        while (dev!=NULL) {
-                if ((ata->deviceModel(dev) == ATA::STORAGE_SATA
-                    || ata->deviceModel(dev) == ATA::STORAGE_PATA)
-                    && ata->deviceSize(dev)>0) {
-                    break;
-                }
-                dev = ata->nextDevice(dev);
+        while (dev != NULL) {
+            if ((ata->deviceModel(dev) == ATA::STORAGE_SATA
+                || ata->deviceModel(dev) == ATA::STORAGE_PATA)
+                && ata->deviceSize(dev) > 0) {
+                break;
+            }
+            dev = ata->nextDevice(dev);
         }
         uint8_t buffer[512];
         for (uint32_t cc=0; cc<512; cc++) {
-                buffer[cc] = 0;
+            buffer[cc] = 0;
         }
 
         video->printf("Reading...\n");
         for (uint32_t sec=0; sec<6; sec++) {
-                if (ata->read(dev, buffer, 1,  sec)) {
-                        video->printf("ATA: Ok %d. %x %x %x\n", sec, buffer[0], buffer[1], buffer[2]);
-                }
+            if (ata->read(dev, buffer, 1,  sec)) {
+                video->printf("ATA: Ok %d. %x %x %x\n", sec, buffer[0], buffer[1], buffer[2]);
+            }
         }
         video->printf("Done.\n");
     }
 #endif
+
 #ifdef ARCH_LINUX
-#ifdef STORAGE
+#ifdef FEATURE_STORAGE
     VirtualDisc *vd = new VirtualDisc();
     vd->append("test.img");
     ATA::Device *dev = vd->getDevice();
     uint8_t buffer[512];
-    if (dev!=NULL) {
-            video->printf("Reading...\n");
-            for (uint32_t sec=0; sec<6; sec++) {
-                    if (vd->read(dev, buffer, 1,  sec)) {
-                            video->printf("VIRTUAL: Ok %d. %x %x %x\n", sec, buffer[0], buffer[1], buffer[2]);
-                    }
+    if (dev != NULL) {
+        video->printf("Reading...\n");
+        for (uint32_t sec=0; sec<6; sec++) {
+            if (vd->read(dev, buffer, 1,  sec)) {
+                video->printf("VIRTUAL: Ok %d. %x %x %x\n", sec, buffer[0], buffer[1], buffer[2]);
             }
-            video->printf("Done.\n");
+        }
+        video->printf("Done.\n");
     }
 #endif
 #endif
 
-/*
-    for (int i=0; i<0x5FFFFFF; i++) 
-        for (int j=0; j<0x22; j++) { }
-*/
 
 #ifdef FEATURE_GRAPHICS
     FB::ModeConfig conf;
@@ -255,7 +233,7 @@ int Kernel::run()
     if (platform->fb()==NULL) return 1;
 
     FB::ModeConfig *vconf = platform->fb()->query(&conf);
-    if (vconf!=NULL) {
+    if (vconf != NULL) {
         video->printf("FB3\n");
         platform->fb()->configure(vconf);
         video->printf("FB3.2\n");
@@ -263,17 +241,17 @@ int Kernel::run()
         platform->fb()->blit();
 #if 1
         for (int j=0; j<120; j++) {
-                platform->fb()->putPixel(j,10,255,255,255);
+            platform->fb()->putPixel(j,10,255,255,255);
         }
         platform->fb()->swap();
         platform->fb()->blit();
         video->printf("FB5\n");
 #if 1
         for (int j=100; j<120; j++) {
-                for (int i=100; i<200; i++) {
-                        platform->fb()->putPixel(i,100+j,255,0,0);
-                        platform->fb()->putPixel(j,100+i,0,0,255);
-                }
+            for (int i=100; i<200; i++) {
+                platform->fb()->putPixel(i,100+j,255,0,0);
+                platform->fb()->putPixel(j,100+i,0,0,255);
+            }
         }
 #endif
 #endif
@@ -285,11 +263,12 @@ int Kernel::run()
     }
 #endif
     video->printf("Done\n");
+
     SysCall *sys = new SysCall();
     (void)sys;
 
     ProcessManager *pm = Platform::processManager();
-    if (pm!=NULL && Platform::task()!=NULL) {
+    if (pm != NULL && Platform::task() != NULL) {
         Task *kernel_task = Platform::task()->create((ptr_val_t)kernel_loop, 0, 0);
         kernel_task->setSize(2);
         kernel_task->setNice(40);

@@ -6,48 +6,48 @@
 #if 0
 #ifdef ARCH_x86
 #define Platform_CAS(__cas_m_ptr,__cas_cmp,__cas_set) \
-	int __cas_res = __cas_cmp;\
-	asm volatile( "lock; cmpxchgl %1,%2\n" "setz %%al\n" "movzbl %%al,%0" : "+a"(__cas_res) : "r" (__cas_set), "m"(*(__cas_m_ptr)) : "memory") 
+    int __cas_res = __cas_cmp;\
+    asm volatile( "lock; cmpxchgl %1,%2\n" "setz %%al\n" "movzbl %%al,%0" : "+a"(__cas_res) : "r" (__cas_set), "m"(*(__cas_m_ptr)) : "memory") 
 #endif
 #endif
 
 #ifndef Platform_CAS
 inline int Platform_CAS(ptr_val_t volatile *m_ptr, int cmp, int set) {
-	// FIXME implement this properly
+    // FIXME implement this properly
 
-	(void)m_ptr;
-	(void)cmp;
-	(void)set;
+    (void)m_ptr;
+    (void)cmp;
+    (void)set;
 
-	#ifdef ARCH_x86
-	int res = cmp;
-	asm volatile(
-		"lock; cmpxchgl %1,%2\n"
-		"setz %%al\n"
-		"movzbl %%al,%0"
-		: "+a"(res)
-		: "r" (set), "m"(*(m_ptr))
-		: "memory"
-		);
+    #ifdef ARCH_x86
+    int res = cmp;
+    asm volatile(
+        "lock; cmpxchgl %1,%2\n"
+        "setz %%al\n"
+        "movzbl %%al,%0"
+        : "+a"(res)
+        : "r" (set), "m"(*(m_ptr))
+        : "memory"
+        );
 
-	return res;
-	#endif
+    return res;
+    #endif
 
-	#ifdef ARCH_LINUX
-	if ((int)*m_ptr==cmp) {
-		*m_ptr=set;
-		return 1;
-	}
-	#endif
+    #ifdef ARCH_LINUX
+    if ((int)*m_ptr==cmp) {
+        *m_ptr = set;
+        return 1;
+    }
+    #endif
 
-	#ifdef ARCH_ARM
-	//if ((int)*m_ptr==cmp) {
-		*m_ptr=set;
-		return 1;
-	//}
-	#endif
+    #ifdef ARCH_ARM
+    //if ((int)*m_ptr==cmp) {
+        *m_ptr = set;
+        return 1;
+    //}
+    #endif
 
-	return 0;
+    return 0;
 }
 #endif
 
