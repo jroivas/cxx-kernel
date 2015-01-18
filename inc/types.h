@@ -1,8 +1,6 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-//#include "../config.h"
-
 #ifndef NULL
 #define NULL 0
 #endif
@@ -42,6 +40,8 @@ typedef long long int int64_t;
 typedef unsigned long long int uint64_t;
 #endif
 
+#if defined(ARCH_LINUX) || defined(ARCH_ARM) || defined(ARCH_x86)
 #include "operators.h"
+#endif
 
 #endif
