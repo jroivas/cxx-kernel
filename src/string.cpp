@@ -54,50 +54,50 @@ void *Mem::setw(void *s, unsigned short c, size_t size)
 
 String::String()
 {
-	m_str = NULL;
+    m_str = NULL;
 }
 
 String::String(const char *str)
 {
-	if (str!=NULL) {
-		unsigned int l = length(str);
-		//m_str = (char*)kmalloc(l+1);
-		m_str = (char*)MM::instance()->alloc(l+1);
-		Mem::copy((void*)m_str, (void*)str, l);
-		m_str[l] = 0;
-	} else m_str = NULL;
+    if (str != NULL) {
+        unsigned int l = length(str);
+        //m_str = (char*)kmalloc(l+1);
+        m_str = (char*)MM::instance()->alloc(l+1);
+        Mem::copy((void*)m_str, (void*)str, l);
+        m_str[l] = 0;
+    } else m_str = NULL;
 }
 
 unsigned int String::length(const char *str)
 {
-	if (str==NULL) return 0;
+    if (str==NULL) return 0;
 
-	unsigned int cnt = 0;
-	const char *tmp = str;
-	while (tmp!=NULL) {
-		cnt++;
-		tmp++;
-	}
+    unsigned int cnt = 0;
+    const char *tmp = str;
+    while (tmp!=NULL) {
+        cnt++;
+        tmp++;
+    }
 
-	return cnt;
+    return cnt;
 }
 
 unsigned int String::length()
 {
-	return length(m_str);
+    return length(m_str);
 }
 
 extern "C" void *memcpy(void *dest, const void *src, unsigned int n)
 {
-	return Mem::copy(dest, (void*)src, n);
+    return Mem::copy(dest, (void*)src, n);
 }
 
 extern "C" void *memset(void *s, int c, size_t n)
 {
-	return Mem::set(s, c, n);
+    return Mem::set(s, c, n);
 }
 
 extern "C" void *memmove(void *dest, const void *src, size_t n)
 {
-	return Mem::move(dest, (void*)src, n);
+    return Mem::move(dest, (void*)src, n);
 }

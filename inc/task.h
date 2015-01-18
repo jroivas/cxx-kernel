@@ -29,8 +29,17 @@ public:
     virtual int save() = 0;
     virtual int restore(volatile ptr_val_t *lock) = 0;
 
-    void setName(const char *n) { for (uint32_t i=0; i<TASK_NAME_LEN-1; i++) { m_name[i] = n[i]; } m_name[TASK_NAME_LEN-1]=0; }
-    const char *name() { return m_name; }
+    void setName(const char *n)
+    {
+        for (uint32_t i=0; i < TASK_NAME_LEN - 1; i++) {
+            m_name[i] = n[i];
+        }
+        m_name[TASK_NAME_LEN - 1] = 0;
+    }
+    const char *name()
+    {
+        return m_name;
+    }
 
     virtual Task *clone(CloneFlags flags = CLONE_NORMAL) = 0;
     virtual Task *create(ptr_val_t addr, ptr_val_t stack, uint32_t flags) = 0;
@@ -44,11 +53,26 @@ public:
     inline uint32_t slice() { return m_slice; }
     inline void decSlice() { if (m_slice>0) m_slice--; }
 
-    inline uint32_t priority() { return m_priority; }
-    inline void setPriority(uint32_t p) { if (p>MAX_PRIORITY) p = MAX_PRIORITY; m_priority = p; }
+    inline uint32_t priority()
+    {
+        return m_priority;
+    }
+    inline void setPriority(uint32_t p)
+    {
+        if (p > MAX_PRIORITY) {
+            p = MAX_PRIORITY;
+        }
+        m_priority = p;
+    }
 
     inline uint32_t nice() { return m_nice; }
-    inline void setNice(uint32_t p) { if (p>MAX_NICE) p = MAX_NICE; m_nice = p; }
+    inline void setNice(uint32_t p)
+    {
+        if (p > MAX_NICE) {
+            p = MAX_NICE;
+        }
+        m_nice = p;
+    }
 
     inline void setPid(uint32_t p) { m_pid = p; };
     inline uint32_t pid() { return m_pid; }
@@ -79,6 +103,13 @@ inline void Task::lock() {
 inline void Task::unlock() {
     m_m.unlock();
 }
-inline void Task::setSlice(uint32_t s) { if (m_size!=0 && s>m_size) m_slice = m_size; else m_slice = s; }
+inline void Task::setSlice(uint32_t s)
+{
+    if (m_size != 0 && s > m_size) {
+        m_slice = m_size;
+    } else {
+        m_slice = s;
+    }
+}
 
 #endif

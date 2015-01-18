@@ -1,5 +1,6 @@
 #include "types.h"
 #include "kernel.h"
+#include "kernel_version.h"
 #include "idt.h"
 #include "timer.h"
 #include "kb.h"
@@ -14,6 +15,7 @@
 #include "arch/linux/virtualdisc.h"
 #endif
 
+#if 0
 void B_proc()
 {
     Platform::video()->printf("v_proc pid %d\n",Platform::processManager()->pid());
@@ -57,13 +59,29 @@ void C_proc()
     }
 #endif
 }
+#endif
 
+extern "C" int app_main();
+void app_proc()
+{
+    int res = app_main();
+    Platform::video()->printf("\n\nApplication exit with code: %d\nHalting...\n", res);
+    while (true) {
+        Timer::get()->wait(500);
+    }
+}
 
 void kernel_loop()
 {
 #if 1
     ProcessManager *pm = Platform::processManager();
 
+    Task *a_task = Platform::task()->create((ptr_val_t)&app_proc, 0, 0);
+    a_task->setName("Application main");
+    pm->addTask(a_task);
+    a_task->setPriority(40);
+
+#if 0
     Task *a_task = Platform::task()->create((ptr_val_t)&A_proc, 0, 0);
     Task *b_task = Platform::task()->create((ptr_val_t)&B_proc, 0, 0);
     Task *c_task = Platform::task()->create((ptr_val_t)&C_proc, 0, 0);
@@ -81,6 +99,7 @@ void kernel_loop()
     pm->addTask(a_task);
     pm->addTask(b_task);
     pm->addTask(c_task);
+#endif
 #endif
 
     uint32_t start = Platform::timer()->getTicks();
@@ -147,26 +166,36 @@ Kernel::~Kernel()
 
 int Kernel::run()
 {
-    if (platform==NULL) return 1;
-    if (platform->state()==NULL) return 1;
+    if (platform == NULL) {
+        return 1;
+    }
+    if (platform->state() == NULL) {
+        return 1;
+    }
     platform->state()->startInterrupts();
 
     if (video != NULL) {
-        //video->clear();
+        video->clear();
+#if 0
         video->printf("Ticks: %lu!\n",Timer::get()->getTicks());
         video->printf("Hello world!\n");
-        video->printf("\nC++ kernel 0.04!!!\n");
+#endif
+        video->printf("\nC++ kernel %s!!!\n\n", kernel_version);
+#if 0
         video->printf("And a TAB\t test!\n");
         video->printf("Removing letter A\bB and continuing.\n");
         video->printf("\b\b\bABCDEFG\n");
         video->printf("Ticks: %lu!\n",Timer::get()->getTicks());
+#endif
 
+#if 0
         /* Some random timing... */
         volatile int b = 5;
         for (int i=0; i<0x1FFFFFF; i++) { b = b + i; }
         video->printf("Ticks: %lu!\n",Timer::get()->getTicks());
         for (int i=0; i<0x1FFFFF; i++) { b = b + i; }
         video->printf("Ticks: %lu!\n",Timer::get()->getTicks());
+#endif
     }
 
 #ifdef FEATURE_STORAGE
@@ -262,7 +291,7 @@ int Kernel::run()
 #endif
     }
 #endif
-    video->printf("Done\n");
+    //video->printf("Done\n");
 
     SysCall *sys = new SysCall();
     (void)sys;

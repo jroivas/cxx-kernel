@@ -39,56 +39,34 @@ void ProcessManager::addTask(Task *t)
 {
     if (t == NULL) return;
 
-    //m.lock();
     Platform::seizeInterrupts();
 
     Task *current = m_current;
 
     if (current!=NULL) current->lock();
 
-    //t->lock();
     if (t->pid()==0) {
         t->setPid(m_pid++);
     }
-    //t->lock();
-    //m_tasks->append(t);
-
-#if 0
-    if (m_current==NULL) {
-            m_current = t;
-    }
-#endif
-    //if (m_current!=NULL) m_current->unlock();
-    
-    //Platform::video()->printf("Addtask: %x %x\n",t->pid(), t);
 
     volatile ptr_val_t *lock = NULL;
     if (current!=NULL) {
         lock = current->getLock();
         m_tasks->append(current);
         if (current->save()) {
-            //Platform::video()->printf("noo!\n");
             Platform::continueInterrupts();
             return;
         }
     }
 
-    //t->lock();
     m_current = t;
 
-    //Platform::continueInterrupts();
-    //t->unlock();
-
     t->switchTo(lock, (ptr_t)&ProcessManager::killer);
-
-    //m.unlock();
 }
 
 void ProcessManager::doKill()
 {
     if (m_current == NULL) return;
-    Platform::video()->printf("Killing time!\n");
-
     m_tasks->deleteAll(m_current);
 }
 

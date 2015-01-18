@@ -5,6 +5,8 @@ project(kernel)
 include_directories(${CMAKE_SOURCE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/inc)
 include_directories(${CMAKE_SOURCE_DIR}/arch)
+include_directories(${CMAKE_SOURCE_DIR}/app)
+include_directories(${CMAKE_SOURCE_DIR}/libc)
 
 set(BASE_FLAGS "-DNO_SYS_HEADERS ")
 set(BASE_FLAGS "${BASE_FLAGS} -D__FREESTAND__")
@@ -119,6 +121,13 @@ add_subdirectory(src)
 add_subdirectory(arch)
 add_subdirectory(3rdparty)
 
+add_subdirectory(libc)
+
+set(APP app/hello.c)
+add_library(app STATIC
+    ${APP}
+    )
+
 
 add_custom_command(OUTPUT kernel.bin
     COMMAND ${GCC_LD} ${LINKFLAGS} -o kernel.bin
@@ -147,6 +156,8 @@ add_custom_command(OUTPUT kernel.bin
         $<TARGET_FILE:coretools>
         $<TARGET_FILE:font_3pp>
         ${extra_libs}
+        $<TARGET_FILE:app>
+        $<TARGET_FILE:libc>
     DEPENDS kernel
     loader
     core
@@ -164,6 +175,8 @@ add_custom_command(OUTPUT kernel.bin
     arch
     arch_late
     ${extra_deps}
+    libc
+    app
     )
 
 add_custom_target(kernel ALL
