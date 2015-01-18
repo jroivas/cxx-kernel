@@ -6,8 +6,8 @@
 class KBX86 : public KB
 {
 public:
-	KBX86();
+    KBX86();
 protected:
-	void run(Regs *r);
+    void run(Regs *r);
 };
 #endif

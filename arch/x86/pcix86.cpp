@@ -1,6 +1,6 @@
 #include "pcix86.h"
 
-#include "../platform.h"
+#include "platform.h"
 #include "port.h"
 
 #define PCI_PORT_CONFIG_ADDR 0xCF8
@@ -16,15 +16,15 @@ PCIX86::~PCIX86()
 
 void PCIX86::systemPut(uint32_t val)
 {
-	Port::outl(PCI_PORT_CONFIG_ADDR, val);
+    Port::outl(PCI_PORT_CONFIG_ADDR, val);
 }
 
 void PCIX86::systemPutData(uint8_t val)
 {
-	Port::out(PCI_PORT_CONFIG_DATA, val);
+    Port::out(PCI_PORT_CONFIG_DATA, val);
 }
 
 uint32_t PCIX86::systemGet()
 {
-	return Port::inl(PCI_PORT_CONFIG_DATA);
+    return Port::inl(PCI_PORT_CONFIG_DATA);
 }

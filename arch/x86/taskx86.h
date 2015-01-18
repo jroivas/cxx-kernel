@@ -59,7 +59,10 @@ public:
 
     Task *clone(CloneFlags flags = CLONE_NORMAL);
     Task *create(ptr_val_t addr, ptr_val_t stack, uint32_t flags);
-    void setTss(void *ptr) { Mem::copy((void*)&m_tss, ptr, sizeof(task_tss_t)); }
+    void setTss(void *ptr)
+    {
+        Mem::copy((void*)&m_tss, ptr, sizeof(task_tss_t));
+    }
     void setEntry(ptr_val_t addr);
 
     task_tss_t m_tss;
@@ -76,7 +79,7 @@ public:
                 uint32_t eip;
 
                 uint32_t fpu_flags;
-                uint8_t fpu_state[512+16] __attribute__((aligned(16)));
+                uint8_t fpu_state[512 + 16] __attribute__((aligned(16)));
             } r;
         };
     } __attribute__((aligned(16)));

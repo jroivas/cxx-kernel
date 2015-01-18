@@ -12,71 +12,83 @@
 #define BIOS_MEM_SIZE           0x8F000
 #define BIOS_STACK_SIZE         0x1000
 
-static uint8_t bios_x86emu_pio_inb(struct x86emu *, uint16_t port) {
+static uint8_t bios_x86emu_pio_inb(struct x86emu *, uint16_t port)
+{
     return Port::in(port);
 }
 
-static uint16_t bios_x86emu_pio_inw(struct x86emu *, uint16_t port) {
+static uint16_t bios_x86emu_pio_inw(struct x86emu *, uint16_t port)
+{
     return Port::inw(port);
 }
 
-static uint32_t bios_x86emu_pio_inl(struct x86emu *, uint16_t port) {
+static uint32_t bios_x86emu_pio_inl(struct x86emu *, uint16_t port)
+{
     return Port::inl(port);
 }
 
-static void bios_x86emu_pio_outb(struct x86emu *, uint16_t port, uint8_t data) {
+static void bios_x86emu_pio_outb(struct x86emu *, uint16_t port, uint8_t data)
+{
     Port::out(port, data);
 }
 
-static void bios_x86emu_pio_outw(struct x86emu *, uint16_t port, uint16_t data) {
+static void bios_x86emu_pio_outw(struct x86emu *, uint16_t port, uint16_t data)
+{
     Port::outw(port, data);
 }
 
-static void bios_x86emu_pio_outl(struct x86emu *, uint16_t port, uint32_t data) {
+static void bios_x86emu_pio_outl(struct x86emu *, uint16_t port, uint32_t data)
+{
     Port::outl(port, data);
 }
 
-static uint8_t bios_x86emu_mem_rdb(struct x86emu *emu, uint32_t addr) {
-    if (emu==NULL) return 0;
-    if (addr > emu->mem_size-1) {
+static uint8_t bios_x86emu_mem_rdb(struct x86emu *emu, uint32_t addr)
+{
+    if (emu == NULL) return 0;
+    if (addr > emu->mem_size - 1) {
         x86emu_halt_sys(emu);
     }
     return emu->mem_base[addr];
 }
 
-static void bios_x86emu_mem_wrb(struct x86emu *emu, uint32_t addr, uint8_t val) {
-    if (emu==NULL) return;
-    if (addr > emu->mem_size-1) {
+static void bios_x86emu_mem_wrb(struct x86emu *emu, uint32_t addr, uint8_t val)
+{
+    if (emu == NULL) return;
+    if (addr > emu->mem_size - 1) {
         x86emu_halt_sys(emu);
     }
     emu->mem_base[addr] = val;
 }
 
-static uint16_t bios_x86emu_mem_rdw(struct x86emu *emu, uint32_t addr) {
-    if (emu==NULL) return 0;
-    if (addr > emu->mem_size-2) {
+static uint16_t bios_x86emu_mem_rdw(struct x86emu *emu, uint32_t addr)
+{
+    if (emu == NULL) return 0;
+    if (addr > emu->mem_size - 2) {
         x86emu_halt_sys(emu);
     }
     return *(uint16_t *)(emu->mem_base + addr);
 }
 
-static void bios_x86emu_mem_wrw(struct x86emu *emu, uint32_t addr, uint16_t val) {
-    if (emu==NULL) return;
-    if (addr > emu->mem_size-2) {
+static void bios_x86emu_mem_wrw(struct x86emu *emu, uint32_t addr, uint16_t val)
+{
+    if (emu == NULL) return;
+    if (addr > emu->mem_size - 2) {
         x86emu_halt_sys(emu);
     }
     *((uint16_t *)(emu->mem_base + addr)) = val;
 }
 
-static uint32_t bios_x86emu_mem_rdl(struct x86emu *emu, uint32_t addr) {
+static uint32_t bios_x86emu_mem_rdl(struct x86emu *emu, uint32_t addr)
+{
     if (emu==NULL) return 0;
-    if (addr > emu->mem_size-4) {
+    if (addr > emu->mem_size - 4) {
         x86emu_halt_sys(emu);
     }
     return *(uint32_t *)(emu->mem_base + addr);
 }
 
-static void bios_x86emu_mem_wrl(struct x86emu *emu, uint32_t addr, uint32_t val) {
+static void bios_x86emu_mem_wrl(struct x86emu *emu, uint32_t addr, uint32_t val)
+{
     if (emu==NULL) return;
     *((uint32_t *)(emu->mem_base + addr)) = val;
 }
@@ -101,7 +113,7 @@ BIOS::BIOS()
 
     bios_stack = (void*)alloc(BIOS_STACK_SIZE);
     bios_halt = (void*)alloc(1);
-    if (bios_stack!=NULL && bios_halt!=NULL) {
+    if (bios_stack != NULL && bios_halt != NULL) {
         *(uint8_t*)bios_halt = 0xF4;
     }
 }
@@ -148,10 +160,12 @@ void BIOS::setupX86EMU(void *ptr)
 
 void *BIOS::alloc(uint32_t size)
 {
-    if (free_base<BIOS_MEM_BASE+BIOS_MEM_SIZE) {
+    if (free_base < BIOS_MEM_BASE + BIOS_MEM_SIZE) {
         m_bios.lock();
 #ifdef ALIGN_BIOS
-        while (free_base%PAGE_SIZE!=0) free_base++;
+        while ((free_base % PAGE_SIZE) != 0) {
+            free_base++;
+        }
 #endif
         void *tmp = (void*)free_base;
         free_base += size;
@@ -165,8 +179,8 @@ void *BIOS::alloc(uint32_t size)
 
 void BIOS::runInt(uint32_t interrupt, Regs *regs)
 {
-    if (interrupt==0) return;
-    if (bios_stack==NULL || bios_halt==NULL) {
+    if (interrupt == 0) return;
+    if (bios_stack == NULL || bios_halt == NULL) {
         return;
     }
 

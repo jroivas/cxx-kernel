@@ -16,7 +16,6 @@
 
 Vesa::Vesa() : FB()
 {
-	//
 }
 
 Vesa::~Vesa()
@@ -25,28 +24,28 @@ Vesa::~Vesa()
 
 int Vesa::modeDiff(FB::ModeConfig *conf, FB::ModeConfig *cmp)
 {
-	if (conf==NULL || cmp==NULL) return -1;
-	int diff=0;
+    if (conf == NULL || cmp == NULL) return -1;
+    int diff = 0;
 
-	if (conf->width!=cmp->width) diff++;
-	if (conf->width>cmp->width) diff++;
-	if (conf->height!=cmp->height) diff++;
-	if (conf->height>cmp->height) diff++;
-	if (conf->depth!=cmp->depth) diff++;
-	if (conf->depth>cmp->depth) diff++;
-	if (conf->bytes_per_line!=cmp->bytes_per_line) diff++;
+    if (conf->width!=cmp->width) diff++;
+    if (conf->width>cmp->width) diff++;
+    if (conf->height!=cmp->height) diff++;
+    if (conf->height>cmp->height) diff++;
+    if (conf->depth!=cmp->depth) diff++;
+    if (conf->depth>cmp->depth) diff++;
+    if (conf->bytes_per_line!=cmp->bytes_per_line) diff++;
 
-	return diff;
+    return diff;
 }
 
 void Vesa::copyMode(FB::ModeConfig *dest, FB::ModeConfig *src)
 {
-	dest->width = src->width;
-	dest->height = src->height;
-	dest->depth = src->depth;
-	dest->base = src->base;
-	dest->bytes_per_line = src->bytes_per_line;
-	dest->id = src->id;
+    dest->width = src->width;
+    dest->height = src->height;
+    dest->depth = src->depth;
+    dest->base = src->base;
+    dest->bytes_per_line = src->bytes_per_line;
+    dest->id = src->id;
 }
 
 bool Vesa::getVESA(void *ptr)
@@ -73,7 +72,7 @@ bool Vesa::getVESA(void *ptr)
     //Platform::video()->printf("=== VBE2 ptr %x %x %x\n",r.es,r.edi,(ptr_val_t)info);
     bios->runInt(0x10, &r);
 
-    if ((r.eax&0xFF)==0x4f && (r.eax&0xFF00)==0) {
+    if ((r.eax & 0xFF) == 0x4f && (r.eax & 0xFF00)==0) {
         Platform::video()->printf("=== VBE2 Init ok\n");
 #if 0
         Platform::video()->printf("    sig: %c%c%c%c\n",info->vbe_signature[0],info->vbe_signature[1],info->vbe_signature[2],info->vbe_signature[3]); 
@@ -96,8 +95,6 @@ bool Vesa::getVESA(void *ptr)
 
 FB::ModeConfig *Vesa::query(FB::ModeConfig *prefer)
 {
-    (void)prefer;
-
     m.lock();
 
     BIOS *bios = BIOS::get();
@@ -109,7 +106,7 @@ FB::ModeConfig *Vesa::query(FB::ModeConfig *prefer)
 
     uint16_t *loc = (uint16_t*)VBE_Ptr((uint32_t)info->video_mode_ptr);
     //Platform::video()->printf("=== VBE2 %d %x %x\n",(loc<(uint16_t*)(info+sizeof(info))),loc,info+sizeof(info));
-    if (loc==NULL) {
+    if (loc == NULL) {
         m.unlock();
         return NULL;
     }
@@ -123,8 +120,7 @@ FB::ModeConfig *Vesa::query(FB::ModeConfig *prefer)
     FB::ModeConfig *conf = (FB::ModeConfig *)MM::instance()->alloc(sizeof(FB::ModeConfig));
     int bestdiff = -1;
 
-
-    for (uint16_t i=0; loc[i]!=0xFFFF; i++) {
+    for (uint16_t i = 0; loc[i] != 0xFFFF; i++) {
         Regs r;
         r.eax = 0x4f01;
         r.ecx = loc[i];
@@ -133,36 +129,36 @@ FB::ModeConfig *Vesa::query(FB::ModeConfig *prefer)
         r.edi = VBE_realOff(modeinfo);
 
         bios->runInt(0x10, &r);
-        if ((r.eax&0xFF)!=0x4f) {
+        if ((r.eax&0xFF) != 0x4f) {
             Platform::video()->printf("=== VBE2 mode info not supported\n");
             m.unlock();
             return NULL;
         }
-        if ((r.eax&0xFF00)!=0) {
-            Platform::video()->printf("=== VBE2 mode info failed %d %d\n",i,loc[i]);
+        if ((r.eax&0xFF00) != 0) {
+            Platform::video()->printf("=== VBE2 mode info failed %d %d\n", i, loc[i]);
             m.unlock();
             return NULL;
         }
-        if (modeinfo->memory_model!=4 && modeinfo->memory_model!=6) {
+        if (modeinfo->memory_model != 4 && modeinfo->memory_model != 6) {
             //Platform::video()->printf("=== a: %x\n",modeinfo->memory_model);
             continue;
         }
-        else if (modeinfo->phys_base_ptr==0) {
+        else if (modeinfo->phys_base_ptr == 0) {
             continue;
         }
-        else if ((modeinfo->mode_attributes&1)==0) {
+        else if ((modeinfo->mode_attributes & 1) == 0) {
             continue;
         }
-        else if ((modeinfo->mode_attributes&(1<<1))==0) {
+        else if ((modeinfo->mode_attributes & (1 << 1)) == 0) {
             continue;
         }
-        else if ((modeinfo->mode_attributes&(1<<3))==0) {
+        else if ((modeinfo->mode_attributes & (1 <<3)) == 0) {
             continue;
         }
-        else if ((modeinfo->mode_attributes&(1<<4))==0) {
+        else if ((modeinfo->mode_attributes & (1 << 4)) == 0) {
             continue;
         }
-        else if ((modeinfo->mode_attributes&(1<<7))==0) {
+        else if ((modeinfo->mode_attributes & (1 << 7)) == 0) {
             continue;
         }
         switch (modeinfo->bits_per_pixel) {
@@ -170,12 +166,12 @@ FB::ModeConfig *Vesa::query(FB::ModeConfig *prefer)
             case 32:
             case 24:
             case 16:
-                    break;
+                break;
 
             /* Skip */
             case 8:
             default:
-                    continue;
+                continue;
         }
 
         //Platform::video()->printf("%d: %dx%d BPP: %d\n",loc[i],modeinfo->x_resolution, modeinfo->y_resolution, modeinfo->bits_per_pixel);
@@ -193,23 +189,23 @@ FB::ModeConfig *Vesa::query(FB::ModeConfig *prefer)
             } else {
                 if (res->width<=conf->width && res->height<=conf->height && res->depth<=conf->depth) {
                 //if (res->width<conf->width || res->height<conf->height || res->depth<conf->depth) {
-                        copyMode(res, conf);
+                    copyMode(res, conf);
                 }
             }
         } else {
             int rdiff = modeDiff(prefer, conf);
-            if (bestdiff==-1 && rdiff!=-1) {
-                bestdiff=rdiff;
+            if (bestdiff == -1 && rdiff != -1) {
+                bestdiff = rdiff;
                 copyMode(res, conf);
-            } else if (bestdiff!=-1 && rdiff!=-1 && rdiff<bestdiff) {
-                bestdiff=rdiff;
+            } else if (bestdiff != -1 && rdiff != -1 && rdiff < bestdiff) {
+                bestdiff = rdiff;
                 copyMode(res, conf);
             }
         }
     }
 
     MM::instance()->free(conf);
-    if (bestdiff==-1) {
+    if (bestdiff == -1) {
         MM::instance()->free(res);
         m.unlock();
         return NULL;
@@ -219,7 +215,7 @@ FB::ModeConfig *Vesa::query(FB::ModeConfig *prefer)
     Paging p;
     p.lock();
 
-    uint32_t s = res->bytes_per_line*(res->height);
+    uint32_t s = res->bytes_per_line * (res->height);
     ptr_val_t newbase;
     p.map(res->base, &newbase, 0x3);
     //ptr_val_t prev = newbase;
@@ -255,47 +251,47 @@ FB::ModeConfig *Vesa::query(FB::ModeConfig *prefer)
 void Vesa::setMode(ModeConfig *mode)
 {
 #if 1
-	BIOS *bios = BIOS::get();
-	Regs r;
-	r.eax = 0x4f02;
-	r.ebx = mode->id|(1<<14);
-	bios->runInt(0x10, &r);
-	if ((r.eax&0xFF00)!=0) {
-		Platform::video()->printf("=== VBE2 mode set failed\n");
-		//while(1);
-	}
+    BIOS *bios = BIOS::get();
+    Regs r;
+    r.eax = 0x4f02;
+    r.ebx = mode->id|(1<<14);
+    bios->runInt(0x10, &r);
+    if ((r.eax&0xFF00)!=0) {
+        Platform::video()->printf("=== VBE2 mode set failed\n");
+        //while(1);
+    }
 #endif
 }
 
 bool Vesa::configure(ModeConfig *mode)
 {
-	if (mode==NULL) return false;
+    if (mode==NULL) return false;
 
-	setMode(mode);
-	if (FB::configure(mode)) {
-		//setDirect();
-		//setSingleBuffer();
-		clear();
-		return true;
-	}
-	return false;
+    setMode(mode);
+    if (FB::configure(mode)) {
+        //setDirect();
+        //setSingleBuffer();
+        clear();
+        return true;
+    }
+    return false;
 }
 
 void Vesa::clear()
 {
-	Mem::set(m_current->base, 0, m_size);
+    Mem::set(m_current->base, 0, m_size);
 }
 
 void Vesa::blit()
 {
-	if (m_direct) return;
+    if (m_direct) return;
 
 #if 0
-	if (!m_double_buffer) Mem::copy(m_current->base, m_backbuffer, m_size);
-	else memcpy_opt(m_current->base, m_buffer, m_size);
+    if (!m_double_buffer) Mem::copy(m_current->base, m_backbuffer, m_size);
+    else memcpy_opt(m_current->base, m_buffer, m_size);
 #endif
-	m.lock();
-	memcpy_opt(m_current->base, m_buffer, m_size);
-	m.unlock();
-	//Mem::copy(m_current->base,m_buffer,m_size);
+    m.lock();
+    memcpy_opt(m_current->base, m_buffer, m_size);
+    m.unlock();
+    //Mem::copy(m_current->base,m_buffer,m_size);
 }

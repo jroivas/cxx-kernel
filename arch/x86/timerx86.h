@@ -3,17 +3,17 @@
 
 #include "timer.h"
 #include "regs.h"
-#include "../platform.h"
+#include "platform.h"
 
 class TimerX86 : public Timer
 {
 public:
-	TimerX86();
-        virtual void setFrequency(unsigned int hz);
+    TimerX86();
+    virtual void setFrequency(unsigned int hz);
 
 protected:
-        virtual void run(Regs *r);
-	ProcessManager *pm;
+    virtual void run(Regs *r);
+    ProcessManager *pm;
 };
 
 #endif

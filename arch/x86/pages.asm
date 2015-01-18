@@ -4,65 +4,56 @@ STACKSIZE             equ 0x4000
 
 [global pagingEnable]
 pagingEnable:
-	; Enable paging
-	mov eax, cr0
-	or eax, 0x80000000
-	mov cr0, eax
+    ; Enable paging
+    mov eax, cr0
+    or eax, 0x80000000
+    mov cr0, eax
 
-	ret
-
+    ret
 
 [global pagingDisable]
 pagingDisable:
-	; Disable paging
-	mov edx, cr0
-	and edx, 0x7fffffff
-	mov cr0, edx
+    ; Disable paging
+    mov edx, cr0
+    and edx, 0x7fffffff
+    mov cr0, edx
 
-	ret
+    ret
 
 [global pagingDirectoryChange]
 pagingDirectoryChange:
-	push ebp
-	mov ebp, esp
-	mov eax, [ebp+8]
-	mov cr3, eax
-	pop ebp
+    push ebp
+    mov ebp, esp
+    mov eax, [ebp+8]
+    mov cr3, eax
+    pop ebp
 
-	ret
+    ret
 
 [GLOBAL copyPhysicalPage]
 copyPhysicalPage:
-	push ebx
-	pushf
+    push ebx
+    pushf
 
-	cli
+    cli
 
-	mov ebx, [esp+12]
-	mov ecx, [esp+16]
+    mov ebx, [esp+12]
+    mov ecx, [esp+16]
 
-	call pagingDisable
-	; Disable paging
-	;mov edx, cr0
-	;and edx, 0x7fffffff
-	;mov cr0, edx
+    call pagingDisable
 
-	mov edx, 1024
+    mov edx, 1024
 
 .copyloop:
-	mov eax, [ebx]
-	mov [ecx], eax
-	add ebx, 4
-	add ecx, 4
-	dec edx
-	jnz .copyloop
+    mov eax, [ebx]
+    mov [ecx], eax
+    add ebx, 4
+    add ecx, 4
+    dec edx
+    jnz .copyloop
 
-	call pagingEnable
-	; Enable paging
-	;mov edx, cr0
-	;and edx, 0x80000000
-	;mov cr0, edx
+    call pagingEnable
 
-	popf
-	pop ebx
-	ret
+    popf
+    pop ebx
+    ret

@@ -6,11 +6,11 @@
 class StateX86 : public State
 {
 public:
-	StateX86() : State() { }
-	~StateX86(){ }
-	void halt();
-	void seizeInterrupts();
-	void startInterrupts();
+    StateX86() : State() { }
+    ~StateX86(){ }
+    void halt();
+    void seizeInterrupts();
+    void startInterrupts();
 
 };
 #endif

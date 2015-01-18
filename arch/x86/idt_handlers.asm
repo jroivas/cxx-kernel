@@ -6,141 +6,141 @@ KERNEL_SPACE equ 0x10
 [global debug_ptr]
 [global debug_ptr_cr2]
 debug_ptr:
-	dd 0
+    dd 0
 debug_ptr_cr2:
-	dd 0
+    dd 0
 
 [global get_esp]
 get_esp:
-        mov eax, esp
-        ret
+    mov eax, esp
+    ret
 
 [global idt_load]
 [extern idt_idtp]
 idt_load:
-	lidt [idt_idtp]
-	ret
+    lidt [idt_idtp]
+    ret
 
 __irq_timer:
-	pusha
+    pusha
 
-	push ds
-	push es
-	push fs
-	push gs
+    push ds
+    push es
+    push fs
+    push gs
 
-	mov ax, KERNEL_SPACE
-	mov ds, ax
-	mov es, ax
-	mov fs, ax
-	mov gs, ax
+    mov ax, KERNEL_SPACE
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
 
-	mov ecx, esp
-	push ecx
+    mov ecx, esp
+    push ecx
 
-	call irq_handler
+    call irq_handler
 
-	add esp, 4
+    add esp, 4
 
-	pop gs
-	pop fs
-	pop es
-	pop ds
+    pop gs
+    pop fs
+    pop es
+    pop ds
 
-	popa
-	add esp, 8
+    popa
+    add esp, 8
 
-	iret
+    iret
 
 __irq_common:
-	push eax
-	mov eax, esp
-	push ecx
-	push edx
-	push ebx
-	push eax
-	push ebp
-	push esi
-	push edi
+    push eax
+    mov eax, esp
+    push ecx
+    push edx
+    push ebx
+    push eax
+    push ebp
+    push esi
+    push edi
 
-	push ds
-	push es
-	push fs
-	push gs
+    push ds
+    push es
+    push fs
+    push gs
 
-	mov ax, KERNEL_SPACE
-	mov ds, ax
-	mov es, ax
-	mov fs, ax
-	mov gs, ax
+    mov ax, KERNEL_SPACE
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
 
-	mov ecx, esp
-	push ecx
+    mov ecx, esp
+    push ecx
 
-	call irq_handler
+    call irq_handler
 
-	add esp, 4
+    add esp, 4
 
-	pop gs
-	pop fs
-	pop es
-	pop ds
+    pop gs
+    pop fs
+    pop es
+    pop ds
 
-	;popa
-	pop edi
-	pop esi
-	pop ebp
-	pop ebx
-	pop ebx
-	pop edx
-	pop ecx
-	;pop eax
-	add esp, 4 ;discard eax
+    ;popa
+    pop edi
+    pop esi
+    pop ebp
+    pop ebx
+    pop ebx
+    pop edx
+    pop ecx
+    ;pop eax
+    add esp, 4 ;discard eax
 
-	add esp, 8
+    add esp, 8
 
-	iret
+    iret
 
 __isr_common:
-	pusha
+    pusha
 
-	push ds
-	push es
-	push fs
-	push gs
+    push ds
+    push es
+    push fs
+    push gs
 
-	mov ax, KERNEL_SPACE
-	mov ds, ax
-	mov es, ax
-	mov fs, ax
-	mov gs, ax
+    mov ax, KERNEL_SPACE
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
 
-	mov ecx, esp
-	push ecx
+    mov ecx, esp
+    push ecx
 
-	call isr_handler
+    call isr_handler
 
-	add esp, 4
+    add esp, 4
 
-	pop gs
-	pop fs
-	pop es
-	pop ds
+    pop gs
+    pop fs
+    pop es
+    pop ds
 
-	popa
-	add esp, 8
+    popa
+    add esp, 8
 
-	iret
+    iret
 
 %macro __irq_init_save_eax 1
 
 [global __irq%1]
 
 __irq%1:
-	cli
-	push dword 0
-	push dword (%1 + 32)
-	jmp __irq_timer
+    cli
+    push dword 0
+    push dword (%1 + 32)
+    jmp __irq_timer
 %endmacro
 
 %macro __irq_init 1
@@ -148,10 +148,10 @@ __irq%1:
 [global __irq%1]
 
 __irq%1:
-	cli
-	push dword 0
-	push dword (%1 + 32)
-	jmp __irq_common
+    cli
+    push dword 0
+    push dword (%1 + 32)
+    jmp __irq_common
 %endmacro
 
 __irq_init_save_eax 0
@@ -177,10 +177,10 @@ __irq_init 121
 [global __isr%1]
 
 __isr%1:
-	cli
-	push dword 0
-	push dword %1
-	jmp __isr_common
+    cli
+    push dword 0
+    push dword %1
+    jmp __isr_common
 %endmacro
 
 %macro __isr_init_dbg 1
@@ -188,13 +188,13 @@ __isr%1:
 [global __isr%1]
 
 __isr%1:
-	cli
-	pop eax
-	mov [debug_ptr],eax
-	push dword 0
-	push dword %1
-	jmp __isr_common
-	jmp $
+    cli
+    pop eax
+    mov [debug_ptr],eax
+    push dword 0
+    push dword %1
+    jmp __isr_common
+    jmp $
 %endmacro
 
 %macro __isr_init_err 1
@@ -202,13 +202,13 @@ __isr%1:
 [global __isr%1]
 
 __isr%1:
-	cli
-	push eax
-	mov eax, cr2
-	mov [debug_ptr_cr2], eax
-	pop eax
-	push dword %1
-	jmp __isr_common
+    cli
+    push eax
+    mov eax, cr2
+    mov [debug_ptr_cr2], eax
+    pop eax
+    push dword %1
+    jmp __isr_common
 %endmacro
 
 __isr_init 0

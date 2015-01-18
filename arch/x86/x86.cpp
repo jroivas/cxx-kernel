@@ -2,15 +2,15 @@
 
 void cli()
 {
-	asm volatile("cli");
+    asm volatile("cli");
 }
 
 void sti()
 {
-	asm volatile("sti");
+    asm volatile("sti");
 }
 
 void hlt()
 {
-	asm volatile("hlt");
+    asm volatile("hlt");
 }
