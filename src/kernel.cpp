@@ -199,12 +199,12 @@ int Kernel::run()
     }
 
 #ifdef FEATURE_STORAGE
-    video->printf("PCI\n");
     PCI *pcidev = Platform::pci();
     if (pcidev != NULL) {
-            if (pcidev->isAvailable()) video->printf("Found PCI\n");
-            else video->printf("PCI not available\n");
-            pcidev->scanDevices();
+        if (pcidev->isAvailable()) video->printf("Found PCI\n");
+        else video->printf("PCI not available\n");
+        pcidev->setVerbose();
+        pcidev->scanDevices();
     }
     ATA *ata = Platform::ata();
     if (ata != NULL) {

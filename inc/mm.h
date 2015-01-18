@@ -9,34 +9,34 @@ struct PtrInfo;
 class MM
 {
 public:
-	enum AllocType {
-		AllocNormal = 0,
-		AllocFast,
-		AllocClear,
-		AllocPage
-	};
-	enum AllocLock {
-		AllocDoNotLock = 0,
-		AllocDoLock
-	};
+    enum AllocType {
+        AllocNormal = 0,
+        AllocFast,
+        AllocClear,
+        AllocPage
+    };
+    enum AllocLock {
+        AllocDoNotLock = 0,
+        AllocDoLock
+    };
 
-	MM();
-	static MM *instance();
-	void *alloc(size_t size, AllocType t=AllocNormal);
-	bool free(void *p, AllocLock l=AllocDoLock);
-	void *realloc(void *ptr, size_t size);
+    MM();
+    static MM *instance();
+    void *alloc(size_t size, AllocType t=AllocNormal);
+    bool free(void *p, AllocLock l=AllocDoLock);
+    void *realloc(void *ptr, size_t size);
 
 private:
-	void treeAdd(PtrInfo *p);
-	void *releaseFree(PtrInfo *p, PtrInfo *parent);
-	void *allocPage(size_t cnt);
-	void *allocMem(size_t size, AllocType t);
-	void *allocMemClear(size_t size);
-	void *findAvail(size_t size);
-	Mutex m;
-	void *m_lastPage;
-	void *m_freeTop;
-	void *m_freeMax;
+    void treeAdd(PtrInfo *p);
+    void *releaseFree(PtrInfo *p, PtrInfo *parent);
+    void *allocPage(size_t cnt);
+    void *allocMem(size_t size, AllocType t);
+    void *allocMemClear(size_t size);
+    void *findAvail(size_t size);
+    Mutex m;
+    void *m_lastPage;
+    void *m_freeTop;
+    void *m_freeMax;
 };
 
 extern "C" void *malloc(size_t size);

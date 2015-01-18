@@ -3,8 +3,8 @@
 
 struct __jmp_buf
 {
-	unsigned edi, esi, ebp, esp, ebx, edx, ecx, eax;
-        unsigned eip, eflags;
+    unsigned edi, esi, ebp, esp, ebx, edx, ecx, eax;
+    unsigned eip, eflags;
 };
 typedef struct __jmp_buf jmp_buf[1];
 

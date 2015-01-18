@@ -13,13 +13,13 @@ class Task
 {
 public:
     enum CloneFlags {
-            CLONE_NORMAL        = 0,
-            CLONE_SHARE_ADDRESS = (1<<0),
-            CLONE_SHARE_STACK   = (1<<1),
-            CLONE_SHARE_FS      = (1<<2),
-            CLONE_SHARE_FILES   = (1<<3),
-            CLONE_SHARE_SIGNAL  = (1<<4),
-            CLONE_SHARE_PARENT  = (1<<5)
+        CLONE_NORMAL        = 0,
+        CLONE_SHARE_ADDRESS = (1<<0),
+        CLONE_SHARE_STACK   = (1<<1),
+        CLONE_SHARE_FS      = (1<<2),
+        CLONE_SHARE_FILES   = (1<<3),
+        CLONE_SHARE_SIGNAL  = (1<<4),
+        CLONE_SHARE_PARENT  = (1<<5)
     };
 
     Task();
@@ -46,14 +46,28 @@ public:
 
     virtual void setEntry(ptr_val_t addr) = 0;
 
-    inline void setSize(uint32_t s) { m_size = s; }
-    inline uint32_t size() { return m_size; }
+    inline void setSize(uint32_t s)
+    {
+        m_size = s;
+    }
+    inline uint32_t size() const
+    {
+        return m_size;
+    }
 
     void setSlice(uint32_t s);
-    inline uint32_t slice() { return m_slice; }
-    inline void decSlice() { if (m_slice>0) m_slice--; }
+    inline uint32_t slice() const
+    {
+        return m_slice;
+    }
+    inline void decSlice()
+    {
+        if (m_slice>0) {
+            m_slice--;
+        }
+    }
 
-    inline uint32_t priority()
+    inline uint32_t priority() const
     {
         return m_priority;
     }
@@ -65,7 +79,10 @@ public:
         m_priority = p;
     }
 
-    inline uint32_t nice() { return m_nice; }
+    inline uint32_t nice() const
+    {
+        return m_nice;
+    }
     inline void setNice(uint32_t p)
     {
         if (p > MAX_NICE) {
@@ -74,10 +91,19 @@ public:
         m_nice = p;
     }
 
-    inline void setPid(uint32_t p) { m_pid = p; };
-    inline uint32_t pid() { return m_pid; }
+    inline void setPid(uint32_t p)
+    {
+        m_pid = p;
+    };
+    inline uint32_t pid() const
+    {
+        return m_pid;
+    }
 
-    inline volatile ptr_val_t *getLock() { return &m_lock; }
+    inline volatile ptr_val_t *getLock()
+    {
+        return &m_lock;
+    }
     void lock();
     void unlock();
 
@@ -97,10 +123,12 @@ protected:
     bool m_userSpace;
 };
 
-inline void Task::lock() {
+inline void Task::lock()
+{
     m_m.lock();
 }
-inline void Task::unlock() {
+inline void Task::unlock()
+{
     m_m.unlock();
 }
 inline void Task::setSlice(uint32_t s)

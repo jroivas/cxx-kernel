@@ -21,21 +21,12 @@ public:
 
 private:
     Mutex(ptr_val_t volatile *ptr);
-#if 0
-    inline int CAS(int cmp, int set) {
-            return Platform::CAS(m_ptr,cmp,set);
-    }
-#endif
     ptr_val_t volatile *m_ptr;
 };
 
-#if 1
 inline void Mutex::lock() {
     if (m_ptr == NULL) return;
 
-    /*
-    while (Platform_CAS(m_ptr, 0, 1)==0) ;
-    */
     Platform_CAS(m_ptr, 0, 1);
 }
 
@@ -46,9 +37,5 @@ inline void Mutex::unlock() {
     if (*m_ptr == 0) return;
 
     while ((Platform_CAS(m_ptr, 1, 0))==0) ;
-/*
-    Platform_CAS(m_ptr, 1, 0);
-*/
 }
-#endif
 #endif

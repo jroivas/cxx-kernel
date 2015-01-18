@@ -8,8 +8,8 @@ void *Mem::copy(void *dest, void *src, size_t size)
 
     char *d = (char*)dest;
     char *s = (char*)src;
-    for (size_t i=0; i<size; i++) {
-        *d++=*s++;
+    for (size_t i = 0; i < size; i++) {
+        *d++ = *s++;
     }
     return dest;
 }
@@ -20,9 +20,9 @@ void *Mem::move(void *dest, void *src, size_t size)
     if (dest == src) return dest;
 
     if (dest > src) {
-        char *d = ((char*)dest)+size-1;
-        char *s = ((char*)src)+size-1;
-        for (size_t i=0; i<size; i++) {
+        char *d = ((char*)dest) + size - 1;
+        char *s = ((char*)src) + size - 1;
+        for (size_t i = 0; i < size; i++) {
             *d = *s;
             d--;
             s--;
@@ -35,7 +35,7 @@ void *Mem::move(void *dest, void *src, size_t size)
 void *Mem::set(void *s, unsigned char c, size_t size)
 {
     unsigned char *d = (unsigned char*)s;
-    for (size_t i=0; i<size; i++) {
+    for (size_t i = 0; i < size; i++) {
         *d++ = c;
     }
     return s;
@@ -44,7 +44,7 @@ void *Mem::set(void *s, unsigned char c, size_t size)
 void *Mem::setw(void *s, unsigned short c, size_t size)
 {
     unsigned short *d = (unsigned short*)s;
-    for (size_t i=0; i<size; i++) {
+    for (size_t i = 0; i < size; i++) {
         *d = c;
         d++;
     }
@@ -61,8 +61,7 @@ String::String(const char *str)
 {
     if (str != NULL) {
         unsigned int l = length(str);
-        //m_str = (char*)kmalloc(l+1);
-        m_str = (char*)MM::instance()->alloc(l+1);
+        m_str = (char*)MM::instance()->alloc(l + 1);
         Mem::copy((void*)m_str, (void*)str, l);
         m_str[l] = 0;
     } else m_str = NULL;

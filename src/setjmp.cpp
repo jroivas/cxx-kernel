@@ -20,8 +20,8 @@ extern "C" void longjmp(jmp_buf buf, long ret_val)
     /* push current CS on the new stack */
     esp--;
     __asm__ __volatile__(
-            "mov %%cs,%0\n"
-            : "=m"(*esp));
+        "mov %%cs,%0\n"
+        : "=m"(*esp));
     /* push EIP on the new stack */
     esp--;
     *esp = buf->eip;

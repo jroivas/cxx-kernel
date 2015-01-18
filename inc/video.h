@@ -20,9 +20,9 @@ public:
     void resize(int width, int height);
     void scroll();
 
-    unsigned int size();
-    unsigned int width();
-    unsigned int height();
+    unsigned int size() const;
+    unsigned int width() const;
+    unsigned int height() const;
 
 protected:
     int print_ul(unsigned long val, int radix=10, int fmtcnt=0);

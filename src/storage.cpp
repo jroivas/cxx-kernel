@@ -2,41 +2,46 @@
 
 void Storage::addDevice(Device *dev)
 {
-	if (dev==NULL) return;
-	if (m_devices==NULL) {
-		m_devices = (Device*)dev;
-		return;
-	}
+    if (dev == NULL) return;
+    if (m_devices == NULL) {
+        m_devices = (Device*)dev;
+        return;
+    }
 
-	Device*d = m_devices;
-	while (d->next != NULL) {
-		d = d->next;
-	}
+    Device *tmp_dev = m_devices;
+    while (tmp_dev->next != NULL) {
+        tmp_dev = tmp_dev->next;
+    }
 
-	d->next = dev;
+    tmp_dev->next = dev;
 }
 
 uint32_t Storage::numDevices()
 {
-	Device *d = m_devices;
-	if (d==NULL) return 0;
+    Device *dev = m_devices;
+    if (dev == NULL) {
+        return 0;
+    }
 
-	uint32_t n = 1;
+    uint32_t num = 1;
 
-	while (d->next != NULL) {
-		n++;
-	}
-	return n;
+    while (dev->next != NULL) {
+        dev = dev->next;
+        ++num;
+    }
+    return num;
 }
 
 Storage::Device *Storage::getDevice()
 {
-	return m_devices;
+    return m_devices;
 }
 
 Storage::Device *Storage::nextDevice(Device *dev)
 {
-	if (dev==NULL) return NULL;
+    if (dev == NULL) {
+        return NULL;
+    }
 
-	return dev->next;
+    return dev->next;
 }

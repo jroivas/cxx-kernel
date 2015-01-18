@@ -1,6 +1,5 @@
 #include "video.h"
 #include "string.h"
-//#include "port.h"
 #include "mm.h"
 #include "font.h"
 #include "arch/platform.h"
@@ -41,17 +40,17 @@ Video::~Video()
     m_y = 0;
 }
 
-unsigned int Video::size()
+unsigned int Video::size() const
 {
     return width() * height();
 }
 
-unsigned int Video::width()
+unsigned int Video::width() const
 {
     return m_width;
 }
 
-unsigned int Video::height()
+unsigned int Video::height() const
 {
     return m_height;
 }
@@ -90,15 +89,15 @@ void Video::scroll()
     } else {
         if (m_videomem == NULL) return;
         if (m_y >= height()) {
-            unsigned int ss = (height()-2)*width();
-            Mem::copy(m_videomem, m_videomem + SCROLL_SIZE*width()*2, ss*2);
+            unsigned int ss = (height() - 2) * width();
+            Mem::copy(m_videomem, m_videomem + SCROLL_SIZE * width() * 2, ss * 2);
             Mem::setw(m_videomem + ss, 0, width());
             //Mem::setw(m_videomem + ss-width(), ' '|VIDEO_COLOR_MASK, width());
             m_y = height()-2;
         }
     }
-    if (m_x>=width()) m_x=0;
-    if (m_y>height()) m_y=height()-2;
+    if (m_x >= width()) m_x = 0;
+    if (m_y > height()) m_y = height() - 2;
 }
 
 int Video::print(const char *cp)
@@ -122,7 +121,7 @@ int Video::print_prenull(int cnt, int fmtcnt)
         if (cc > 255) {
             cc=255;
         }
-        for (int i=0; i<cc; i++) {
+        for (int i = 0; i < cc; i++) {
             s2[i] = '0';
         }
         s2[cc] = 0;
@@ -149,21 +148,21 @@ int Video::print_l(long val, int radix, int fmtcnt)
     int l = 0;
     int tmp = val;
     while (tmp > 0) {
-        tmp/=radix;
+        tmp /= radix;
         l++;
     }
 
     if (n) l++;
-    if (l==0) {
-        l=1;
+    if (l == 0) {
+        l = 1;
     }
 
     int cnt = 0;
     char s[256];
     if (n) {
-        s[0]='-';
+        s[0] = '-';
     }
-    s[l]=0;
+    s[l] = 0;
     l--;
 
     while (l >= 0) {
@@ -185,7 +184,7 @@ int Video::print_l(long val, int radix, int fmtcnt)
 int Video::print_ul(unsigned long val, int radix, int fmtcnt)
 {
     int print_cnt = 0;
-    if (val==0) {
+    if (val == 0) {
         print_cnt += print_prenull(1, fmtcnt);
         putCh('0');
         ++print_cnt;
@@ -193,25 +192,25 @@ int Video::print_ul(unsigned long val, int radix, int fmtcnt)
     }
     int l = 0;
     unsigned int long tmp = val;
-    while (tmp>0) {
+    while (tmp > 0) {
         tmp /= radix;
         l++;
     }
-    if (l==0) {
-        l=1;
+    if (l == 0) {
+        l = 1;
     }
 
     int cnt = 0;
     char s[256];
-    s[l]=0;
-    s[l+1]=0;
+    s[l] = 0;
+    s[l+1] = 0;
     l--;
-    while (l>=0) {
-        char t = val%radix;
-        if (t<10) {
+    while (l >= 0) {
+        char t = val % radix;
+        if (t < 10) {
             s[l] = '0' + t;
         } else {
-            s[l] = 'A' + (t-10);
+            s[l] = 'A' + (t - 10);
         }
         val /= radix;
         l--;
@@ -225,10 +224,6 @@ int Video::print_ul(unsigned long val, int radix, int fmtcnt)
 
 int Video::vprintf(const char *fmt, va_list al)
 {
-#if 0
-    Args args;
-    args.init(&fmt);
-#endif
     const char *str = fmt;
     const char *ch;
     bool format_char = false;
@@ -244,31 +239,31 @@ int Video::vprintf(const char *fmt, va_list al)
                 ++print_count;
                 format_char = false;
             }
-            else if (*ch=='s') {
+            else if (*ch == 's') {
                 print_count += print(va_arg(al, const char*));
                 format_char = false;
             }
-            else if (*ch=='l') {
+            else if (*ch == 'l') {
                 //s_signed = false;
                 l_cnt++;
             }
-            else if (*ch=='x') {
+            else if (*ch == 'x') {
                 print_count += print_ul(va_arg(al, unsigned int), 16, fmtcnt);
                 format_char = false;
             }
-            else if (*ch=='c') {
+            else if (*ch == 'c') {
                 putCh(va_arg(al, unsigned int));
                 ++print_count;
                 format_char = false;
             }
-            else if (*ch=='d') {
+            else if (*ch == 'd') {
                 if (!s_signed) {
                     print_count += print_ul(va_arg(al, unsigned int), 10, fmtcnt);
                 } else {
                     print_count += print_l(va_arg(al, int), 10, fmtcnt);
                 }
                 format_char = false;
-            } else if (*ch=='u') {
+            } else if (*ch == 'u') {
                 if (l_cnt == 0) {
                     print_count += print_ul(va_arg(al, unsigned int), 10, fmtcnt);
                 } else if (l_cnt == 1) {
@@ -290,39 +285,41 @@ int Video::vprintf(const char *fmt, va_list al)
                 fmtcnt *= 10;
                 fmtcnt += (*ch-'0');
             }
+            else {
+                //FIXME
+            }
         }
-        else if (*ch=='%') {
+        else if (*ch == '%') {
             fmtcnt = 0;
             format_char = true;
             s_signed = true;
         }
-        else if (*ch=='\r') {
+        else if (*ch == '\r') {
             m_x = 0;
         }
-        else if (*ch=='\n') {
+        else if (*ch == '\n') {
             m_x = 0;
             m_y++;
             putCh(*ch);
             ++print_count;
         }
-        else if (*ch=='\b') {
-            if (m_x==0 && m_y>0) {
+        else if (*ch == '\b') {
+            if (m_x == 0 && m_y > 0) {
                 m_y--;
-                m_x = width()-1;
-            } else if (m_y==0 && m_x==0) {
+                m_x = width() - 1;
+            } else if (m_y == 0 && m_x == 0) {
                 //Do nothing
             } else {
                 m_x--;
             }
         }
-        else if (*ch=='\t') {
+        else if (*ch == '\t') {
             m_x += TAB_SIZE;
         } else {
             putCh(*ch);
             ++print_count;
         }
     }
-    //args.end();
     return print_count;
 }
 
@@ -348,19 +345,20 @@ void Video::putCh(char c)
 
     scroll();
 
-    if (Platform::fb()!=NULL && Platform::fb()->isConfigured()) {
-#if 1
+    if (Platform::fb() != NULL && Platform::fb()->isConfigured()) {
         if (m_font == NULL) {
             m_font = new KernelFont();
             //clear();
             m_x = 0;
             m_y = 0;
         }
-        m_font->drawFont(Platform::fb(), m_x*m_font->width(), m_y*(m_font->height()+0), c);
+        m_font->drawFont(
+            Platform::fb(),
+            m_x * m_font->width(),
+            m_y * (m_font->height() + 0),
+            c);
         m_x++;
-#endif
     } else {
-#if 1
         if (m_videomem == NULL) return;
         unsigned int offset = m_y*width() + m_x;
 
@@ -368,12 +366,5 @@ void Video::putCh(char c)
 
         m_x++;
         setCursor();
-#endif
     }
-
-#if 0
-    //volatile unsigned int a;
-    unsigned int a;
-    for (a=0; a<0x1ffffff; a++) { }
-#endif
 }

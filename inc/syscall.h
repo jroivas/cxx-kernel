@@ -9,8 +9,8 @@
 class SysCall
 {
 public:
-	SysCall();
-	static int handler(Regs *r);
+    SysCall();
+    static int handler(Regs *r);
 
 protected:
 };

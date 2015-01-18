@@ -3,14 +3,14 @@
 #include "kernel.h"
 #include "mutex.h"
 
-#define SCHEDULING_GRANULARITY (KERNEL_FREQUENCY>>1)
-#define SCHEDULING_GRANULARITY_MIN (KERNEL_FREQUENCY/50)
+#define SCHEDULING_GRANULARITY (KERNEL_FREQUENCY >> 1)
+#define SCHEDULING_GRANULARITY_MIN (KERNEL_FREQUENCY / 50)
 
 static ptr_val_t __pm_mutex = 0;
 
 ProcessManager::ProcessManager()
 {
-    for (uint32_t i=0; i<TASK_POOLS; i++) {
+    for (uint32_t i = 0; i < TASK_POOLS; i++) {
         m_task_pool[i] = new List();
     }
     m_tasks = new List();
@@ -25,13 +25,14 @@ ProcessManager::ProcessManager()
 
 uint32_t ProcessManager::approxPool(Task *t, uint32_t base)
 {
-    if (t == NULL) return TASK_POOLS - 1;
+    if (t == NULL) {
+        return TASK_POOLS - 1;
+    }
 
     uint32_t approx = (MAX_PRIORITY - t->priority()) + t->nice();
     approx = approx * TASK_POOLS / (MAX_PRIORITY + MAX_NICE + 1);
-    (void)base;
 
-    approx = (m_pool_index+approx+base)%TASK_POOLS;
+    approx = (m_pool_index + approx + base) % TASK_POOLS;
     return approx;
 }
 
@@ -43,10 +44,12 @@ void ProcessManager::addTask(Task *t)
 
     Task *current = m_current;
 
-    if (current!=NULL) current->lock();
+    if (current != NULL) {
+        current->lock();
+    }
 
-    if (t->pid()==0) {
-        t->setPid(m_pid++);
+    if (t->pid() == 0) {
+        t->setPid(++m_pid);
     }
 
     volatile ptr_val_t *lock = NULL;
@@ -148,7 +151,10 @@ Task *ProcessManager::schedule()
 
 #if 1
     uint32_t approx = (MAX_PRIORITY - next->priority()) + next->nice();
-    if (approx == 0) approx++;
+    if (approx == 0) {
+        approx++;
+    }
+
     if (m_tasks->size() > 0) {
         m_pool_slice = SCHEDULING_GRANULARITY / m_tasks->size() / approx;
         if (m_pool_slice < SCHEDULING_GRANULARITY_MIN) {
