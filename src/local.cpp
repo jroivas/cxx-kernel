@@ -18,6 +18,7 @@ int __cxa_guard_acquire(__guard *g)
 void __cxa_guard_release (__guard *g)
 {
     if (g == NULL) return;
+
     Mutex m;
     m.assign((unsigned long volatile*)g);
     m.unlock();

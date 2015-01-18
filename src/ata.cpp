@@ -61,32 +61,100 @@ class ATA::DevicePrivate : public Storage::Device
 public:
     enum DeviceType { ATAMaster=0, ATASlave=1 };
 
-    DevicePrivate(ATA *a) : Device() { m_ata = a; next = NULL; m_avail = false; m_lba = false; m_lba48 = false; m_dma = false; m_class = CLASS_ATA; }
-    void setup(uint32_t pri, uint32_t sec, DeviceType type) { m_basePort = pri; m_basePort2 = sec; m_type = type; detect(); }
-    //DevicePrivate *next;
+    DevicePrivate(ATA *a)
+        : Device(),
+        m_avail(false),
+        m_lba(false), m_lba48(false),
+        m_dma(false),
+        m_ata(a)
+    {
+        next = NULL;
+        m_class = CLASS_ATA;
+    }
+    void setup(uint32_t pri, uint32_t sec, DeviceType type)
+    {
+        m_basePort = pri;
+        m_basePort2 = sec;
+        m_type = type;
+        detect();
+    }
     bool readSector(uint8_t *buffer, uint16_t sectors, uint32_t addr, uint32_t addr_hi=0);
     bool writeSector(uint8_t *buffer, uint16_t sectors, uint32_t addr, uint32_t addr_hi=0);
-    uint32_t size() { return m_size; }
-    DeviceModel model() { return m_model; }
+    uint32_t size() const
+    {
+        return m_size;
+    }
+    DeviceModel model() const
+    {
+        return m_model;
+    }
     void select(uint8_t head=0);
 
 protected:
-    inline uint32_t data() { return m_basePort; }
-    inline uint32_t fetures() { return m_basePort; }
-    inline uint32_t error() { return m_basePort+1; }
-    inline uint32_t secCount() { return m_basePort+2; }
-    inline uint32_t LBA0() { return m_basePort+3; }
-    inline uint32_t LBA1() { return m_basePort+4; }
-    inline uint32_t LBA2() { return m_basePort+5; }
-    inline uint32_t LBA3() { return m_basePort+3; }
-    inline uint32_t LBA4() { return m_basePort+4; }
-    inline uint32_t LBA5() { return m_basePort+5; }
-    inline uint32_t devSel() { return m_basePort+6; }
-    inline uint32_t command() { return m_basePort+7; }
-    inline uint32_t status() { return m_basePort+7; }
-    inline uint32_t altStatus() { return m_basePort2+2; }
-    inline uint32_t control() { return m_basePort2+2; }
-    inline uint32_t devAddress() { return m_basePort2+3; }
+    inline uint32_t data() const
+    {
+        return m_basePort;
+    }
+    inline uint32_t fetures() const
+    {
+        return m_basePort;
+    }
+    inline uint32_t error() const
+    {
+        return m_basePort+1;
+    }
+    inline uint32_t secCount() const
+    {
+        return m_basePort+2;
+    }
+    inline uint32_t LBA0() const
+    {
+        return m_basePort+3;
+    }
+    inline uint32_t LBA1() const
+    {
+        return m_basePort+4;
+    }
+    inline uint32_t LBA2() const
+    {
+        return m_basePort+5;
+    }
+    inline uint32_t LBA3() const
+    {
+        return m_basePort+3;
+    }
+    inline uint32_t LBA4() const
+    {
+        return m_basePort+4;
+    }
+    inline uint32_t LBA5() const
+    {
+        return m_basePort+5;
+    }
+    inline uint32_t devSel() const
+    {
+        return m_basePort+6;
+    }
+    inline uint32_t command() const
+    {
+        return m_basePort+7;
+    }
+    inline uint32_t status() const
+    {
+        return m_basePort+7;
+    }
+    inline uint32_t altStatus() const
+    {
+        return m_basePort2+2;
+    }
+    inline uint32_t control() const
+    {
+        return m_basePort2+2;
+    }
+    inline uint32_t devAddress() const
+    {
+        return m_basePort2+3;
+    }
 
     bool reset();
     void wait();
@@ -97,8 +165,14 @@ protected:
     bool prepareAccess(uint16_t sectors, uint32_t addr, uint32_t addr_hi=0);
     bool poll(bool extra=false);
 
-    inline void setHi() { write(control(), (0x80+m_irq)?0:0x2); }
-    inline void setLo() { write(control(), m_irq?0:0x2); }
+    inline void setHi()
+    {
+        write(control(), (0x80+m_irq)?0:0x2);
+    }
+    inline void setLo()
+    {
+        write(control(), m_irq?0:0x2);
+    }
 
     uint8_t getStatus();
     uint32_t getSecCount();
@@ -502,7 +576,8 @@ ATA::~ATA()
 
 void ATA::init()
 {
-    if (m_pci!=NULL) {
+    // TODO Cleanup
+    if (m_pci != NULL) {
         PCI::DeviceIterator *i = m_pci->startIter();
         PCI::HeaderGeneric *hdr = NULL;
         /* Go thorought all the controllers */

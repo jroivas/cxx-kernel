@@ -6,12 +6,12 @@
 class KB
 {
 public:
-	static KB *get();
+    static KB *get();
 
 protected:
-	KB() { }
-	static int handler(Regs *r);
-	virtual void run(Regs *r) = 0;
+    KB() { }
+    static int handler(Regs *r);
+    virtual void run(Regs *r) = 0;
 };
 
 #endif

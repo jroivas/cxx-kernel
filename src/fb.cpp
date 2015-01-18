@@ -8,13 +8,14 @@
 static volatile ptr_val_t __fb_mutex = 0;
 
 FB::FB()
+    :
+    m_buffer(NULL),
+    m_backbuffer(NULL),
+    m_double_buffer(NULL),
+    m_current(NULL),
+    m_direct(false),
+    m_configured(false)
 {
-    m_current = NULL;
-    m_buffer = NULL;
-    m_backbuffer = NULL;
-    m_double_buffer = true;
-    m_direct = false;
-    m_configured = false;
     m.assign(&__fb_mutex);
 }
 
@@ -28,7 +29,7 @@ void FB::setSingleBuffer()
     m.lock();
 
     m_double_buffer = false;
-    if (m_buffer!=NULL) {
+    if (m_buffer != NULL) {
         MM::instance()->free(m_buffer);
     }
     m_buffer = NULL;
@@ -41,7 +42,7 @@ void FB::setDirect()
     m.lock();
 
     m_direct = true;
-    if (m_backbuffer!=NULL) {
+    if (m_backbuffer != NULL) {
         MM::instance()->free(m_backbuffer);
     }
     if (m_buffer!=NULL) {
@@ -60,12 +61,14 @@ void FB::allocBuffers()
 
     m_size = m_current->bytes_per_line*(m_current->height);
     m_backbuffer = (unsigned char*)MM::instance()->alloc(m_size, MM::AllocClear);
-    //m_backbuffer = (unsigned char*)MM::instance()->alloc(m_size);
     if (m_backbuffer!=NULL) {
         m_backbuffer[0] = 0xfe;
         m_backbuffer[m_size/2] = 0xed;
         m_backbuffer[m_size-1] = 0xdc;
-        if (m_backbuffer==NULL || m_backbuffer[0] != 0xfe || m_backbuffer[m_size/2] != 0xed || m_backbuffer[m_size-1] != 0xdc) {
+        if (m_backbuffer==NULL
+            || m_backbuffer[0] != 0xfe
+            || m_backbuffer[m_size/2] != 0xed
+            || m_backbuffer[m_size-1] != 0xdc) {
             m_direct = true;
             MM::instance()->free(m_backbuffer);
             m_backbuffer = m_current->base;
@@ -93,8 +96,8 @@ void FB::allocBuffers()
     }
 #if 0
     for (uint32_t i=0; i<m_size; i++) {
-            if (buffer!=NULL) buffer[i] = 0;
-            if (backbuffer!=NULL) backbuffer[i] = 0;
+        if (buffer!=NULL) buffer[i] = 0;
+        if (backbuffer!=NULL) backbuffer[i] = 0;
     }
 #endif
     //Platform::video()->printf("Allocbuffers: %x %x %x sizes: %d\n",m_current->base,m_buffer,m_backbuffer,m_current->bytes_per_line*(m_current->height));
@@ -154,15 +157,15 @@ void FB::swap()
 #if 0
 void printD(uint32_t d)
 {
-	char aa[5];
-	while (d>0) {
-		uint32_t i = d%10;
-		d/=10;
-		aa[0] = '0'+i;
-		aa[1] = 0;
-		Video::get()->printf(aa);
-	}
-	Video::get()->printf("\n");
+    char aa[5];
+    while (d>0) {
+        uint32_t i = d%10;
+        d/=10;
+        aa[0] = '0'+i;
+        aa[1] = 0;
+        Video::get()->printf(aa);
+    }
+    Video::get()->printf("\n");
 }
 #endif
 
@@ -171,10 +174,6 @@ void FB::putPixel(int x, int y, unsigned char r, unsigned char g, unsigned char 
     if (m_backbuffer==NULL) return;
     if (m_current==NULL) return;
 
-/*
-    x %= m_current->width;
-    y %= m_current->height;
-*/
     if (x>m_current->width) x = m_current->width;
     if (y>m_current->height) y = m_current->height;
 
@@ -189,14 +188,6 @@ void FB::putPixel(int x, int y, unsigned char r, unsigned char g, unsigned char 
             *pos = color;
             }
             break;
-        /*case 24:
-            {
-            unsigned char *pos = (unsigned char*)(backbuffer+(y*current->bytes_per_line + x*4));
-            *pos++ = r;
-            *pos++ = g;
-            *pos++ = b;
-            }
-            break;*/
         case 24:
             {
             unsigned char *pos = (unsigned char*)(m_backbuffer+(y*m_current->bytes_per_line + x*3));
@@ -231,7 +222,7 @@ void FB::putPixel(int x, int y, unsigned int color)
         unsigned char g = (color>>8) & 0xff;
         unsigned char r = (color>>16) & 0xff;
         unsigned char a = (color>>24) & 0xff;
-        putPixel(x, y, r,g,b,a);
+        putPixel(x, y, r, g, b, a);
     }
 }
 
