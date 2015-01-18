@@ -121,7 +121,14 @@ add_subdirectory(src)
 add_subdirectory(arch)
 add_subdirectory(3rdparty)
 
-add_subdirectory(libc)
+if (ARCH STREQUAL "LINUX")
+    set(libc_files "")
+    set(libc_deps "")
+else()
+    add_subdirectory(libc)
+    set(libc_files $<TARGET_FILE:libc>)
+    set(libc_deps libc)
+endif()
 
 set(APP app/hello.c)
 add_library(app STATIC
@@ -157,7 +164,7 @@ add_custom_command(OUTPUT kernel.bin
         $<TARGET_FILE:font_3pp>
         ${extra_libs}
         $<TARGET_FILE:app>
-        $<TARGET_FILE:libc>
+        ${libc_files}
     DEPENDS kernel
     loader
     core
@@ -175,8 +182,8 @@ add_custom_command(OUTPUT kernel.bin
     arch
     arch_late
     ${extra_deps}
-    libc
     app
+    ${libc_deps}
     )
 
 add_custom_target(kernel ALL
@@ -195,12 +202,16 @@ if (ARCH STREQUAL "x86")
         DEPENDS stage2_eltorito
         DEPENDS kernel.bin
         )
-    add_custom_target(kernel_image ALL
-        DEPENDS kernel.iso
-        )
+    #add_custom_target(kernel_image ALL
+    #    DEPENDS kernel.iso
+    #    )
+    #add_custom_target(run
+    #    COMMAND kvm -serial mon:stdio -cdrom ${CMAKE_CURRENT_BINARY_DIR}/kernel.iso
+    #    DEPENDS kernel.iso
+    #    )
     add_custom_target(run
-        COMMAND kvm -serial mon:stdio -cdrom ${CMAKE_CURRENT_BINARY_DIR}/kernel.iso
-        DEPENDS kernel.iso
+        COMMAND kvm -serial mon:stdio -kernel ${CMAKE_CURRENT_BINARY_DIR}/kernel.bin
+        DEPENDS kernel.bin
         )
 endif()
 if (ARCH STREQUAL "ARM")
