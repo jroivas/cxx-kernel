@@ -28,60 +28,38 @@
 class Platform
 {
 public:
-	Platform();
-	~Platform();
-	State *state();
-	static Timer *timer();
-	static Video *video();
-	static IDT *idt();
-	static KB *kb();
-	static FB *fb();
-	static PCI *pci();
-	static ATA *ata();
-	static Task *task();
-	static ProcessManager *processManager();
+    Platform();
+    ~Platform();
+    State *state();
+    static Timer *timer();
+    static Video *video();
+    static IDT *idt();
+    static KB *kb();
+    static FB *fb();
+    static PCI *pci();
+    static ATA *ata();
+    static Task *task();
+    static ProcessManager *processManager();
 
-	static inline int CAS(ptr_val_t volatile *m_ptr, int cmp, int set) {
-		return Platform_CAS(m_ptr, cmp, set);
-#if 0
-		// FIXME implement this properly
-
-		#ifdef ARCH_x86
-		int res = cmp;
-		asm volatile(
-			"lock; cmpxchgl %1,%2\n"
-			"setz %%al\n"
-			"movzbl %%al,%0"
-			: "+a"(res)
-			: "r" (set), "m"(*(m_ptr))
-			: "memory"
-			);
-
-		return res;
-		#endif
-
-		if ((int)*m_ptr==cmp) {
-			*m_ptr=set;
-			return 1;
-		}
-		return 0;
-#endif
-	}
-	static void halt();
-	static void seizeInterrupts();
-	static void continueInterrupts();
+    static inline int CAS(ptr_val_t volatile *m_ptr, int cmp, int set)
+    {
+        return Platform_CAS(m_ptr, cmp, set);
+    }
+    static void halt();
+    static void seizeInterrupts();
+    static void continueInterrupts();
 
 private:
-	/* Plese extend the platform enums when supported */
-	enum Platforms {
-		PlatformNone = 0,
-		PlatformX86,
-		PlatformX86_64,
-		PlatformARM,
-		PlatformLinux
-	};
-	Platforms current;
-	State *m_state;
+    /* Extend the platform enums when supported */
+    enum Platforms {
+        PlatformNone = 0,
+        PlatformX86,
+        PlatformX86_64,
+        PlatformARM,
+        PlatformLinux
+    };
+    Platforms current;
+    State *m_state;
 };
 
 #endif

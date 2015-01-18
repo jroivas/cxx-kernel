@@ -65,7 +65,9 @@ Platform::Platform()
 
 Platform::~Platform()
 {
-    if (m_state!=NULL) delete m_state;
+    if (m_state != NULL) {
+        delete m_state;
+    }
     m_state = NULL;
 }
 
@@ -73,31 +75,6 @@ State *Platform::state()
 {
     return m_state;
 }
-
-#if 0
-int Platform::CAS(ptr_val_t volatile *m_ptr, int cmp, int set)
-{
-    #ifdef ARCH_x86
-    int res = cmp;
-    asm volatile(
-        "lock; cmpxchgl %1,%2\n"
-        "setz %%al\n"
-        "movzbl %%al,%0"
-        : "+a"(res)
-        : "r" (set), "m"(*(m_ptr))
-        : "memory"
-        );
-
-    return res;
-    #endif
-
-    if ((int)*m_ptr==cmp) {
-        *m_ptr=set;
-        return 1;
-    }
-    return 0;
-}
-#endif
 
 Timer *Platform::timer()
 {

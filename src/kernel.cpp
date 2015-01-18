@@ -66,8 +66,9 @@ void app_proc()
 {
     int res = app_main();
     Platform::video()->printf("\n\nApplication exit with code: %d\nHalting...\n", res);
+
     while (true) {
-        Timer::get()->wait(500);
+        //Timer::get()->wait(500);
     }
 }
 
@@ -251,7 +252,6 @@ int Kernel::run()
 #endif
 #endif
 
-
 #ifdef FEATURE_GRAPHICS
     FB::ModeConfig conf;
     conf.width=800;
@@ -301,6 +301,7 @@ int Kernel::run()
         Task *kernel_task = Platform::task()->create((ptr_val_t)kernel_loop, 0, 0);
         kernel_task->setSize(2);
         kernel_task->setNice(40);
+
         pm->setRunning();
         pm->addTask(kernel_task);
     }
