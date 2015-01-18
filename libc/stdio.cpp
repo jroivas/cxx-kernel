@@ -1,6 +1,20 @@
 #include "stdio.h"
 #include "video.h"
 #include <stdarg.h>
+struct _IO_FILE
+{
+    int fd;
+};
+
+static _IO_FILE _stdio_streams[] = {
+    {0},
+    {1},
+    {2}
+};
+
+struct _IO_FILE *stdin = _stdio_streams;
+struct _IO_FILE *stdout = _stdio_streams + 1;
+struct _IO_FILE *stderr = _stdio_streams + 2;
 
 int printf(const char *fmt, ...)
 {
