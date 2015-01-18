@@ -5,7 +5,7 @@
 #include "memcpy.h"
 
 
-#include "string.h"
+#include "string.hh"
 #include "../platform.h"
 #include "vbe_priv.h"
 #include "bios.h"

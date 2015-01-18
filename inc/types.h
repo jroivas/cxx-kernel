@@ -25,6 +25,7 @@ typedef unsigned long ptr_val_t;
 #ifndef ARCH_LINUX
 typedef int off_t;
 #endif
+typedef __WCHAR_TYPE__ wchar_t;
 typedef signed char  int8_t;
 typedef unsigned char  uint8_t;
 typedef short int16_t;

@@ -1,7 +1,9 @@
-#ifndef STRING_H
-#define STRING_H
+#ifndef STRING_HH
+#define STRING_HH
 
 #include "types.h"
+
+#ifdef __cplusplus
 
 class Mem
 {
@@ -25,5 +27,6 @@ public:
 private:
     char *m_str;
 };
+#endif
 
 #endif

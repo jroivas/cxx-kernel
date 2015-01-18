@@ -1,7 +1,7 @@
 #include "idtx86.h"
 #include "port.h"
 #include "types.h"
-#include "string.h"
+#include "string.hh"
 #include "videox86.h"
 #include "platform.h"
 

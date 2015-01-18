@@ -1,5 +1,5 @@
 #include "taskx86.h"
-#include "string.h"
+#include "string.hh"
 #include "mm.h"
 #include "gdt.h"
 #include "../platform.h"

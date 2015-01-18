@@ -3,7 +3,7 @@
 
 #include "task.h"
 #include "regs.h"
-#include "string.h"
+#include "string.hh"
 
 typedef struct
 {

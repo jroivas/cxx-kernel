@@ -121,10 +121,6 @@ if (PCI)
     add_definitions(-DFEATURE_PCI)
 endif()
 
-add_subdirectory(src)
-add_subdirectory(arch)
-add_subdirectory(3rdparty)
-
 if (ARCH STREQUAL "LINUX")
     set(libc_files "")
     set(libc_deps "")
@@ -132,12 +128,18 @@ else()
     add_subdirectory(libc)
     set(libc_files $<TARGET_FILE:libc>)
     set(libc_deps libc)
+    include_directories("3rdparty/osdevlibc/include")
 endif()
 
-set(APP app/hello.c)
-add_library(app STATIC
-    ${APP}
-    )
+add_subdirectory(src)
+add_subdirectory(arch)
+add_subdirectory(3rdparty)
+add_subdirectory(app)
+
+#set(APP app/hello.c)
+#add_library(app STATIC
+#    ${APP}
+#    )
 
 
 add_custom_command(OUTPUT kernel.bin

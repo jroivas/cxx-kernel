@@ -4,6 +4,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#include <types.h>
 
 int printf(const char *fmt, ...);
 

@@ -1,4 +1,4 @@
-#include "string.h"
+#include "string.hh"
 
 typedef void (*ctor_type_t)();
 

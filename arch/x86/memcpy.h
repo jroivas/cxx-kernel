@@ -1,7 +1,7 @@
 #ifndef MEMCPY_X86_H
 #define MEMCPY_X86_H
 
-#include "string.h"
+#include "string.hh"
 
 extern "C" bool mmx_has();
 extern "C" bool sse_has();

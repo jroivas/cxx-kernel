@@ -1,5 +1,5 @@
 #include "mm.h"
-#include "string.h"
+#include "string.hh"
 #include "platform.h"
 #include "armfb.h"
 

@@ -1,5 +1,5 @@
 #include "video.h"
-#include "string.h"
+#include "string.hh"
 #include "mm.h"
 #include "font.h"
 #include "arch/platform.h"

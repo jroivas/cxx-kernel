@@ -1,6 +1,6 @@
 #include "gdt.h"
 #include "types.h"
-#include "string.h"
+#include "string.hh"
 
 struct gdt_entry_t
 {

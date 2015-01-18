@@ -1,5 +1,5 @@
 #include "fb.h"
-#include "string.h"
+#include "string.hh"
 #include "types.h"
 #include "mm.h"
 #include "arch/platform.h"

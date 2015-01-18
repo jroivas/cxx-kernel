@@ -2,7 +2,7 @@
 #include "mm.h"
 #include "paging.h"
 #include "port.h"
-#include "string.h"
+#include "string.hh"
 #include "../platform.h"
 
 #include "x86emu.h"

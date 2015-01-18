@@ -1,5 +1,5 @@
 #include "mm.h"
-#include "string.h"
+#include "string.hh"
 #include "x11.h"
 #include "platform.h"
 

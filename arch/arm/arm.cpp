@@ -1,5 +1,5 @@
 #include "arm.h"
-#include "string.h"
+#include "string.hh"
 
 extern "C" unsigned int get_esp()
 {
