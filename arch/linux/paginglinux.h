@@ -20,7 +20,7 @@
 class Page
 {
 public:
-	Page();
+    Page();
 };
 
 void paging_mmap_init(MultibootInfo *info);

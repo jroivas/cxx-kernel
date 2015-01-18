@@ -8,30 +8,30 @@ static unsigned int __static_hz = 1000;
 
 void *__timer_start_routine(void *data)
 {
-	TimerLinux *p = (TimerLinux*)data;
-	(void)p;
-	while (1) {
-		usleep(__static_hz);
-		Timer::handler(NULL);
-	}
-	return NULL;
+    TimerLinux *p = (TimerLinux*)data;
+    (void)p;
+    while (1) {
+            usleep(__static_hz);
+            Timer::handler(NULL);
+    }
+    return NULL;
 }
 
 TimerLinux::TimerLinux()
 {
-	if (pthread_create(&__static_thread, NULL, __timer_start_routine, this)==0) {
-		printf("TimerLinux: thread created\n");
-	}
+    if (pthread_create(&__static_thread, NULL, __timer_start_routine, this)==0) {
+        printf("TimerLinux: thread created\n");
+    }
 }
 
 void TimerLinux::setFrequency(unsigned int hz)
 {
-	__static_hz = 10000000/hz;
-	Timer::setFrequency(hz);
+    __static_hz = 10000000 / hz;
+    Timer::setFrequency(hz);
 }
 
 void TimerLinux::run(Regs *r)
 {
-	(void)r;
-	m_ticks++;
+    (void)r;
+    ++m_ticks;
 }

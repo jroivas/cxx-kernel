@@ -6,11 +6,11 @@
 class VideoLinux : public Video
 {
 public:
-	VideoLinux();
-	virtual void putCh(char c);
+    VideoLinux();
+    virtual void putCh(char c);
 
 protected:
-	void setCursor();
+    void setCursor();
 };
 
 #endif

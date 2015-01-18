@@ -7,13 +7,11 @@
 class TimerLinux : public Timer
 {
 public:
-	TimerLinux();
-        virtual void setFrequency(unsigned int hz);
+    TimerLinux();
+    virtual void setFrequency(unsigned int hz);
 
 protected:
-        virtual void run(Regs *r);
-
-private:
+    virtual void run(Regs *r);
 };
 
 #endif

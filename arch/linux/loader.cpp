@@ -9,7 +9,7 @@ ctor_type_t *init_array_end = NULL;
 
 extern "C" void _main(unsigned long multiboot, unsigned long magic);
 extern "C" void loaderstart() {
-    _main(0,0);
+    _main(0, 0);
 }
 
 extern "C" unsigned int get_esp() {

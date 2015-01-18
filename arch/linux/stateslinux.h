@@ -6,11 +6,11 @@
 class StateLinux : public State
 {
 public:
-	StateLinux() : State() { }
-	~StateLinux(){ }
-	void halt();
-	void seizeInterrupts();
-	void startInterrupts();
+    StateLinux() : State() { }
+    ~StateLinux(){ }
+    void halt();
+    void seizeInterrupts();
+    void startInterrupts();
 
 };
 #endif
