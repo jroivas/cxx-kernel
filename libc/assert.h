@@ -3,10 +3,16 @@
 
 #include <stdio.h>
 
-#define assert(x)\
-    if (!(x)) {\
-        printf("ASSERT FAILURE: %s\nHalting...\n", #x);\
-        while(1) ;\
-    }
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void __assert(const char *reason);
+
+#define assert(x) ((x) ? 0 : (__assert(#x)))
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

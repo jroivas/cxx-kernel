@@ -4,4 +4,6 @@ add_library(libc STATIC
     locale.cpp
     osstdlib.cpp
     string.cpp
+    errno.cpp
+    assert.cpp
     )

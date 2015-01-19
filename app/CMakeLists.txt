@@ -4,6 +4,8 @@ if (APP STREQUAL "python")
 
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=sign-compare -Wno-sign-compare")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=missing-field-initializers -Wno-missing-field-initializers")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=unused-but-set-variable -Wno-unused-but-set-variable")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=unused-parameter -Wno-unused-parameter")
 
     include_directories(${PYTHON_PATH}/Include)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/python)
@@ -19,6 +21,9 @@ if (APP STREQUAL "python")
         ${PYTHON_PATH}/Parser/firstsets.c
         ${PYTHON_PATH}/Parser/grammar.c
         ${PYTHON_PATH}/Parser/pgen.c
+        ${PYTHON_PATH}/Parser/myreadline.c
+        ${PYTHON_PATH}/Parser/parsetok.c
+        ${PYTHON_PATH}/Parser/tokenizer.c
         )
 
     set(APP_FILES

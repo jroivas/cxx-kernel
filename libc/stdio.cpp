@@ -1,22 +1,49 @@
 #include "stdio.h"
 #include "video.h"
 #include <stdarg.h>
+#include <errno.h>
+#include <mm.h>
 
-struct _IO_FILE
+class IO_FILE
 {
+public:
+    IO_FILE()
+        : fd(0),
+        errno(0),
+        pos(0),
+        mode(0),
+        data(NULL)
+    {
+    }
+    IO_FILE(int _fd)
+        : fd(_fd),
+        errno(0),
+        pos(0),
+        mode(0),
+        data(NULL)
+    {
+    }
+
     int fd;
+    int errno;
+    int pos;
+    int mode;
+    char *data;
 };
 
+static int _fd_max = 3;
+
+static IO_FILE _stdio_streams[] = {
+    IO_FILE(0),
+    IO_FILE(1),
+    IO_FILE(2)
+};
 //FIXME
-static _IO_FILE _stdio_streams[] = {
-    {0},
-    {1},
-    {2}
-};
+void *stdin = (void*)&_stdio_streams[0];
+void *stdout = (void*)&_stdio_streams[1];
+void *stderr = (void*)&_stdio_streams[2];
 
-struct _IO_FILE *stdin = _stdio_streams;
-struct _IO_FILE *stdout = _stdio_streams + 1;
-struct _IO_FILE *stderr = _stdio_streams + 2;
+#define FP(x) ((IO_FILE*)(x))
 
 int printf(const char *fmt, ...)
 {
@@ -46,3 +73,112 @@ int fprintf(FILE *__restrict __stream, const char *fmt, ...)
 
     return cnt;
 }
+
+void clearerr(FILE *stream)
+{
+    if (stream == NULL) return;
+    FP(stream)->errno = 0;
+}
+
+int ferror(FILE *stream)
+{
+    if (stream == NULL) return -1;
+    return FP(stream)->errno;
+}
+
+int getc(FILE *stream)
+{
+    // FIXME
+    unsigned char res = FP(stream)->data[FP(stream)->pos];
+    ++FP(stream)->pos;
+    return res;
+}
+
+int ungetc(int c, FILE *stream)
+{
+    // FIXME
+    --FP(stream)->pos;
+    FP(stream)->data[FP(stream)->pos] = (unsigned char)c;
+    return c;
+}
+
+char *fgets(char *s, int size, FILE *stream)
+{
+    //FIXME
+    (void)s;
+    (void)size;
+    (void)stream;
+
+    return NULL;
+}
+
+int feof(FILE *stream)
+{
+    if (stream == NULL) return 0;
+    return FP(stream)->errno == EOF;
+}
+
+int fflush(FILE *stream)
+{
+    //TODO
+    (void)stream;
+    return 0;
+}
+
+int isatty(int fd)
+{
+    //FIXME
+    (void)fd;
+    return 0;
+}
+
+int fileno(FILE *stream)
+{
+    if (stream == NULL) return 0;
+    return FP(stream)->fd;
+}
+
+long ftell(FILE *stream)
+{
+    return FP(stream)->pos;
+}
+
+off_t lseek(int fd, off_t offset, int whence)
+{
+    //TODO
+    (void)fd;
+    (void)offset;
+    (void)whence;
+    return (off_t)-1;
+}
+
+FILE *fopen(const char *path, const char *mode)
+{
+    IO_FILE *tmp = new IO_FILE();
+    tmp->fd = ++_fd_max;
+
+    //TODO
+    (void)path;
+    (void)mode;
+
+    return tmp;
+}
+
+FILE *fdopen(int fd, const char *mode)
+{
+    IO_FILE *tmp = new IO_FILE();
+    tmp->fd = fd;
+
+    //TODO
+    (void)mode;
+
+    return tmp;
+}
+
+int fclose(FILE *fp)
+{
+    // FIXME
+    FP(fp)->errno = EOF;
+    return 0;
+}
+

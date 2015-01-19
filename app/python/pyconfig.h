@@ -50,7 +50,7 @@
 #define HAVE_ERFC 1
 
 /* Define to 1 if you have the <errno.h> header file. */
-//#define HAVE_ERRNO_H 1
+#define HAVE_ERRNO_H 1
 
 /* Define to 1 if you have the `execv' function. */
 #define HAVE_EXECV 1
