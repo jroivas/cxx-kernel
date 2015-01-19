@@ -128,7 +128,7 @@ else()
     add_subdirectory(libc)
     set(libc_files $<TARGET_FILE:libc> $<TARGET_FILE:osdevlibc>)
     set(libc_deps libc osdevlibc)
-    include_directories("3rdparty/osdevlibc/include")
+    include_directories("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/osdevlibc/include")
 endif()
 
 add_subdirectory(src)
