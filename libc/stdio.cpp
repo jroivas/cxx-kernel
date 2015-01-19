@@ -182,3 +182,13 @@ int fclose(FILE *fp)
     return 0;
 }
 
+int snprintf(const char *fmt, size_t size, ...)
+{
+    (void)fmt;
+    (void)size;
+    return 0;
+}
+
+int sprintf(const char *fmt, ...)
+{
+}

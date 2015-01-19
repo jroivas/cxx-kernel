@@ -5,4 +5,6 @@
 #include <types.h>
 #include <wchar.h>
 
+#define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
+
 #endif

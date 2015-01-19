@@ -24,6 +24,8 @@ extern void* stderr;
 
 int printf(const char *fmt, ...);
 int fprintf(FILE *__restrict __stream, const char *fmt, ...);
+int snprintf(const char *fmt, size_t size, ...);
+int sprintf(const char *fmt, ...);
 
 FILE *fopen(const char *path, const char *mode);
 FILE *fdopen(int fd, const char *mode);

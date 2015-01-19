@@ -5,6 +5,33 @@
 extern "C" {
 #endif
 
+enum {
+    EDOM = 1,
+    HUGE_VAL,
+    ERANGE,
+    EAGAIN,
+    EALREADY,
+    EINPROGRESS,
+    EWOULDBLOCK,
+    EPIPE,
+    ESHUTDOWN,
+    ECHILD,
+    ECONNABORTED,
+    ECONNREFUSED,
+    ECONNRESET,
+    EEXIST,
+    ENOENT,
+    EISDIR,
+    ENOTDIR,
+    EINTR,
+    EACCES,
+    EPERM,
+    ESRCH,
+    ETIMEDOUT,
+    ENXIO,
+    ELAST
+};
+
 extern int errno;
 
 #ifdef __cplusplus

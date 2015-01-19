@@ -77,31 +77,6 @@ char *strndup(const char *s, size_t n)
     return res;
 }
 
-char *strchr(const char *s, int c)
-{
-    if (s == NULL) return NULL;
-    while (*s != 0) {
-        if (*s == c) return (char*)s;
-        ++s;
-    }
-    return NULL;
-}
-
-char *strrchr(const char *s, int c)
-{
-    if (s == NULL) return NULL;
-
-    const char *sp = s;
-    while (*sp != 0) {
-        ++sp;
-    }
-    while (s <= sp) {
-        if (*sp == c) return (char*)sp;
-        --sp;
-    }
-    return NULL;
-}
-
 char *strncpy(char *dest, const char *src, size_t n)
 {
     return (char*)Mem::copy(dest, src, n);
@@ -112,3 +87,39 @@ char *strcpy(char *dest, const char *src)
     size_t n = String::length(src);
     return (char*)Mem::copy(dest, src, n);
 }
+
+void *memchr(const void *s, int c, size_t n)
+{
+    if (s == NULL) return NULL;
+
+    while (n) {
+        if (*s == c) return s;
+        ++s;
+        --n;
+    }
+    return NULL;
+}
+
+void *memrchr(const void *s, int c, size_t n);
+{
+    if (s == NULL) return NULL;
+
+    const void *p = s + n;
+    while (n) {
+        if (*p == c) return p;
+        --p;
+        --n;
+    }
+    return NULL;
+}
+
+char *strchr(const char *s, int c)
+{
+    return memchr(s, c, strlen(s) + 1);
+}
+
+char *strrchr(const char *s, int c)
+{
+    return memrchr(s, c, strlen(s) + 1);
+}
+
