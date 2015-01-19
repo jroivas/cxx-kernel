@@ -2,7 +2,7 @@
 #include "types.h"
 #include "mm.h"
 
-void *Mem::copy(void *dest, void *src, size_t size)
+void *Mem::copy(void *dest, const void *src, size_t size)
 {
     if (dest == src) return dest;
 
@@ -14,7 +14,7 @@ void *Mem::copy(void *dest, void *src, size_t size)
     return dest;
 }
 
-void *Mem::move(void *dest, void *src, size_t size)
+void *Mem::move(void *dest, const void *src, size_t size)
 {
     if (dest == NULL || src == NULL) return NULL;
     if (dest == src) return dest;

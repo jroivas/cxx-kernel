@@ -5,16 +5,18 @@
 #define NULL 0
 #endif
 
-#ifdef ARCH_LINUX
 #if __i386__
 typedef unsigned int size_t;
-#endif
-#if __x86_64__
+typedef int ssize_t;
+typedef unsigned int uintptr_t;
+typedef int intptr_t;
+#elif __x86_64__
 typedef unsigned long size_t;
+typedef long ssize_t;
+typedef unsigned long uintptr_t;
+typedef long intptr_t;
 #endif
-#else
-typedef unsigned int size_t;
-#endif
+
 typedef unsigned char* ptr8_t;
 typedef unsigned char  ptr8_val_t;
 typedef unsigned long* ptr32_t;

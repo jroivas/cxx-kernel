@@ -13,13 +13,14 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-   
+
 */
 
 #ifndef _STDC_STDLIB_H_
 #define _STDC_STDLIB_H_
 
 #include <stddef.h>
+#include <osstdlib.h>
 
 #ifdef __cplusplus
 extern "C" {

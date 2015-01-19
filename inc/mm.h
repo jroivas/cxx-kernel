@@ -1,9 +1,10 @@
 #ifndef MM_H
 #define MM_H
 
+#ifdef __cplusplus
+
 #include "mutex.h"
 #include "types.h"
-
 
 struct PtrInfo;
 class MM
@@ -39,10 +40,16 @@ private:
     void *m_freeMax;
 };
 
-extern "C" void *malloc(size_t size);
-extern "C" void free(void *ptr);
-extern "C" void *calloc(size_t cnt, size_t size);
-extern "C" void *realloc(void *ptr, size_t size);
+extern "C" {
+#endif
 
+void *malloc(size_t size);
+void free(void *ptr);
+void *calloc(size_t cnt, size_t size);
+void *realloc(void *ptr, size_t size);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
