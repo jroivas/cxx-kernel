@@ -92,19 +92,21 @@ void *memchr(const void *s, int c, size_t n)
 {
     if (s == NULL) return NULL;
 
+    char *p = (char*)s;
     while (n) {
-        if (*s == c) return s;
-        ++s;
+        if (*p == c) return p;
+        ++p;
         --n;
     }
     return NULL;
 }
 
-void *memrchr(const void *s, int c, size_t n);
+void *memrchr(const void *s, int c, size_t n)
 {
     if (s == NULL) return NULL;
 
-    const void *p = s + n;
+    char *p = (char*)s;
+    p += n;
     while (n) {
         if (*p == c) return p;
         --p;
@@ -115,11 +117,11 @@ void *memrchr(const void *s, int c, size_t n);
 
 char *strchr(const char *s, int c)
 {
-    return memchr(s, c, strlen(s) + 1);
+    return (char*)memchr(s, c, strlen(s) + 1);
 }
 
 char *strrchr(const char *s, int c)
 {
-    return memrchr(s, c, strlen(s) + 1);
+    return (char*)memrchr(s, c, strlen(s) + 1);
 }
 

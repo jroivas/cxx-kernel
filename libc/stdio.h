@@ -33,6 +33,8 @@ FILE *fdopen(int fd, const char *mode);
 int fclose(FILE *fp);
 
 char *fgets(char *s, int size, FILE *stream);
+int fputc(int c, FILE *stream);
+int fputs(const char *s, FILE *stream);
 int getc(FILE *stream);
 int ungetc(int c, FILE *stream);
 

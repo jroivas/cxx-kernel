@@ -8,6 +8,7 @@ if (APP STREQUAL "python")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=unused-parameter -Wno-unused-parameter")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=uninitialized -Wno-uninitialized")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=implicit-function-declaration -Wno-implicit-function-declaration")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error")
 
     include_directories(${PYTHON_PATH}/Include)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/python)

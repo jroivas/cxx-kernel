@@ -191,4 +191,28 @@ int snprintf(const char *fmt, size_t size, ...)
 
 int sprintf(const char *fmt, ...)
 {
+    (void)fmt;
+    return 0;
+}
+
+int fputc(int c, FILE *stream)
+{
+    (void)c;
+    (void)stream;
+    return 1;
+}
+
+int fputs(const char *s, FILE *stream)
+{
+    if (s == NULL) return 0;
+
+    int cnt = 0;
+    while (*s != 0) {
+        int res = fputc(*s, stream);
+        if (res == 0) break;
+        res += cnt;
+        ++s;
+    }
+
+    return cnt;
 }
