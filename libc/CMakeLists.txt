@@ -6,4 +6,5 @@ add_library(libc STATIC
     string.cpp
     errno.cpp
     assert.cpp
+    pthread.cpp
     )

@@ -70,11 +70,59 @@ if (APP STREQUAL "python")
         ${PYTHON_PATH}/Objects/weakrefobject.c
         )
 
+    set(PYTHON_FILES
+        ${PYTHON_PATH}/Python/_warnings.c
+        ${PYTHON_PATH}/Python/Python-ast.c
+        ${PYTHON_PATH}/Python/asdl.c
+        ${PYTHON_PATH}/Python/ast.c
+        ${PYTHON_PATH}/Python/bltinmodule.c
+        ${PYTHON_PATH}/Python/ceval.c
+        ${PYTHON_PATH}/Python/compile.c
+        ${PYTHON_PATH}/Python/codecs.c
+        ${PYTHON_PATH}/Python/dynamic_annotations.c
+        ${PYTHON_PATH}/Python/errors.c
+        ${PYTHON_PATH}/Python/frozenmain.c
+        ${PYTHON_PATH}/Python/future.c
+        ${PYTHON_PATH}/Python/getargs.c
+        ${PYTHON_PATH}/Python/getcompiler.c
+        ${PYTHON_PATH}/Python/getcopyright.c
+        ${PYTHON_PATH}/Python/getplatform.c
+        ${PYTHON_PATH}/Python/getversion.c
+        ${PYTHON_PATH}/Python/graminit.c
+        ${PYTHON_PATH}/Python/import.c
+        ${PYTHON_PATH}/Python/importdl.c
+        ${PYTHON_PATH}/Python/marshal.c
+        ${PYTHON_PATH}/Python/modsupport.c
+        ${PYTHON_PATH}/Python/mystrtoul.c
+        ${PYTHON_PATH}/Python/mysnprintf.c
+        ${PYTHON_PATH}/Python/peephole.c
+        ${PYTHON_PATH}/Python/pyarena.c
+        ${PYTHON_PATH}/Python/pyctype.c
+        ${PYTHON_PATH}/Python/pyfpe.c
+        ${PYTHON_PATH}/Python/pyhash.c
+        ${PYTHON_PATH}/Python/pymath.c
+        ${PYTHON_PATH}/Python/pystate.c
+        ${PYTHON_PATH}/Python/pythonrun.c
+        ${PYTHON_PATH}/Python/pytime.c
+        ${PYTHON_PATH}/Python/random.c
+        ${PYTHON_PATH}/Python/structmember.c
+        ${PYTHON_PATH}/Python/symtable.c
+        ${PYTHON_PATH}/Python/sysmodule.c
+        ${PYTHON_PATH}/Python/traceback.c
+        ${PYTHON_PATH}/Python/getopt.c
+        ${PYTHON_PATH}/Python/pystrcmp.c
+        ${PYTHON_PATH}/Python/pystrtod.c
+        ${PYTHON_PATH}/Python/dtoa.c
+        ${PYTHON_PATH}/Python/formatter_unicode.c
+        ${PYTHON_PATH}/Python/fileutils.c
+        )
+
     set(APP_FILES
         python/python.c
         ${PYTHON_PATH}/Modules/python.c
         ${PYTHON_PARSER_FILES}
         ${PYTHON_OBJECTS_FILES}
+        ${PYTHON_FILES}
         )
 
 elseif (NOT DEFINED APP OR APP STREQUAL "hello" OR APP STREQUAL "" )
