@@ -125,3 +125,13 @@ char *strrchr(const char *s, int c)
     return (char*)memrchr(s, c, strlen(s) + 1);
 }
 
+
+static char *__errmsg = NULL;
+char *strerror(int errnum)
+{
+    (void)errnum;
+    if (__errmsg == NULL) {
+        __errmsg = strdup("TODO Error message");
+    }
+    return __errmsg;
+}

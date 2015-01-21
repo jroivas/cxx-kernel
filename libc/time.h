@@ -8,6 +8,15 @@ extern "C" {
 #endif
 
 typedef uint64_t time_t;
+struct timeval {
+    time_t tv_sec;
+    long tv_usec;
+};
+struct timespec {
+    time_t tv_sec;
+    long tv_nsec;
+};
+
 time_t time(time_t *t);
 
 #ifdef __cplusplus

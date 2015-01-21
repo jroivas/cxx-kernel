@@ -10,6 +10,7 @@ class Mutex
 {
 public:
     Mutex();
+    Mutex(ptr_val_t volatile *ptr);
     ~Mutex();
 
     void assign(ptr_val_t volatile *ptr);
@@ -20,7 +21,6 @@ public:
     void abort();
 
 private:
-    Mutex(ptr_val_t volatile *ptr);
     ptr_val_t volatile *m_ptr;
 };
 

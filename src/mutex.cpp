@@ -24,18 +24,16 @@ void Mutex::assign(ptr_val_t volatile *ptr)
 
 bool Mutex::isLocked()
 {
-    if (m_ptr==NULL) return false;
+    if (m_ptr == NULL) return false;
 
-    if (*m_ptr==1) return true;
-
-    return false;
+    return (*m_ptr == 1);
 }
 
 bool Mutex::wait()
 {
-    if (m_ptr==NULL) return false;
+    if (m_ptr == NULL) return false;
 
-    while (*m_ptr==1) {
+    while (*m_ptr == 1) {
         //Sleep
     }
 

@@ -45,7 +45,7 @@
 #define ULLONG_MAX		((1 << (CHAR_BIT * __SIZEOF_LONG_LONG__)) - 1)
 */
 
-#define CHAR_MAX UCHAR_MAX
+#define CHAR_MAX SCHAR_MAX
 
 #define MB_LEN_MAX 16
 
