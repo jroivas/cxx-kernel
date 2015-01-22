@@ -47,8 +47,8 @@ extern int64_t my__moddi3(int64_t num, int64_t den);
 #include <sys/types.h>
 #include <sys/endian.h>
 #else
-#include <../../inc/types.h>
-#include <../../inc/math.h>
+#include <types.h>
+#include <math.h>
 #endif
 
 #ifdef _KERNEL

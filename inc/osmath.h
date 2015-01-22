@@ -1,7 +1,7 @@
-#ifndef MATH_H
-#define MATH_H
+#ifndef OS_MATH_H
+#define OS_MATH_H
 
-#include "math.h"
+#include "types.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -1,4 +1,6 @@
 #include "types.h"
+#include "osmath.h"
+#include "stdlib.h"
 
 #define ABS_STUB(j)\
     if (j < 0) {\
@@ -130,3 +132,23 @@ extern "C" int __aeabi_idivmod(int num, int den)
 {
     return __aeabi_uidivmod(num, den);
 }
+
+int64_t __divdi3(int64_t num, int64_t den)
+{
+    return my__divdi3(num, den);
+}
+
+int64_t __moddi3(int64_t num, int64_t den)
+{
+    return my__moddi3(num, den);
+}
+
+
+lldiv_t lldiv(long long int numer, long long int denom)
+{
+    lldiv_t result;
+    result.quot = numer / denom;
+    result.rem = numer % denom;
+    return result;
+}
+
