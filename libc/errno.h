@@ -29,6 +29,9 @@ enum {
     ESRCH,
     ETIMEDOUT,
     ENXIO,
+    ENODEV,
+    ENOMEM,
+    EINVAL,
     ELAST
 };
 

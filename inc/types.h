@@ -24,9 +24,6 @@ typedef unsigned long  ptr32_val_t;
 typedef unsigned long* ptr_t;
 typedef unsigned long phys_ptr_t;
 typedef unsigned long ptr_val_t;
-#ifndef ARCH_LINUX
-typedef int off_t;
-#endif
 #ifndef __cplusplus
 typedef __WCHAR_TYPE__ wchar_t;
 #endif
@@ -45,7 +42,19 @@ typedef long long int int64_t;
 typedef unsigned long long int uint64_t;
 #endif
 
+typedef uint64_t time_t;
+
 typedef uint32_t dev_t;
+typedef uint32_t ino_t;
+typedef uint16_t mode_t;
+typedef uint16_t nlink_t;
+typedef uint16_t uid_t;
+typedef uint16_t gid_t;
+#ifndef ARCH_LINUX
+typedef uint32_t off_t;
+#endif
+typedef uint32_t blksize_t;
+typedef uint64_t blkcnt_t;
 
 #if defined(ARCH_LINUX) || defined(ARCH_ARM) || defined(ARCH_x86)
 #include "operators.h"

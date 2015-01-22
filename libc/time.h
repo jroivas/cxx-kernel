@@ -7,7 +7,6 @@
 extern "C" {
 #endif
 
-typedef uint64_t time_t;
 struct timeval {
     time_t tv_sec;
     long tv_usec;

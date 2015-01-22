@@ -7,4 +7,5 @@ add_library(libc STATIC
     errno.cpp
     assert.cpp
     pthread.cpp
+    fcntl.cpp
     )

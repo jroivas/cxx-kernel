@@ -5,7 +5,8 @@
 extern "C" {
 #endif
 
-enum {
+enum
+{
     O_RDONLY = 0,
     O_WRONLY = 1,
     O_RDWR = 2,
@@ -18,6 +19,19 @@ enum {
     O_SYNC = 010000,
     O_ASYNC = 020000
 };
+
+enum
+{
+    F_DUPFD,
+    F_GETFD,
+    F_SETFD,
+    F_GETFL,
+    F_SETFL
+};
+
+#define FD_CLOEXEC 1
+
+int fcntl(int fd, int cmd, ...);
 
 #ifdef __cplusplus
 }

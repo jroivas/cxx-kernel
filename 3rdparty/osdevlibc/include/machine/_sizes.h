@@ -13,7 +13,7 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-   
+
 */
 
 /*
@@ -33,11 +33,11 @@ After inclusion of this file, the following macros have to be defined:
 #define _STDC_MACHINE__TYPES_H_
 
 #ifndef __CHAR_BIT__
-# define __CHAR_BIT__			8
+# define __CHAR_BIT__ 8
 #endif
 
 #ifndef __SIZEOF_SHORT__
-# define __SIZEOF_SHORT__		2
+# define __SIZEOF_SHORT__ 2
 #endif
 
 #endif
