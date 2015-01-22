@@ -5,4 +5,5 @@ add_library(osdevlibc
     src/math_misc.c
     src/math_pow.c
     src/math_trigo.c
+    src/wchar.c
     )

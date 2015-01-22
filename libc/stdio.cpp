@@ -182,10 +182,35 @@ int fclose(FILE *fp)
     return 0;
 }
 
-int snprintf(const char *fmt, size_t size, ...)
+int sprintf(char *str, const char *fmt, ...)
 {
+    (void)str;
     (void)fmt;
+    return 0;
+}
+
+int snprintf(char *str, size_t size, const char *fmt, ...)
+{
+    (void)str;
     (void)size;
+    (void)fmt;
+    return 0;
+}
+
+int vsprintf(char *str, const char *fmt, va_list ap)
+{
+    (void)str;
+    (void)fmt;
+    (void)ap;
+    return 0;
+}
+
+int vsnprintf(char *str, size_t size, const char *fmt, va_list ap)
+{
+    (void)str;
+    (void)size;
+    (void)fmt;
+    (void)ap;
     return 0;
 }
 
@@ -215,4 +240,21 @@ int fputs(const char *s, FILE *stream)
     }
 
     return cnt;
+}
+
+//int open(const char *pathname, int flags, mode_t mode)
+int open(const char *pathname, int flags)
+{
+    (void)pathname;
+    (void)flags;
+    //(void)mode;
+
+        //FIXME
+    return 6;
+}
+
+int close(int fd)
+{
+    (void)fd;
+    return 0;
 }

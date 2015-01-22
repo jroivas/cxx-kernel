@@ -102,9 +102,44 @@ ldiv_t ldiv(long int numer, long int denom)
     return result;
 }
 
-int mblen(const char* s, size_t n);
-int mbtowc(wchar_t* pwc, const char* s, size_t n);
-int wctomb(char* s, wchar_t wc);
-size_t mbstowcs(wchar_t* pwcs, const char* s, size_t n);
-size_t wcstombs(char* s, const wchar_t* pwcs, size_t n);
+int mblen(const char* s, size_t n)
+{
+    (void)s;
+    (void)n;
+    return 0;
+}
 
+int mbtowc(wchar_t* pwc, const char* s, size_t n)
+{
+    (void)pwc;
+    (void)s;
+    (void)n;
+    return 0;
+}
+int wctomb(char* s, wchar_t wc)
+{
+    (void)s;
+    (void)wc;
+    return 0;
+}
+size_t mbstowcs(wchar_t* pwcs, const char* s, size_t n)
+{
+    (void)pwcs;
+    (void)s;
+    (void)n;
+    return 0;
+}
+size_t wcstombs(char* s, const wchar_t* pwcs, size_t n)
+{
+    (void)s;
+    (void)pwcs;
+    (void)n;
+    return 0;
+}
+
+char *realpath(const char *path, char *resolved_path)
+{
+    (void)path;
+    (void)resolved_path;
+    return NULL;
+}

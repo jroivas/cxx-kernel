@@ -1,4 +1,5 @@
 add_library(libc STATIC
+    stat.cpp
     stdio.cpp
     time.cpp
     locale.cpp
@@ -8,4 +9,5 @@ add_library(libc STATIC
     assert.cpp
     pthread.cpp
     fcntl.cpp
+    unistd.cpp
     )

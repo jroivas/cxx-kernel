@@ -1,11 +1,13 @@
 #ifndef __STDIO_H
 #define __STDIO_H
 
+#include <types.h>
+#include <sys/stat.h>
+#include <stdarg.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include <types.h>
-#include <sys/stat.h>
 
 #define EOF (-1)
 
@@ -24,13 +26,19 @@ extern void* stderr;
 
 int printf(const char *fmt, ...);
 int fprintf(FILE *__restrict __stream, const char *fmt, ...);
-int snprintf(const char *fmt, size_t size, ...);
-int sprintf(const char *fmt, ...);
+int sprintf(char *str, const char *fmt, ...);
+int snprintf(char *str, size_t size, const char *fmt, ...);
+int vsprintf(char *str, const char *fmt, va_list ap);
+int vsnprintf(char *str, size_t size, const char *fmt, va_list ap);
 
 FILE *fopen(const char *path, const char *mode);
 FILE *fdopen(int fd, const char *mode);
 //FILE *freopen(const char *path, const char *mode, FILE *stream);
 int fclose(FILE *fp);
+
+//int open(const char *pathname, int flags, mode_t mode);
+int open(const char *pathname, int flags);
+int close(int fd);
 
 char *fgets(char *s, int size, FILE *stream);
 int fputc(int c, FILE *stream);

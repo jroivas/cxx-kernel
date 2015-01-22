@@ -3,6 +3,10 @@
 
 #include <types.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct stat {
     dev_t st_dev;
     ino_t st_ino;
@@ -43,5 +47,11 @@ enum {
 #define S_ISFIFO(mode) __MODE_CHECK(mode, S_TYPE_IFIFO)
 #define S_ISLNK(mode) __MODE_CHECK(mode, S_TYPE_IFLNK)
 #define S_ISSOCK(mode) __MODE_CHECK(mode, S_TYPE_IFSCK)
+
+int stat(const char *pathname, struct stat *buf);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
