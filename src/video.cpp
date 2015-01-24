@@ -335,6 +335,20 @@ int Video::printf(const char *fmt, ...)
     return res;
 }
 
+void Video::handleChar(char c)
+{
+    if (c == 0) {
+        return;
+    }
+    if (c == '\n') {
+        m_x = 0;
+        m_y++;
+        putCh(c);
+        return;
+    }
+    putCh(c);
+}
+
 void Video::putCh(char c)
 {
     if (c == '\n') return;
