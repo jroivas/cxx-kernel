@@ -1,5 +1,5 @@
-#ifndef _SYSCALL_H
-#define _SYSCALL_H
+#ifndef _SYSCALL_HH
+#define _SYSCALL_HH
 
 #include "types.h"
 #include "regs.h"

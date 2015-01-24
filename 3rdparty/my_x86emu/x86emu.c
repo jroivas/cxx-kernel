@@ -37,6 +37,7 @@
 
 #include <x86emu.h>
 #include <x86emu_regs.h>
+#include <osmath.h>
 
 static void 	x86emu_intr_raise (struct x86emu *, uint8_t type);
 

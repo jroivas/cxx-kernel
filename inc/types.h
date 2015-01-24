@@ -42,6 +42,7 @@ typedef long long int int64_t;
 typedef unsigned long long int uint64_t;
 #endif
 
+#if 0
 typedef uint64_t time_t;
 
 typedef uint32_t dev_t;
@@ -55,6 +56,7 @@ typedef uint32_t off_t;
 #endif
 typedef uint32_t blksize_t;
 typedef uint64_t blkcnt_t;
+#endif
 
 #if defined(ARCH_LINUX) || defined(ARCH_ARM) || defined(ARCH_x86)
 #include "operators.h"

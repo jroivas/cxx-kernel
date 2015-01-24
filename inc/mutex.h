@@ -4,7 +4,7 @@
 class Mutex;
 
 #include "types.h"
-#include "atomic.h"
+#include "atomic.hh"
 
 class Mutex
 {

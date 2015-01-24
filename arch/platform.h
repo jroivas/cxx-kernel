@@ -13,7 +13,7 @@
 #include "ata.h"
 #include "task.h"
 #include "processmanager.h"
-#include "atomic.h"
+#include "atomic.hh"
 
 #ifdef ARCH_x86
 #include "x86/pagingx86.h"

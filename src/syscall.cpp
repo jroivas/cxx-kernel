@@ -1,4 +1,4 @@
-#include "syscall.h"
+#include "syscall.hh"
 #include "platform.h"
 
 SysCall::SysCall()

@@ -1,6 +1,6 @@
-#include "types.h"
+#include <stdlib.h>
 #include "osmath.h"
-#include "stdlib.h"
+#include "types.h"
 
 #define ABS_STUB(j)\
     if (j < 0) {\
@@ -143,6 +143,15 @@ int64_t __moddi3(int64_t num, int64_t den)
     return my__moddi3(num, den);
 }
 
+uint64_t __umoddi3(uint64_t num, uint64_t den)
+{
+    return my__umoddi3(num, den);
+}
+
+uint64_t __udivdi3(uint64_t num, uint64_t den)
+{
+    return my__udivdi3(num, den);
+}
 
 lldiv_t lldiv(long long int numer, long long int denom)
 {

@@ -9,7 +9,7 @@
 #include "ata.h"
 #include "processmanager.h"
 #include "task.h"
-#include "syscall.h"
+#include "syscall.hh"
 
 #ifdef ARCH_LINUX
 #include "arch/linux/virtualdisc.h"

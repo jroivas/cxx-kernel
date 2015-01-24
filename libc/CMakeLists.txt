@@ -1,13 +1,6 @@
-add_library(libc STATIC
-    stat.cpp
-    stdio.cpp
-    time.cpp
-    locale.cpp
-    osstdlib.cpp
-    string.cpp
-    errno.cpp
-    assert.cpp
-    pthread.cpp
-    fcntl.cpp
-    unistd.cpp
+set(LIBC_FILES
+    syscall.cpp
+    )
+add_library(libc
+    ${LIBC_FILES}
     )

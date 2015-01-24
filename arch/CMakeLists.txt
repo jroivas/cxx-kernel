@@ -2,7 +2,7 @@ set(ARCH_FILES
     platform.cpp
     )
 
-if (ARCH STREQUAL "x86")
+if (PLATFORM STREQUAL "x86")
     set(LOADER_FILES
         x86/loader.asm
         )
@@ -63,7 +63,7 @@ if (ARCH STREQUAL "x86")
         )
 endif()
 
-if (ARCH STREQUAL "LINUX")
+if (PLATFORM STREQUAL "LINUX")
     set(LOADER_FILES
         linux/loader.cpp
         )
@@ -91,7 +91,7 @@ if (ARCH STREQUAL "LINUX")
         )
 endif()
 
-if (ARCH STREQUAL "ARM")
+if (PLATFORM STREQUAL "ARM")
     set(LOADER_FILES
         arm/loader.s
         )

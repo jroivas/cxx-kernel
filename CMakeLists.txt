@@ -6,7 +6,7 @@ include_directories(${CMAKE_SOURCE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/inc)
 include_directories(${CMAKE_SOURCE_DIR}/arch)
 include_directories(${CMAKE_SOURCE_DIR}/app)
-if (NOT ARCH STREQUAL "LINUX")
+if (NOT PLATFORM STREQUAL "LINUX")
     include_directories(${CMAKE_SOURCE_DIR}/libc)
 endif()
 
@@ -28,14 +28,20 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions")
 set(CMAKE_C_FLAGS "${BASE_FLAGS}")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -nostdlib")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-stack-protector")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -save-temps")
 find_program(GCC_LD ld REQUIRED)
 
 
-set(ARCH_ERROR_MSG "Plase define ARCH to x86, ARM or LINUX (example: -DARCH=x86)")
+set(PLATFORM_ERROR_MSG "Plase define PLATFORM to x86, ARM or LINUX (example: -DPLATFORM=x86)")
+set(ARCH_ERROR_MSG "Plase define ARCH (example: -DARCH=i386)")
+if (NOT DEFINED PLATFORM)
+    message(FATAL_ERROR ${PLATFORM_ERROR_MSG})
+endif()
 if (NOT DEFINED ARCH)
     message(FATAL_ERROR ${ARCH_ERROR_MSG})
 endif()
-if (ARCH STREQUAL "x86")
+if (PLATFORM STREQUAL "x86")
     set(CMAKE_ASM_NASM_OBJECT_FORMAT elf32)
     enable_language(ASM_NASM)
     set(CMAKE_ASM-NASM_COMPILER_ARG1 "-f elf32")
@@ -47,7 +53,7 @@ if (ARCH STREQUAL "x86")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -nostdinc")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
-elseif (ARCH STREQUAL "ARM")
+elseif (PLATFORM STREQUAL "ARM")
     enable_language(ASM-ATT)
     add_definitions(-DARCH_ARM)
     set(LINKFLAGS ${LINKFLAGS} -nostdlib)
@@ -60,12 +66,12 @@ elseif (ARCH STREQUAL "ARM")
     set(CMAKE_CXX_COMPILER "${CROSS_COMPILE}g++")
     set(GCC_LD "${CROSS_COMPILE}ld")
     set(CMAKE_ASM-ATT_COMPILER "${CROSS_COMPILE}as")
-    add_definitions(-DPLATFORM_qemu=1)
-elseif (ARCH STREQUAL "LINUX")
+    add_definitions(-DARCH_qemu=1)
+elseif (PLATFORM STREQUAL "LINUX")
     add_definitions(-DARCH_LINUX)
     set(GCC_LD g++)
 else()
-    message(FATAL_ERROR ${ARCH_ERROR_MSG})
+    message(FATAL_ERROR ${PLATFORM_ERROR_MSG})
 endif()
 
 set(CMAKE_CXX_LINKER_PREFERENCE_PROPAGATES 0)
@@ -79,16 +85,16 @@ set(extra_deps "")
 set(extra_libs "")
 set(extra_loader "")
 
-if (ARCH STREQUAL "x86")
+if (PLATFORM STREQUAL "x86")
     set(extra_pre $<TARGET_FILE:arch_asm>)
     set(extra_mid $<TARGET_FILE:arch_setjmp>)
     set(extra_late $<TARGET_FILE:arch_asm_late>)
     set(emu $<TARGET_FILE:x86emu>)
     set(extra_deps arch_asm arch_setjmp arch_asm_late x86emu
     )
-elseif(ARCH STREQUAL "LINUX")
+elseif(PLATFORM STREQUAL "LINUX")
     set(extra_libs -lc -lpthread -lX11)
-elseif(ARCH STREQUAL "ARM")
+elseif(PLATFORM STREQUAL "ARM")
     if (GRAPHICS)
         set(extra_late $<TARGET_FILE:arch_asm_late>)
         set(extra_deps arch_asm_late)
@@ -121,14 +127,25 @@ if (PCI)
     add_definitions(-DFEATURE_PCI)
 endif()
 
-if (ARCH STREQUAL "LINUX")
+if (PLATFORM STREQUAL "LINUX")
     set(libc_files "")
     set(libc_deps "")
 else()
     add_subdirectory(libc)
-    set(libc_files $<TARGET_FILE:libc> $<TARGET_FILE:osdevlibc>)
-    set(libc_deps libc osdevlibc)
-    include_directories("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/osdevlibc/include")
+    #set(libc_files $<TARGET_FILE:libc> $<TARGET_FILE:osdevlibc>)
+    #set(libc_deps libc osdevlibc)
+    #include_directories("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/osdevlibc/include")
+    include_directories("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/musl/musl/arch/${ARCH}")
+    include_directories("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/musl/musl/src/internal")
+    include_directories("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/musl/musl/include")
+    set(extra_src
+        )
+    set(libc_files
+        $<TARGET_FILE:musl>
+        $<TARGET_FILE:coretools>
+        $<TARGET_FILE:libc>
+        )
+    set(libc_deps libc musl coretools)
 endif()
 
 add_subdirectory(src)
@@ -196,7 +213,7 @@ add_custom_target(kernel ALL
     DEPENDS kernel.bin
     )
 
-if (ARCH STREQUAL "x86")
+if (PLATFORM STREQUAL "x86")
     #add_custom_command(OUTPUT kernel.iso
     #    COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/isofiles/boot/grub
     #    COMMAND cp -f kernel.bin ${CMAKE_CURRENT_BINARY_DIR}/isofiles/boot/kernel
@@ -220,13 +237,13 @@ if (ARCH STREQUAL "x86")
         DEPENDS kernel.bin
         )
 endif()
-if (ARCH STREQUAL "ARM")
+if (PLATFORM STREQUAL "ARM")
     add_custom_target(run
         COMMAND qemu-system-arm -serial mon:stdio -M versatilepb -m 128M -kernel kernel.bin
         DEPENDS kernel.bin
         )
 endif()
-if (ARCH STREQUAL "LINUX")
+if (PLATFORM STREQUAL "LINUX")
     add_custom_target(run
         COMMAND ./kernel.bin
         DEPENDS kernel.bin
