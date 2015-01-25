@@ -1,0 +1,91 @@
+diff -ur Python-3.4.2.orig/Include/unicodeobject.h Python-3.4.2/Include/unicodeobject.h
+--- Python-3.4.2.orig/Include/unicodeobject.h	2014-10-08 11:18:11.000000000 +0300
++++ Python-3.4.2/Include/unicodeobject.h	2015-01-25 14:11:53.828280911 +0200
+@@ -2258,6 +2258,8 @@
+ PyAPI_FUNC(int) _PyUnicode_CheckConsistency(
+     PyObject *op,
+     int check_content);
++#else
++#define _PyUnicode_CheckConsistency(op, cc) 1
+ #endif
+ 
+ /* Return an interned Unicode object for an Identifier; may fail if there is no memory.*/
+diff -ur Python-3.4.2.orig/Modules/posixmodule.c Python-3.4.2/Modules/posixmodule.c
+--- Python-3.4.2.orig/Modules/posixmodule.c	2014-10-08 11:18:15.000000000 +0300
++++ Python-3.4.2/Modules/posixmodule.c	2015-01-25 02:27:20.542052445 +0200
+@@ -223,7 +223,7 @@
+ extern int lchmod(const char *, mode_t);
+ #endif*/
+ extern int chown(const char *, uid_t, gid_t);
+-extern char *getcwd(char *, int);
++extern char *getcwd(char *, size_t);
+ extern char *strerror(int);
+ extern int link(const char *, const char *);
+ extern int rename(const char *, const char *);
+diff -ur Python-3.4.2.orig/Modules/_threadmodule.c Python-3.4.2/Modules/_threadmodule.c
+--- Python-3.4.2.orig/Modules/_threadmodule.c	2014-10-08 11:18:15.000000000 +0300
++++ Python-3.4.2/Modules/_threadmodule.c	2015-01-25 02:23:53.698044853 +0200
+@@ -12,6 +12,7 @@
+ #endif
+ 
+ #include "pythread.h"
++#include <sys/time.h>
+ 
+ static PyObject *ThreadError;
+ static long nb_threads = 0;
+diff -ur Python-3.4.2.orig/Modules/_tracemalloc.c Python-3.4.2/Modules/_tracemalloc.c
+--- Python-3.4.2.orig/Modules/_tracemalloc.c	2014-10-08 11:18:15.000000000 +0300
++++ Python-3.4.2/Modules/_tracemalloc.c	2015-01-25 02:29:20.250056838 +0200
+@@ -3,6 +3,7 @@
+ #include "frameobject.h"
+ #include "pythread.h"
+ #include "osdefs.h"
++#include <unistd.h>
+ 
+ /* Trace memory blocks allocated by PyMem_RawMalloc() */
+ #define TRACE_RAW_MALLOC
+diff -ur Python-3.4.2.orig/Objects/obmalloc.c Python-3.4.2/Objects/obmalloc.c
+--- Python-3.4.2.orig/Objects/obmalloc.c	2014-10-08 11:18:15.000000000 +0300
++++ Python-3.4.2/Objects/obmalloc.c	2015-01-25 02:06:58.258007587 +0200
+@@ -2014,6 +2014,8 @@
+     }
+ }
+ 
++#else
++#define pool_is_in_list(X, Y) 1
+ #endif  /* PYMALLOC_DEBUG */
+ 
+ static size_t
+diff -ur Python-3.4.2.orig/Python/condvar.h Python-3.4.2/Python/condvar.h
+--- Python-3.4.2.orig/Python/condvar.h	2014-10-08 11:18:16.000000000 +0300
++++ Python-3.4.2/Python/condvar.h	2015-01-24 23:27:25.709656278 +0200
+@@ -58,6 +58,7 @@
+ #define Py_HAVE_CONDVAR
+ 
+ #include <pthread.h>
++#include <sys/time.h>
+ 
+ #define PyCOND_ADD_MICROSECONDS(tv, interval) \
+ do { /* TODO: add overflow and truncation checks */ \
+diff -ur Python-3.4.2.orig/Python/pytime.c Python-3.4.2/Python/pytime.c
+--- Python-3.4.2.orig/Python/pytime.c	2014-10-08 11:18:16.000000000 +0300
++++ Python-3.4.2/Python/pytime.c	2015-01-24 23:27:53.565657300 +0200
+@@ -17,6 +17,7 @@
+ #include <sys/timeb.h>
+ extern int ftime(struct timeb *);
+ #endif
++#include <sys/time.h>
+ 
+ static void
+ pygettimeofday(_PyTime_timeval *tp, _Py_clock_info_t *info)
+diff -ur Python-3.4.2.orig/Python/thread_pthread.h Python-3.4.2/Python/thread_pthread.h
+--- Python-3.4.2.orig/Python/thread_pthread.h	2014-10-08 11:18:16.000000000 +0300
++++ Python-3.4.2/Python/thread_pthread.h	2015-01-25 14:07:18.704270815 +0200
+@@ -11,6 +11,7 @@
+ #undef destructor
+ #endif
+ #include <signal.h>
++#include <sys/time.h>
+ 
+ /* The POSIX spec requires that use of pthread_attr_setstacksize
+    be conditional on _POSIX_THREAD_ATTR_STACKSIZE being defined. */

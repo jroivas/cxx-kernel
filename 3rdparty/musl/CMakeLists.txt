@@ -1132,6 +1132,16 @@ set(MUSL_SCHED
     ${MUSL_PREFIX}/sched/sched_yield.c
     )
 
+set(MUSL_DLSO
+    ${MUSL_PREFIX}/ldso/dladdr.c
+    ${MUSL_PREFIX}/ldso/dlinfo.c
+    ${MUSL_PREFIX}/ldso/dl_iterate_phdr.c
+    ${MUSL_PREFIX}/ldso/dlsym.c
+    ${MUSL_PREFIX}/ldso/dynlink.c
+    ${MUSL_PREFIX}/ldso/start.c
+    ${MUSL_PREFIX}/ldso/tlsdesc.c
+    )
+
 #set(MUSL_DUMMY
 #    )
 
@@ -1166,4 +1176,5 @@ add_library(musl
     ${MUSL_CONF}
     ${MUSL_LEGACY}
     ${MUSL_SCHED}
+    ${MUSL_DLSO}
     )

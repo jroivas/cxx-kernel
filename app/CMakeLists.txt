@@ -1,5 +1,8 @@
 if (APP STREQUAL "python")
-    set(PYTHON_VERSION 3.4.2)
+    set(PYTHON_MAJOR 3)
+    set(PYTHON_MINOR 4)
+    set(PYTHON_PATCH 2)
+    set(PYTHON_VERSION "${PYTHON_MAJOR}.${PYTHON_MINOR}.${PYTHON_PATCH}")
     set(PYTHON_PATH "python/Python-${PYTHON_VERSION}")
 
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=sign-compare -Wno-sign-compare")
@@ -115,10 +118,14 @@ if (APP STREQUAL "python")
         ${PYTHON_PATH}/Python/dtoa.c
         ${PYTHON_PATH}/Python/formatter_unicode.c
         ${PYTHON_PATH}/Python/fileutils.c
+        ${PYTHON_PATH}/Python/dynload_shlib.c # FIXME
+        #${PYTHON_PATH}/Python/dynload_stub.c
+        ${PYTHON_PATH}/Python/thread.c
         )
 
     set(PYTHON_MODULE
-        ${PYTHON_PATH}/Modules/config.c
+        #${PYTHON_PATH}/Modules/config.c
+        python/config.c
         ${PYTHON_PATH}/Modules/getpath.c
         ${PYTHON_PATH}/Modules/main.c
         ${PYTHON_PATH}/Modules/gcmodule.c
@@ -158,8 +165,10 @@ if (APP STREQUAL "python")
     set(APP_FILES
         python/python.c
         ${PYTHON_PATH}/Modules/python.c
+        ${PYTHON_PATH}/Modules/getbuildinfo.c
         ${PYTHON_PARSER_FILES}
         ${PYTHON_OBJECTS_FILES}
+        ${PYTHON_PATH}/Python/frozen.c
         ${PYTHON_FILES}
         ${PYTHON_MODULE}
         ${PYTHON_MODOBJS}
@@ -170,6 +179,10 @@ elseif (NOT DEFINED APP OR APP STREQUAL "hello" OR APP STREQUAL "" )
         hello/hello.c
         )
 endif()
+
+add_definitions(
+    -DSOABI="cpython-${PYTHON_MAJOR}${PYTHON_MINOR}m"
+    )
 
 add_library(app
     ${APP_FILES}

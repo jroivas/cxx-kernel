@@ -30,7 +30,7 @@
 #define HAVE_DIRFD 1
 
 //#define HAVE_DLFCN_H 1
-//#define HAVE_DLOPEN 1
+#define HAVE_DLOPEN 1
 /*
 #define HAVE_DUP2 1
 #define HAVE_DUP3 1
