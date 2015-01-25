@@ -183,7 +183,7 @@
 //#define HAVE_GETHOSTBYNAME_R_6_ARG 1
 
 /* Define to 1 if you have the `getitimer' function. */
-#define HAVE_GETITIMER 1
+//#define HAVE_GETITIMER 1
 
 /* Define to 1 if you have the `getloadavg' function. */
 #define HAVE_GETLOADAVG 1
@@ -595,7 +595,7 @@
 #define HAVE_SETHOSTNAME 1
 
 /* Define to 1 if you have the `setitimer' function. */
-#define HAVE_SETITIMER 1
+//#define HAVE_SETITIMER 1
 
 /* Define to 1 if you have the `setlocale' function. */
 #define HAVE_SETLOCALE 1

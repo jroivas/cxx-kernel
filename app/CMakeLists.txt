@@ -117,12 +117,52 @@ if (APP STREQUAL "python")
         ${PYTHON_PATH}/Python/fileutils.c
         )
 
+    set(PYTHON_MODULE
+        ${PYTHON_PATH}/Modules/config.c
+        ${PYTHON_PATH}/Modules/getpath.c
+        ${PYTHON_PATH}/Modules/main.c
+        ${PYTHON_PATH}/Modules/gcmodule.c
+        )
+
+    set(PYTHON_MODOBJS
+        ${PYTHON_PATH}/Modules/_threadmodule.c
+        ${PYTHON_PATH}/Modules/signalmodule.c
+        ${PYTHON_PATH}/Modules/posixmodule.c
+        ${PYTHON_PATH}/Modules/errnomodule.c
+        ${PYTHON_PATH}/Modules/pwdmodule.c
+        ${PYTHON_PATH}/Modules/_sre.c
+        ${PYTHON_PATH}/Modules/_codecsmodule.c
+        ${PYTHON_PATH}/Modules/_weakref.c
+        ${PYTHON_PATH}/Modules/_functoolsmodule.c
+        ${PYTHON_PATH}/Modules/_operator.c
+        ${PYTHON_PATH}/Modules/_collectionsmodule.c
+        ${PYTHON_PATH}/Modules/itertoolsmodule.c
+        ${PYTHON_PATH}/Modules/atexitmodule.c
+        ${PYTHON_PATH}/Modules/_stat.c
+        ${PYTHON_PATH}/Modules/_localemodule.c
+        ${PYTHON_PATH}/Modules/_io/_iomodule.c
+        ${PYTHON_PATH}/Modules/_io/iobase.c
+        ${PYTHON_PATH}/Modules/_io/fileio.c
+        ${PYTHON_PATH}/Modules/_io/bytesio.c
+        ${PYTHON_PATH}/Modules/_io/bufferedio.c
+        ${PYTHON_PATH}/Modules/_io/textio.c
+        ${PYTHON_PATH}/Modules/_io/stringio.c
+        ${PYTHON_PATH}/Modules/zipimport.c
+        ${PYTHON_PATH}/Modules/faulthandler.c
+        ${PYTHON_PATH}/Modules/_tracemalloc.c
+        ${PYTHON_PATH}/Modules/hashtable.c
+        ${PYTHON_PATH}/Modules/symtablemodule.c
+        ${PYTHON_PATH}/Modules/xxsubtype.c
+        )
+
     set(APP_FILES
         python/python.c
         ${PYTHON_PATH}/Modules/python.c
         ${PYTHON_PARSER_FILES}
         ${PYTHON_OBJECTS_FILES}
         ${PYTHON_FILES}
+        ${PYTHON_MODULE}
+        ${PYTHON_MODOBJS}
         )
 
 elseif (NOT DEFINED APP OR APP STREQUAL "hello" OR APP STREQUAL "" )

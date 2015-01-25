@@ -967,6 +967,171 @@ set(MUSL_TERMIOS
     ${MUSL_PREFIX}/termios/tcsetattr.c
     )
 
+set(MUSL_PASSWD
+    ${MUSL_PREFIX}/passwd/fgetgrent.c
+    ${MUSL_PREFIX}/passwd/fgetpwent.c
+    ${MUSL_PREFIX}/passwd/fgetspent.c
+    ${MUSL_PREFIX}/passwd/getgrent_a.c
+    ${MUSL_PREFIX}/passwd/getgrent.c
+    ${MUSL_PREFIX}/passwd/getgr_r.c
+    ${MUSL_PREFIX}/passwd/getpwent_a.c
+    ${MUSL_PREFIX}/passwd/getpwent.c
+    ${MUSL_PREFIX}/passwd/getpw_r.c
+    ${MUSL_PREFIX}/passwd/getspent.c
+    ${MUSL_PREFIX}/passwd/getspnam.c
+    ${MUSL_PREFIX}/passwd/getspnam_r.c
+    ${MUSL_PREFIX}/passwd/lckpwdf.c
+    ${MUSL_PREFIX}/passwd/putgrent.c
+    ${MUSL_PREFIX}/passwd/putpwent.c
+    ${MUSL_PREFIX}/passwd/putspent.c
+    )
+
+set(MUSL_DIRENT
+    ${MUSL_PREFIX}/dirent/alphasort.c
+    ${MUSL_PREFIX}/dirent/closedir.c
+    ${MUSL_PREFIX}/dirent/dirfd.c
+    ${MUSL_PREFIX}/dirent/fdopendir.c
+    ${MUSL_PREFIX}/dirent/__getdents.c
+    ${MUSL_PREFIX}/dirent/opendir.c
+    ${MUSL_PREFIX}/dirent/readdir.c
+    ${MUSL_PREFIX}/dirent/readdir_r.c
+    ${MUSL_PREFIX}/dirent/rewinddir.c
+    ${MUSL_PREFIX}/dirent/scandir.c
+    ${MUSL_PREFIX}/dirent/seekdir.c
+    ${MUSL_PREFIX}/dirent/telldir.c
+    ${MUSL_PREFIX}/dirent/versionsort.c
+    )
+
+set(MUSL_PROCESS
+    ${MUSL_PREFIX}/process/execl.c
+    ${MUSL_PREFIX}/process/execle.c
+    ${MUSL_PREFIX}/process/execlp.c
+    ${MUSL_PREFIX}/process/execv.c
+    ${MUSL_PREFIX}/process/execve.c
+    ${MUSL_PREFIX}/process/execvp.c
+    ${MUSL_PREFIX}/process/fexecve.c
+    ${MUSL_PREFIX}/process/fork.c
+    ${MUSL_PREFIX}/process/posix_spawnattr_destroy.c
+    ${MUSL_PREFIX}/process/posix_spawnattr_getflags.c
+    ${MUSL_PREFIX}/process/posix_spawnattr_getpgroup.c
+    ${MUSL_PREFIX}/process/posix_spawnattr_getsigdefault.c
+    ${MUSL_PREFIX}/process/posix_spawnattr_getsigmask.c
+    ${MUSL_PREFIX}/process/posix_spawnattr_init.c
+    ${MUSL_PREFIX}/process/posix_spawnattr_sched.c
+    ${MUSL_PREFIX}/process/posix_spawnattr_setflags.c
+    ${MUSL_PREFIX}/process/posix_spawnattr_setpgroup.c
+    ${MUSL_PREFIX}/process/posix_spawnattr_setsigdefault.c
+    ${MUSL_PREFIX}/process/posix_spawnattr_setsigmask.c
+    ${MUSL_PREFIX}/process/posix_spawn.c
+    ${MUSL_PREFIX}/process/posix_spawn_file_actions_addclose.c
+    ${MUSL_PREFIX}/process/posix_spawn_file_actions_adddup2.c
+    ${MUSL_PREFIX}/process/posix_spawn_file_actions_addopen.c
+    ${MUSL_PREFIX}/process/posix_spawn_file_actions_destroy.c
+    ${MUSL_PREFIX}/process/posix_spawn_file_actions_init.c
+    ${MUSL_PREFIX}/process/posix_spawnp.c
+    ${MUSL_PREFIX}/process/system.c
+    ${MUSL_PREFIX}/process/vfork.c
+    ${MUSL_PREFIX}/process/wait.c
+    ${MUSL_PREFIX}/process/waitid.c
+    ${MUSL_PREFIX}/process/waitpid.c
+    )
+
+set(MUSL_LINUX
+    ${MUSL_PREFIX}/linux/adjtime.c
+    ${MUSL_PREFIX}/linux/adjtimex.c
+    ${MUSL_PREFIX}/linux/arch_prctl.c
+    ${MUSL_PREFIX}/linux/brk.c
+    ${MUSL_PREFIX}/linux/cache.c
+    ${MUSL_PREFIX}/linux/cap.c
+    ${MUSL_PREFIX}/linux/chroot.c
+    ${MUSL_PREFIX}/linux/clock_adjtime.c
+    ${MUSL_PREFIX}/linux/clone.c
+    ${MUSL_PREFIX}/linux/epoll.c
+    ${MUSL_PREFIX}/linux/eventfd.c
+    ${MUSL_PREFIX}/linux/fallocate.c
+    ${MUSL_PREFIX}/linux/fanotify.c
+    ${MUSL_PREFIX}/linux/flock.c
+    ${MUSL_PREFIX}/linux/inotify.c
+    ${MUSL_PREFIX}/linux/ioperm.c
+    ${MUSL_PREFIX}/linux/iopl.c
+    ${MUSL_PREFIX}/linux/klogctl.c
+    ${MUSL_PREFIX}/linux/module.c
+    ${MUSL_PREFIX}/linux/mount.c
+    ${MUSL_PREFIX}/linux/personality.c
+    ${MUSL_PREFIX}/linux/pivot_root.c
+    ${MUSL_PREFIX}/linux/ppoll.c
+    ${MUSL_PREFIX}/linux/prctl.c
+    ${MUSL_PREFIX}/linux/prlimit.c
+    ${MUSL_PREFIX}/linux/process_vm.c
+    ${MUSL_PREFIX}/linux/ptrace.c
+    ${MUSL_PREFIX}/linux/quotactl.c
+    ${MUSL_PREFIX}/linux/readahead.c
+    ${MUSL_PREFIX}/linux/reboot.c
+    ${MUSL_PREFIX}/linux/remap_file_pages.c
+    ${MUSL_PREFIX}/linux/sbrk.c
+    ${MUSL_PREFIX}/linux/sendfile.c
+    ${MUSL_PREFIX}/linux/setfsgid.c
+    ${MUSL_PREFIX}/linux/setfsuid.c
+    ${MUSL_PREFIX}/linux/setgroups.c
+    ${MUSL_PREFIX}/linux/sethostname.c
+    ${MUSL_PREFIX}/linux/setns.c
+    ${MUSL_PREFIX}/linux/settimeofday.c
+    ${MUSL_PREFIX}/linux/signalfd.c
+    ${MUSL_PREFIX}/linux/splice.c
+    ${MUSL_PREFIX}/linux/stime.c
+    ${MUSL_PREFIX}/linux/swap.c
+    ${MUSL_PREFIX}/linux/sync_file_range.c
+    ${MUSL_PREFIX}/linux/syncfs.c
+    ${MUSL_PREFIX}/linux/sysinfo.c
+    ${MUSL_PREFIX}/linux/tee.c
+    ${MUSL_PREFIX}/linux/timerfd.c
+    ${MUSL_PREFIX}/linux/unshare.c
+    ${MUSL_PREFIX}/linux/utimes.c
+    ${MUSL_PREFIX}/linux/vhangup.c
+    ${MUSL_PREFIX}/linux/vmsplice.c
+    ${MUSL_PREFIX}/linux/wait3.c
+    ${MUSL_PREFIX}/linux/wait4.c
+    ${MUSL_PREFIX}/linux/xattr.c
+    )
+
+set(MUSL_CONF
+    ${MUSL_PREFIX}/conf/confstr.c
+    ${MUSL_PREFIX}/conf/fpathconf.c
+    ${MUSL_PREFIX}/conf/pathconf.c
+    ${MUSL_PREFIX}/conf/sysconf.c
+    )
+
+set(MUSL_LEGACY
+    ${MUSL_PREFIX}/legacy/cuserid.c
+    ${MUSL_PREFIX}/legacy/daemon.c
+    ${MUSL_PREFIX}/legacy/err.c
+    ${MUSL_PREFIX}/legacy/euidaccess.c
+    ${MUSL_PREFIX}/legacy/ftw.c
+    ${MUSL_PREFIX}/legacy/futimes.c
+    ${MUSL_PREFIX}/legacy/getdtablesize.c
+    ${MUSL_PREFIX}/legacy/getloadavg.c
+    ${MUSL_PREFIX}/legacy/getpagesize.c
+    ${MUSL_PREFIX}/legacy/getpass.c
+    ${MUSL_PREFIX}/legacy/getusershell.c
+    ${MUSL_PREFIX}/legacy/isastream.c
+    ${MUSL_PREFIX}/legacy/lutimes.c
+    ${MUSL_PREFIX}/legacy/ulimit.c
+    ${MUSL_PREFIX}/legacy/utmpx.c
+    ${MUSL_PREFIX}/legacy/valloc.c
+    )
+
+set(MUSL_SCHED
+    ${MUSL_PREFIX}/sched/affinity.c
+    ${MUSL_PREFIX}/sched/sched_cpucount.c
+    ${MUSL_PREFIX}/sched/sched_getparam.c
+    ${MUSL_PREFIX}/sched/sched_get_priority_max.c
+    ${MUSL_PREFIX}/sched/sched_getscheduler.c
+    ${MUSL_PREFIX}/sched/sched_rr_get_interval.c
+    ${MUSL_PREFIX}/sched/sched_setparam.c
+    ${MUSL_PREFIX}/sched/sched_setscheduler.c
+    ${MUSL_PREFIX}/sched/sched_yield.c
+    )
+
 #set(MUSL_DUMMY
 #    )
 
@@ -994,4 +1159,11 @@ add_library(musl
     ${MUSL_MISC}
     ${MUSL_CTYPE}
     ${MUSL_TERMIOS}
+    ${MUSL_PASSWD}
+    ${MUSL_DIRENT}
+    ${MUSL_PROCESS}
+    ${MUSL_LINUX}
+    ${MUSL_CONF}
+    ${MUSL_LEGACY}
+    ${MUSL_SCHED}
     )
