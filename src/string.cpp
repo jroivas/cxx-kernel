@@ -51,41 +51,6 @@ void *Mem::setw(void *s, unsigned short c, size_t size)
     return s;
 }
 
-
-String::String()
-{
-    m_str = NULL;
-}
-
-String::String(const char *str)
-{
-    if (str != NULL) {
-        unsigned int l = length(str);
-        m_str = (char*)MM::instance()->alloc(l + 1);
-        Mem::copy((void*)m_str, (void*)str, l);
-        m_str[l] = 0;
-    } else m_str = NULL;
-}
-
-unsigned int String::length(const char *str)
-{
-    if (str==NULL) return 0;
-
-    unsigned int cnt = 0;
-    const char *tmp = str;
-    while (tmp!=NULL) {
-        cnt++;
-        tmp++;
-    }
-
-    return cnt;
-}
-
-unsigned int String::length()
-{
-    return length(m_str);
-}
-
 extern "C" void *memcpy(void *dest, const void *src, unsigned int n)
 {
     return Mem::copy(dest, (void*)src, n);
@@ -99,4 +64,121 @@ extern "C" void *memset(void *s, int c, size_t n)
 extern "C" void *memmove(void *dest, const void *src, size_t n)
 {
     return Mem::move(dest, (void*)src, n);
+}
+
+
+String::String()
+    : m_length(0),
+    m_str(NULL),
+    m_null(0)
+{
+}
+
+String::String(const char *str)
+    : m_null(0)
+{
+    init(str);
+}
+
+String::String(const String &str)
+    : m_null(0)
+{
+    init(str.m_str);
+}
+
+String::String(char c)
+    : m_null(0)
+{
+    m_length = 1;
+    m_str = (char*)MM::instance()->alloc(m_length + 1);
+    m_str[0] = c;
+    m_str[m_length] = 0;
+}
+
+void String::init(const char *str)
+{
+    if (str != NULL) {
+        m_length = length(str);
+        m_str = (char*)MM::instance()->alloc(m_length + 1);
+        Mem::copy((void*)m_str, (void*)str, m_length);
+        m_str[m_length] = 0;
+    } else {
+        m_str = NULL;
+    }
+}
+
+size_t String::length(const char *str)
+{
+    if (str == NULL) return 0;
+
+    unsigned int cnt = 0;
+    const char *tmp = str;
+    while (tmp != NULL) {
+        cnt++;
+        tmp++;
+    }
+
+    return cnt;
+}
+
+size_t String::length() const
+{
+    return m_length;
+}
+
+const char &String::at(size_t pos) const
+{
+    if (pos >= m_length) {
+        // TODO FIXME Exception
+        return m_null;
+    }
+    return m_str[pos];
+}
+
+char &String::at(size_t pos)
+{
+    if (pos >= m_length) {
+        // TODO FIXME Exception
+        return m_null;
+    }
+    return m_str[pos];
+}
+
+
+String &String::append(const String &str)
+{
+    size_t len1 = length();
+    size_t len2 = str.length();
+
+    size_t new_length = len1 + len2;
+
+    char *tmp = (char*)MM::instance()->realloc(m_str, new_length + 1);
+    Mem::copy((void*)(tmp + len1), (void*)str.m_str, len2);
+
+    m_str = tmp;
+    m_length = new_length;
+    m_str[m_length] = 0;
+
+    return *this;
+}
+
+String &String::append(const char *str)
+{
+    return append(String(str));
+}
+
+String &String::operator+=(const String& str)
+{
+    return append(str);
+}
+
+String &String::operator+=(const char *str)
+{
+    return append(String(str));
+}
+
+String &String::operator+=(char c)
+{
+    // FIXME: This is a bit overkill and inefficient
+    return append(String(c));
 }

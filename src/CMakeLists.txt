@@ -58,6 +58,10 @@ set(BASE_FILES
     syscall.cpp
     )
 
+set(FS_FILES
+    fs/vfs.cpp
+    )
+
 add_library(core STATIC ${CORE_FILES})
 add_library(base STATIC ${BASE_FILES})
 add_library(mm STATIC ${MM_FILES})
@@ -70,4 +74,5 @@ add_library(bits STATIC ${BITS_FILES})
 add_library(coretools STATIC ${CORETOOLS_FILES})
 add_library(font STATIC ${FONT_FILES})
 add_library(storage STATIC ${STORAGE_FILES})
+add_library(fs STATIC ${FS_FILES})
 add_library(task STATIC ${TASK_FILES})

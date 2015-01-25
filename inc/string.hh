@@ -21,11 +21,44 @@ class String
 public:
     String();
     String(const char *str);
-    unsigned int length();
-    static unsigned int length(const char *str);
+    String(const String &str);
+    String(char c);
+
+    String &append(const String &str);
+    String &append(const char *str);
+    String &operator+=(const String& str);
+    String &operator+=(const char *str);
+    String &operator+=(char c);
+
+    size_t length() const;
+    size_t size() const
+    {
+        return length();
+    }
+    static size_t length(const char *str);
+
+    const char &at(size_t pos) const;
+    char &at(size_t pos);
+    const char& operator[](size_t pos) const
+    {
+        return at(pos);
+    }
+    char& operator[](size_t pos)
+    {
+        return at(pos);
+    }
+
+    const char *c_str() const
+    {
+        return m_str;
+    }
 
 private:
+    void init(const char *str);
+
+    size_t m_length;
     char *m_str;
+    char m_null;
 };
 #endif
 

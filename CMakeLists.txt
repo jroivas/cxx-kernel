@@ -114,8 +114,8 @@ endif()
 
 
 if (STORAGE)
-    set(storage_files $<TARGET_FILE:storage>)
-    set(storage_deps storage)
+    set(storage_files $<TARGET_FILE:storage> $<TARGET_FILE:fs>)
+    set(storage_deps storage fs)
     add_definitions(-DFEATURE_STORAGE)
     set(PCI True)
 else()

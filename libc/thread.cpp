@@ -1,4 +1,3 @@
-//#include <thread.hh>
 #include <types.h>
 
 extern "C"

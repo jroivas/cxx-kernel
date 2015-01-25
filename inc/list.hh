@@ -1,5 +1,5 @@
-#ifndef _LIST_H
-#define _LIST_H
+#ifndef _LIST_HH
+#define _LIST_HH
 
 #include "types.h"
 
