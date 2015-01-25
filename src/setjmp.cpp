@@ -1,4 +1,4 @@
-#include "setjmp.h"
+#include "setjmp.hh"
 #include "types.h"
 
 extern "C" void longjmp(jmp_buf buf, long ret_val)

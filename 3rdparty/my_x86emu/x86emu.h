@@ -56,7 +56,7 @@ extern int64_t my__moddi3(int64_t num, int64_t den);
 #include <machine/setjmp.h>
 #else
 //#include <setjmp.h>
-#include <../../inc/setjmp.h>
+#include <setjmp.hh>
 #endif
 
 /*

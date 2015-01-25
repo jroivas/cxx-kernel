@@ -2,6 +2,7 @@
 #include "osmath.h"
 #include "types.h"
 
+#if 0
 #define ABS_STUB(j)\
     if (j < 0) {\
         j *= -1;\
@@ -20,6 +21,7 @@ long long int llabs(long long int j)
 {
     ABS_STUB(j);
 }
+#endif
 
 uint64_t __udivmoddi4(uint64_t num, uint64_t den, uint64_t *rem_p)
 {

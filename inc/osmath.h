@@ -7,9 +7,11 @@
 extern "C" {
 #endif
 
+/*
 int abs(int j);
 long int labs(long int j);
 long long int llabs(long long int j);
+*/
 
 uint64_t my__udivdi3(uint64_t num, uint64_t den);
 uint64_t my__umoddi3(uint64_t num, uint64_t den);
