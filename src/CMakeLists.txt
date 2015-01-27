@@ -60,6 +60,7 @@ set(BASE_FILES
 
 set(FS_FILES
     fs/vfs.cpp
+    fs/filesystem.cpp
     )
 
 add_library(core STATIC ${CORE_FILES})
