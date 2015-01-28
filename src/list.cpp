@@ -97,6 +97,27 @@ uint32_t List::size()
     return m_size;
 }
 
+const List::ListObject *List::begin() const
+{
+    return m_first;
+}
+
+const List::ListObject *List::next(const List::ListObject *iter) const
+{
+    if (iter == NULL) {
+        return NULL;
+    }
+    return iter->next;
+}
+
+void *List::item(const List::ListObject *iter)
+{
+    if (iter == NULL) {
+        return NULL;
+    }
+    return iter->ptr;
+}
+
 void *List::at(uint32_t i)
 {
     ListObject *obj = m_first;

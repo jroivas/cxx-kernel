@@ -45,11 +45,17 @@ public:
     Filesystem() {}
     virtual ~Filesystem() {}
 
+    virtual Filesystem *mount(String mountpoint, String options) = 0;
+    virtual bool umount(Filesystem *fs) = 0;
+    virtual String mountpoint() const = 0;
+
+    virtual const String type() const = 0;
+
     // File operations
-    virtual int create(String path, mode_t mode) = 0;
     virtual int truncate(String path, off_t length) = 0;
 
     virtual int open(String path, int flags) = 0;
+    virtual int close(int fh) = 0;
 
     virtual int chmod(String path, mode_t mode) = 0;
     virtual int getattr(String path, int handle=0) = 0;
@@ -72,6 +78,18 @@ public:
 
     virtual int mkdir(String path, mode_t mode) = 0;
     virtual int rmdir(String path) = 0;
+
+protected:
+    int mapfile(const String &fs, const String &name);
+    int getfile(const String &fs, const String &name);
+    String getFS(int fh);
+    String getName(int fh);
+    bool closefile(int fh);
+
+    static int m_filehandle;
+    static List m_files;
+    static ptr_val_t m_mutex;
 };
+
 
 #endif

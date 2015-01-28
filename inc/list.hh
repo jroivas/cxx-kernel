@@ -6,6 +6,25 @@
 class List
 {
 public:
+    class ListObject {
+        friend class List;
+    public:
+        ListObject()
+        {
+            next = NULL;
+            ptr = NULL;
+        }
+        ListObject(void *val)
+        {
+            ptr = val;
+            next = NULL;
+        }
+
+    protected:
+        ListObject *next;
+        void *ptr;
+    };
+
     List();
     void addFirst(void *val);
     void append(void *val);
@@ -20,22 +39,11 @@ public:
     bool addAt(uint32_t i, void *val);
     bool deleteAt(uint32_t i);
 
+    const List::ListObject *begin() const;
+    const List::ListObject *next(const List::ListObject *iter) const;
+    void *item(const List::ListObject *iter);
+
 protected:
-    class ListObject {
-    public:
-        ListObject()
-        {
-            next = NULL;
-            ptr = NULL;
-        }
-        ListObject(void *val)
-        {
-            ptr = val;
-            next = NULL;
-        }
-        ListObject *next;
-        void *ptr;
-    };
     ListObject *m_first;
     ListObject *m_last;
     uint32_t m_size;

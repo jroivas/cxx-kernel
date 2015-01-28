@@ -10,6 +10,8 @@
 #include "processmanager.h"
 #include "task.h"
 #include "syscall.hh"
+#include "fs/vfs.hh"
+#include "fs/devfs.hh"
 
 #ifdef ARCH_LINUX
 #include "arch/linux/virtualdisc.h"
@@ -232,6 +234,10 @@ int Kernel::run()
         }
         video->printf("Done.\n");
     }
+
+    VFS vfs;
+    vfs.register_filesystem(new DevFS);
+    vfs.mount("/dev", "DevFS", "");
 #endif
 
 #ifdef ARCH_LINUX

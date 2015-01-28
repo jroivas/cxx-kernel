@@ -7,11 +7,19 @@
 class VFS
 {
 public:
-    VFS();
+    VFS() {}
+    ~VFS() {}
     bool register_filesystem(Filesystem *type);
+    bool mount(String mountpoint, String type, String options);
+
+    Filesystem *access(String file);
+    String basedir(String file, Filesystem *fs);
 
 protected:
+    Filesystem *find_filesystem(String type);
+
     List m_filesystems;
+    List m_mounts;
 };
 
 #endif

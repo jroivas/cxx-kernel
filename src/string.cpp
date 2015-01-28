@@ -95,6 +95,14 @@ String::String(char c)
     m_str[m_length] = 0;
 }
 
+String::~String()
+{
+    if (m_str != NULL) {
+        MM::instance()->free(m_str);
+        m_str = NULL;
+    }
+}
+
 void String::init(const char *str)
 {
     if (str != NULL) {
@@ -113,7 +121,7 @@ size_t String::length(const char *str)
 
     unsigned int cnt = 0;
     const char *tmp = str;
-    while (tmp != NULL) {
+    while (*tmp != NULL) {
         cnt++;
         tmp++;
     }
@@ -181,4 +189,55 @@ String &String::operator+=(char c)
 {
     // FIXME: This is a bit overkill and inefficient
     return append(String(c));
+}
+
+bool String::operator==(const String &other) const
+{
+    if (other.length() != m_length) return false;
+
+    for (size_t i = 0; i < m_length; ++i) {
+        if (m_str[i] != other.m_str[i]) return false;
+    }
+
+    return true;
+}
+
+bool String::startsWith(const String &other) const
+{
+    size_t len = other.m_length;
+    if (m_length < len) {
+        return false;
+    }
+
+    for (size_t i = 0; i < len; ++i) {
+        if (m_str[i] != other.m_str[i]) return false;
+    }
+
+    return true;
+}
+
+String String::right(size_t index) const
+{
+    String res;
+
+    for (size_t i = index; i < m_length; ++i) {
+        res += m_str[i];
+    }
+
+    return res;
+}
+
+String String::left(size_t index) const
+{
+    String res;
+
+    size_t cnt = 0;
+    for (size_t i = 0; i < m_length; ++i) {
+        res += m_str[i];
+
+        if (cnt >= index) break;
+        ++index;
+    }
+
+    return res;
 }

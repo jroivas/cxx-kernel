@@ -23,12 +23,19 @@ public:
     String(const char *str);
     String(const String &str);
     String(char c);
+    ~String();
 
     String &append(const String &str);
     String &append(const char *str);
     String &operator+=(const String& str);
     String &operator+=(const char *str);
     String &operator+=(char c);
+
+    bool operator==(const String &other) const;
+
+    bool startsWith(const String &other) const;
+    String right(size_t index) const;
+    String left(size_t index) const;
 
     size_t length() const;
     size_t size() const
