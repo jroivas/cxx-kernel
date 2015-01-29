@@ -72,10 +72,15 @@ int DevFS::getattr(String path, int handle)
 
 ssize_t DevFS::read(int fh, char *buf, size_t count)
 {
-    (void)fh;
     (void)buf;
     (void)count;
-    return 0;
+
+    String name = getName(fh);
+    if (name == "random") {
+    }
+
+    errno = ENOENT;
+    return -1;
 }
 
 ssize_t DevFS::write(int fh, const char *buf, size_t count)

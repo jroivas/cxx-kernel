@@ -69,3 +69,12 @@ String VFS::basedir(String file, Filesystem *fs)
     }
     return file.right(fs->mountpoint().length());
 }
+
+String VFS::stripslash(String name)
+{
+    String res = name;
+    while (res[0] == '/') {
+        res = res.right(1);
+    }
+    return res;
+}

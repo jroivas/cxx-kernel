@@ -39,6 +39,7 @@ static PCI   *__platform_pci   = NULL;
 static ATA   *__platform_ata   = NULL;
 static Task  *__platform_task  = NULL;
 static ProcessManager *__platform_pm = NULL;
+static VFS   *__platform_vfs   = NULL;
 
 Platform::Platform()
 {
@@ -193,6 +194,14 @@ ProcessManager *Platform::processManager()
         __platform_pm = new ProcessManager();
     }
     return __platform_pm;
+}
+
+VFS *Platform::vfs()
+{
+    if (__platform_vfs == NULL) {
+        __platform_vfs = new VFS();
+    }
+    return __platform_vfs;
 }
 
 void Platform::halt()

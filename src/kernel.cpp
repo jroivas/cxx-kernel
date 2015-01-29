@@ -235,9 +235,9 @@ int Kernel::run()
         video->printf("Done.\n");
     }
 
-    VFS vfs;
-    vfs.register_filesystem(new DevFS);
-    vfs.mount("/dev", "DevFS", "");
+    VFS *vfs = Platform::vfs();
+    vfs->register_filesystem(new DevFS);
+    vfs->mount("/dev", "DevFS", "");
 #endif
 
 #ifdef ARCH_LINUX

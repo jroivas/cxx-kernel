@@ -1,31 +1,25 @@
 #include "syscall_fileio.h"
 #include <platform.h>
 #include <errno.h>
+#include <fs/filesystem.hh>
+#include <sys/ioctl.h>
+#include <termios.h>
 
-ssize_t syscall_writev(int fd, const struct iovec *_iov, int iovcnt)
+ssize_t syscall_writev(int fd, const struct iovec *iov, int iovcnt)
 {
-    const struct iovec *iov_ptr = _iov;
-
     if (fd == 1 || fd == 2) {
         ssize_t cnt = 0;
         for (int vptr = 0; vptr < iovcnt; ++vptr) {
-            char *base = (char*)iov_ptr->iov_base;
-            ssize_t len = (ssize_t)iov_ptr->iov_len;
+            ssize_t len = iov[vptr].iov_len;
 
             if (len < 0) {
                 return -EINVAL;
             }
-            --base;
-            ++len;
 
-            //Platform::video()->printf("Writev %d, %d, %x, %x, %d\n", fd, iovcnt, iov_ptr, base, len);
             for (ssize_t cptr = 0; cptr < len; ++cptr) {
-                //Platform::video()->printf("%c %d\n", *base, *base);
-                Platform::video()->handleChar(*base);
-                ++base;
+                Platform::video()->handleChar(((char*)iov[vptr].iov_base)[cptr]);
             }
             cnt += len;
-            ++iov_ptr;
         }
         return cnt;
     }
@@ -34,3 +28,45 @@ ssize_t syscall_writev(int fd, const struct iovec *_iov, int iovcnt)
     return -EINVAL;
 }
 
+int syscall_open(const char *name, int flags, int mode)
+{
+    (void)mode;
+    if (name == NULL) {
+        errno = ENOENT;
+        return -1;
+    }
+
+    VFS *vfs = Platform::vfs();
+    Filesystem *fs = vfs->access(name);
+
+    if (fs == NULL) {
+        errno = ENOENT;
+        return -1;
+    }
+
+    String base = vfs->stripslash(vfs->basedir(name, fs));
+    Platform::video()->printf("BASE: %s \n", base.c_str());
+
+    return fs->open(base, flags);
+}
+
+int syscall_ioctl(int fd, long cmd, long arg)
+{
+    Platform::video()->printf("ioctl: %d %d %d\n", fd, cmd, arg);
+    if (cmd == TCGETS) {
+        struct termios *argp = (struct termios *)arg;
+
+        argp->c_iflag = IGNPAR;
+        argp->c_oflag = OPOST | ONOCR | ONLRET;
+        argp->c_cflag = 0;
+        argp->c_lflag = 0;
+        for (int i = 0; i < NCCS; ++i) {
+            argp->c_cc[i] = 0;
+        }
+
+        return 0;
+    }
+
+    errno = EINVAL;
+    return -1;
+}

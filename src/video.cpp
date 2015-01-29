@@ -140,7 +140,7 @@ int Video::print_l(long val, int radix, int fmtcnt)
         return print_cnt;
     }
     bool n = false;
-    if (val<0) {
+    if (val < 0) {
         val *= -1;
         n = true;
     }
@@ -159,9 +159,6 @@ int Video::print_l(long val, int radix, int fmtcnt)
 
     int cnt = 0;
     char s[256];
-    if (n) {
-        s[0] = '-';
-    }
     s[l] = 0;
     l--;
 
@@ -175,6 +172,9 @@ int Video::print_l(long val, int radix, int fmtcnt)
         val /= radix;
         l--;
         cnt++;
+    }
+    if (n) {
+        s[0] = '-';
     }
     print_cnt += print_prenull(cnt, fmtcnt);
     print_cnt += print(s);

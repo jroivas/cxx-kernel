@@ -11,6 +11,8 @@ extern "C" {
 #endif
 
 ssize_t syscall_writev(int fd, const struct iovec *_iov, int iovcnt);
+int syscall_open(const char *name, int flags, int mode);
+int syscall_ioctl(int fd, long cmd, long arg);
 
 #ifdef __cplusplus
 }

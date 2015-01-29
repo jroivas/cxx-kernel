@@ -14,6 +14,7 @@ public:
 
     Filesystem *access(String file);
     String basedir(String file, Filesystem *fs);
+    String stripslash(String name);
 
 protected:
     Filesystem *find_filesystem(String type);

@@ -14,6 +14,7 @@
 #include "task.h"
 #include "processmanager.h"
 #include "atomic.hh"
+#include "fs/vfs.hh"
 
 #ifdef ARCH_x86
 #include "x86/pagingx86.h"
@@ -40,6 +41,7 @@ public:
     static ATA *ata();
     static Task *task();
     static ProcessManager *processManager();
+    static VFS *vfs();
 
     static inline int CAS(ptr_val_t volatile *m_ptr, int cmp, int set)
     {
