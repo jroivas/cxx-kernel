@@ -21,10 +21,13 @@ There you can run cmake:
 
     mkdir build
     cd build
-    cmake .. -DARCH=x86
+    cmake .. -DPLATFORM=x86 -DARCH=i386
 
-You need to define architecture. Current option are: x86, ARM and LINUX.
-x86 builds i386 binary, ARM build qemu supported versatilepb kernel,
+You need to define platform and architecture.
+Current option for platform are: x86, ARM and LINUX.
+For architecture you can choose at least: i386 and x86_64
+
+x86 builds i386 or x86_64 binary, ARM build qemu supported versatilepb kernel,
 and LINUX build native Linux binary, which can just be executed from shell.
 
 There's preliminary support for different features, which can be disabled
@@ -36,7 +39,7 @@ or enabled from cmake configurations. So far such features are:
 
 By default these are disabled, but can easily set on by running cmake:
 
-    cmake .. -DARCH=x86 -DSTORAGE=1 -DGRAPHICS=1
+    cmake .. -DPLATFORM=x86 -DARCH=i386 -DSTORAGE=1 -DGRAPHICS=1
 
 
 After cmake you can just build the kenrnel:
@@ -46,3 +49,15 @@ After cmake you can just build the kenrnel:
 To run it (usually qemu/kvm is required), just do:
 
     make run
+
+## Applications
+
+Currently there's couple of test applications which can be built with the kernel:
+
+    cmake .. -DPLATFORM=x86 -DARCH=i386 -DSTORAGE=1 -DAPP=hello
+
+This will build Hello world example app and work like expected.
+Another example is a bit more complicated, it opens /dev/random and reads few random numbers,
+prints them out and closes the file:
+
+    cmake .. -DPLATFORM=x86 -DARCH=i386 -DSTORAGE=1 -DAPP=randomfile
