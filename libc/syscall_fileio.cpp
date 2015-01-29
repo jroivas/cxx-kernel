@@ -45,8 +45,6 @@ int syscall_open(const char *name, int flags, int mode)
     }
 
     String base = vfs->stripslash(vfs->basedir(name, fs));
-    Platform::video()->printf("BASE: %s \n", base.c_str());
-
     return fs->open(base, flags);
 }
 

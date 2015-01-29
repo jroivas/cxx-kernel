@@ -174,6 +174,10 @@ if (APP STREQUAL "python")
         ${PYTHON_MODOBJS}
         )
 
+elseif (APP STREQUAL "randomfile")
+    set(APP_FILES
+        randomfile/randomfile.c
+        )
 elseif (NOT DEFINED APP OR APP STREQUAL "hello" OR APP STREQUAL "" )
     set(APP_FILES
         hello/hello.c
