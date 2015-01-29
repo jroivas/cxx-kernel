@@ -6,15 +6,19 @@ int app_main()
 {
     printf("Hello, world!\n");
 
-    char buf[10];
+    char buf[20];
     int fd = open("/dev/random", O_RDONLY);
 
     printf("fd: %d\n", fd);
     if (fd >= 0) {
-        int res = read(fd, buf, 3);
+        int res = read(fd, buf, 10);
         printf("res: %d\n", res);
+        printf("Data: ");
 
-        printf("Data: %d %d %d\n", buf[0], buf[1], buf[2]);
+        for (int i = 0; i < res; ++i) {
+            printf("%u ", (unsigned char)buf[i]);
+        }
+        printf("\n");
     }
 
     close(fd);

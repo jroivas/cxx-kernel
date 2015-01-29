@@ -31,6 +31,18 @@ long syscall_va(long num, va_list al)
                 long arg = va_arg(al, long);
                 return syscall_ioctl(fd, cmd, arg);
             }
+        case __NR_read:
+            {
+                int fd = va_arg(al, int);
+                void *buf = va_arg(al, void*);
+                size_t cnt = va_arg(al, size_t);
+                return syscall_read(fd, buf, cnt);
+            }
+        case __NR_close:
+            {
+                int fd = va_arg(al, int);
+                return syscall_close(fd);
+            }
 
         default:
             Platform::video()->printf("Unsupported syscall %lld\n", num);

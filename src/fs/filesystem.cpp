@@ -6,6 +6,23 @@ int Filesystem::m_filehandle = 2;
 ptr_val_t Filesystem::m_mutex = 0;
 List Filesystem::m_files;
 
+class FileData
+{
+public:
+    FileData(int id, String fs, String name, Filesystem *owner)
+        : m_fs(fs),
+        m_name(name),
+        m_id(id),
+        m_owner(owner)
+    {
+    }
+
+    String m_fs;
+    String m_name;
+    int m_id;
+    Filesystem *m_owner;
+};
+
 void Dir::reset()
 {
     m_index = 0;
@@ -27,22 +44,7 @@ Dirent *Dir::next()
     return res;
 }
 
-class FileData
-{
-public:
-    FileData(int id, String fs, String name)
-        : m_fs(fs),
-        m_name(name),
-        m_id(id)
-    {
-    }
-
-    String m_fs;
-    String m_name;
-    int m_id;
-};
-
-int Filesystem::mapfile(const String &fs, const String &name)
+int Filesystem::mapfile(const String &fs, const String &name, Filesystem *owner)
 {
     Mutex mtx(&m_mutex);
     mtx.lock();
@@ -51,7 +53,8 @@ int Filesystem::mapfile(const String &fs, const String &name)
     FileData *tmp = new FileData(
         m_filehandle,
         fs,
-        name);
+        name,
+        owner);
 
     m_files.append(tmp);
 
@@ -92,6 +95,23 @@ String Filesystem::getFS(int fh)
     mtx.unlock();
 
     return "";
+}
+
+Filesystem *Filesystem::getFilesystem(int fh)
+{
+    Mutex mtx(&m_mutex);
+    mtx.lock();
+
+    for (uint32_t i = 0; i < m_files.size(); ++i) {
+        FileData *tmp = (FileData*)m_files.at(i);
+        if (tmp->m_id == fh) {
+            mtx.unlock();
+            return tmp->m_owner;
+        }
+    }
+    mtx.unlock();
+
+    return NULL;
 }
 
 String Filesystem::getName(int fh)

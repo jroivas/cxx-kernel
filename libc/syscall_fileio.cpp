@@ -52,7 +52,7 @@ int syscall_open(const char *name, int flags, int mode)
 
 int syscall_ioctl(int fd, long cmd, long arg)
 {
-    Platform::video()->printf("ioctl: %d %d %d\n", fd, cmd, arg);
+    (void)fd;
     if (cmd == TCGETS) {
         struct termios *argp = (struct termios *)arg;
 
@@ -69,4 +69,28 @@ int syscall_ioctl(int fd, long cmd, long arg)
 
     errno = EINVAL;
     return -1;
+}
+
+int syscall_read(int fd, void *buf, size_t cnt)
+{
+    VFS *vfs = Platform::vfs();
+    Filesystem *fs = vfs->accessHandle(fd);
+    if (fd == NULL) {
+        errno = EPERM;
+        return -1;
+    }
+
+    return fs->read(fd, (char*)buf, cnt);
+}
+
+int syscall_close(int fd)
+{
+    VFS *vfs = Platform::vfs();
+    Filesystem *fs = vfs->accessHandle(fd);
+    if (fd == NULL) {
+        errno = EPERM;
+        return -1;
+    }
+
+    return fs->close(fd);
 }

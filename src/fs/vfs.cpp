@@ -45,6 +45,20 @@ bool VFS::mount(String mountpoint, String type, String options)
     return true;
 }
 
+Filesystem *VFS::accessHandle(int fd)
+{
+    const List::ListObject *iter = m_mounts.begin();
+    while (iter != NULL) {
+        Filesystem *tmp = (Filesystem*)m_mounts.item(iter);
+        if (tmp == NULL) {
+            iter = m_mounts.next(iter);
+            continue;
+        }
+        return tmp->getFilesystem(fd);
+    }
+    return NULL;
+}
+
 Filesystem *VFS::access(String file)
 {
     const List::ListObject *iter = m_mounts.begin();

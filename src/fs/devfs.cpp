@@ -1,6 +1,7 @@
 #include <fs/devfs.hh>
 #include <errno.h>
 #include <fcntl.h>
+#include <platform.h>
 
 Filesystem *DevFS::mount(String mountpoint, String options)
 {
@@ -39,7 +40,7 @@ int DevFS::open(String path, int flags)
     }
     //FIXME
     if (path == "random") {
-        return mapfile(type(), "random");
+        return mapfile(type(), "random", this);
     }
     errno = ENOENT;
     return -1;
@@ -70,13 +71,34 @@ int DevFS::getattr(String path, int handle)
     return -1;
 }
 
+static unsigned long int rand_seed = 1;
+static bool srand_called = false;
+
+static void srand(unsigned int seed)
+{
+    rand_seed = seed;
+}
+
+static int rand(void)
+{
+    if (!srand_called) {
+        srand(Platform::timer()->getTicks());
+        srand_called = true;
+    }
+    rand_seed = rand_seed * 1103515245 + 12345;
+    return (unsigned int)(rand_seed / 65536) % 32768;
+}
+
 ssize_t DevFS::read(int fh, char *buf, size_t count)
 {
-    (void)buf;
-    (void)count;
-
     String name = getName(fh);
     if (name == "random") {
+        ssize_t cnt = 0;
+        for (cnt = 0; cnt < (ssize_t)count; ++cnt) {
+            *buf = (rand() % 256) & 0xFF;
+            ++buf;
+        }
+        return cnt;
     }
 
     errno = ENOENT;

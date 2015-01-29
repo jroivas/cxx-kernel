@@ -13,6 +13,7 @@ public:
     bool mount(String mountpoint, String type, String options);
 
     Filesystem *access(String file);
+    Filesystem *accessHandle(int fd);
     String basedir(String file, Filesystem *fs);
     String stripslash(String name);
 

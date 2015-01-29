@@ -79,8 +79,10 @@ public:
     virtual int mkdir(String path, mode_t mode) = 0;
     virtual int rmdir(String path) = 0;
 
+    Filesystem *getFilesystem(int fh);
+
 protected:
-    int mapfile(const String &fs, const String &name);
+    int mapfile(const String &fs, const String &name, Filesystem *owner);
     int getfile(const String &fs, const String &name);
     String getFS(int fh);
     String getName(int fh);
