@@ -1,6 +1,7 @@
 #include "string.hh"
 #include "types.h"
 #include "mm.h"
+#include "platform.h"
 
 void *Mem::copy(void *dest, const void *src, size_t size)
 {
@@ -83,7 +84,7 @@ String::String(const char *str)
 String::String(const String &str)
     : m_null(0)
 {
-    init(str.m_str);
+    init(str.m_str, str.m_length);
 }
 
 String::String(char c)
@@ -103,10 +104,14 @@ String::~String()
     }
 }
 
-void String::init(const char *str)
+void String::init(const char *str, ssize_t len)
 {
     if (str != NULL) {
-        m_length = length(str);
+        if (len >= 0) {
+            m_length = len;
+        } else {
+            m_length = length(str);
+        }
         m_str = (char*)MM::instance()->alloc(m_length + 1);
         Mem::copy((void*)m_str, (void*)str, m_length);
         m_str[m_length] = 0;
@@ -152,16 +157,12 @@ char &String::at(size_t pos)
     return m_str[pos];
 }
 
-
-String &String::append(const String &str)
+String &String::append(const char* str, size_t len)
 {
-    size_t len1 = length();
-    size_t len2 = str.length();
-
-    size_t new_length = len1 + len2;
+    size_t new_length = m_length + len;
 
     char *tmp = (char*)MM::instance()->realloc(m_str, new_length + 1);
-    Mem::copy((void*)(tmp + len1), (void*)str.m_str, len2);
+    Mem::move((void*)(tmp + m_length), (void*)str, len);
 
     m_str = tmp;
     m_length = new_length;
@@ -170,14 +171,27 @@ String &String::append(const String &str)
     return *this;
 }
 
+String &String::append(const String &str)
+{
+    return append(str.c_str(), str.m_length);
+}
+
 String &String::append(const char *str)
 {
-    return append(String(str));
+    return append(str, length(str));
+}
+
+String &String::operator=(const String& str)
+{
+    if (this != &str) {
+        init(str.m_str, str.m_length);
+    }
+    return *this;
 }
 
 String &String::operator+=(const String& str)
 {
-    return append(str);
+    return append(str.c_str(), str.m_length);
 }
 
 String &String::operator+=(const char *str)
@@ -187,8 +201,14 @@ String &String::operator+=(const char *str)
 
 String &String::operator+=(char c)
 {
-    // FIXME: This is a bit overkill and inefficient
-    return append(String(c));
+    char *tmp = (char*)MM::instance()->realloc(m_str, m_length + 2);
+    tmp[m_length] = c;
+
+    m_str = tmp;
+    ++m_length;
+    m_str[m_length] = 0;
+
+    return *this;
 }
 
 bool String::operator==(const String &other) const
@@ -221,7 +241,7 @@ String String::right(size_t index) const
     String res;
 
     for (size_t i = index; i < m_length; ++i) {
-        res += m_str[i];
+        res += (char)m_str[i];
     }
 
     return res;
@@ -233,7 +253,7 @@ String String::left(size_t index) const
 
     size_t cnt = 0;
     for (size_t i = 0; i < m_length; ++i) {
-        res += m_str[i];
+        res += (char)m_str[i];
 
         if (cnt >= index) break;
         ++index;

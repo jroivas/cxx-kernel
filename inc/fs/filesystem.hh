@@ -47,7 +47,7 @@ public:
 
     virtual Filesystem *mount(String mountpoint, String options) = 0;
     virtual bool umount(Filesystem *fs) = 0;
-    virtual String mountpoint() const = 0;
+    virtual const String &mountpoint() const = 0;
 
     virtual const String type() const = 0;
 
@@ -83,9 +83,9 @@ public:
 
 protected:
     int mapfile(const String &fs, const String &name, Filesystem *owner);
-    int getfile(const String &fs, const String &name);
-    String getFS(int fh);
-    String getName(int fh);
+    int getfile(const String &fs, const String &name) const;
+    const String getFS(int fh) const;
+    const String getName(int fh) const;
     bool closefile(int fh);
 
     static int m_filehandle;

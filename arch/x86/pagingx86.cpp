@@ -254,8 +254,8 @@ bool PagingPrivate::init(void *platformData)
             while(1);
     }
 #endif
-    // Identify mapping
-    uint32_t i = 0;
+    // Identify mapping, skip first page to detect nullptr
+    uint32_t i = 1;
     while (i<(ptr_val_t)0x10000) {
         identityMapFrame(PDIR(directory)->getPage(i, PageDir::PageDoReserve), i, MapPageKernel, MapPageRW);
         i += PAGE_SIZE;

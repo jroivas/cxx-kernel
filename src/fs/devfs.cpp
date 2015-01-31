@@ -3,6 +3,12 @@
 #include <fcntl.h>
 #include <platform.h>
 
+DevFS::DevFS(const DevFS &fs)
+{
+    m_mountpoint = fs.m_mountpoint;
+    m_opts = fs.m_mountpoint;
+}
+
 Filesystem *DevFS::mount(String mountpoint, String options)
 {
     DevFS *tmp = new DevFS();
@@ -39,8 +45,10 @@ int DevFS::open(String path, int flags)
         return -1;
     }
     //FIXME
-    if (path == "random") {
-        return mapfile(type(), "random", this);
+    if (path == "random"
+        || path == "urandom") {
+        int res =  mapfile(type(), path, this);
+        return res;
     }
     errno = ENOENT;
     return -1;
@@ -92,7 +100,8 @@ static int rand(void)
 ssize_t DevFS::read(int fh, char *buf, size_t count)
 {
     String name = getName(fh);
-    if (name == "random") {
+    if (name == "random"
+        || name == "urandom") {
         ssize_t cnt = 0;
         for (cnt = 0; cnt < (ssize_t)count; ++cnt) {
             *buf = (rand() % 256) & 0xFF;

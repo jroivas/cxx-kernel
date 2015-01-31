@@ -110,7 +110,7 @@ const List::ListObject *List::next(const List::ListObject *iter) const
     return iter->next;
 }
 
-void *List::item(const List::ListObject *iter)
+const void *List::item(const List::ListObject *iter) const
 {
     if (iter == NULL) {
         return NULL;

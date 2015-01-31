@@ -41,7 +41,7 @@ public:
 
     const List::ListObject *begin() const;
     const List::ListObject *next(const List::ListObject *iter) const;
-    void *item(const List::ListObject *iter);
+    const void *item(const List::ListObject *iter) const;
 
 protected:
     ListObject *m_first;

@@ -25,8 +25,10 @@ public:
     String(char c);
     ~String();
 
+    String &operator=(const String& str);
     String &append(const String &str);
     String &append(const char *str);
+    String &append(const char c);
     String &operator+=(const String& str);
     String &operator+=(const char *str);
     String &operator+=(char c);
@@ -61,7 +63,8 @@ public:
     }
 
 private:
-    void init(const char *str);
+    void init(const char *str, ssize_t len=-1);
+    String &append(const char* str, size_t len);
 
     size_t m_length;
     char *m_str;

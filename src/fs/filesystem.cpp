@@ -1,6 +1,7 @@
 #include <fs/filesystem.hh>
 #include <mutex.h>
 #include <mm.h>
+#include <platform.h>
 
 int Filesystem::m_filehandle = 2;
 ptr_val_t Filesystem::m_mutex = 0;
@@ -63,7 +64,7 @@ int Filesystem::mapfile(const String &fs, const String &name, Filesystem *owner)
     return tmp->m_id;
 }
 
-int Filesystem::getfile(const String &fs, const String &name)
+int Filesystem::getfile(const String &fs, const String &name) const
 {
     Mutex mtx(&m_mutex);
     mtx.lock();
@@ -80,7 +81,7 @@ int Filesystem::getfile(const String &fs, const String &name)
     return -1;
 }
 
-String Filesystem::getFS(int fh)
+const String Filesystem::getFS(int fh) const
 {
     Mutex mtx(&m_mutex);
     mtx.lock();
@@ -114,7 +115,7 @@ Filesystem *Filesystem::getFilesystem(int fh)
     return NULL;
 }
 
-String Filesystem::getName(int fh)
+const String Filesystem::getName(int fh) const
 {
     Mutex mtx(&m_mutex);
     mtx.lock();

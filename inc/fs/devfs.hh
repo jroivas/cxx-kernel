@@ -1,18 +1,20 @@
 #include <fs/filesystem.hh>
 #include <string.hh>
+#include <platform.h>
 
 class DevFS : public Filesystem
 {
 public:
     DevFS() {}
+    DevFS(const DevFS &fs);
     virtual ~DevFS() {}
 
     virtual inline const String type() const
     {
-        return "DevFS";
+        return String("DevFS");
     }
     virtual Filesystem *mount(String mountpoint, String options);
-    virtual String mountpoint() const
+    virtual const String &mountpoint() const
     {
         return m_mountpoint;
     }

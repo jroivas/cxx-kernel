@@ -8,6 +8,7 @@
 #include "paging.h"
 #include "arch/platform.h"
 #endif
+#include "string.hh"
 
 
 static MM __mm_static_instance;
@@ -519,7 +520,7 @@ bool MM::free(void *p, AllocLock l)
 
 void *MM::realloc(void *ptr, size_t size)
 {
-    if (size==0 && ptr!=NULL) {
+    if (size == 0 && ptr != NULL) {
         free(ptr);
         return NULL;
     }
@@ -536,21 +537,19 @@ void *MM::realloc(void *ptr, size_t size)
         }
     }
 
-    void *tmp = malloc(size);
-    if (tmp==NULL) return ptr;
-    if (ptr==NULL) return tmp;
+    void *tmp = alloc(size);
+    // FIXME: This does not handle error properly
+    if (tmp == NULL) return ptr;
+    if (ptr == NULL) return tmp;
 
     m.lock();
 
     unsigned int min = old->size;
-    if (min>size) min = size;
-
-    char *dest = (char*)tmp;
-    char *src = (char*)ptr;
-
-    for (size_t i = 0; i < min; i++) {
-        *dest++ = *src++;
+    if (min > size) {
+        min = size;
     }
+
+    Mem::move((char*)tmp, (char*)ptr, min);
     free(ptr, AllocDoNotLock);
     m.unlock();
 

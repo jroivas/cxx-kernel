@@ -1,4 +1,5 @@
 #include "fs/vfs.hh"
+#include "platform.h"
 
 bool VFS::register_filesystem(Filesystem *type)
 {
@@ -64,11 +65,10 @@ Filesystem *VFS::access(String file)
     const List::ListObject *iter = m_mounts.begin();
     while (iter != NULL) {
         Filesystem *tmp = (Filesystem*)m_mounts.item(iter);
-        if (tmp == NULL) {
-            break;
-        }
-        if (file.startsWith(tmp->mountpoint())) {
-            return tmp;
+        if (tmp != NULL) {
+            if (file.startsWith(tmp->mountpoint())) {
+                return tmp;
+            }
         }
         iter = m_mounts.next(iter);
     }
@@ -81,7 +81,7 @@ String VFS::basedir(String file, Filesystem *fs)
     if (fs == NULL) {
         return file;
     }
-    return file.right(fs->mountpoint().length());
+    return file.rigth(fs->mountpoint().length() + 1);
 }
 
 String VFS::stripslash(String name)

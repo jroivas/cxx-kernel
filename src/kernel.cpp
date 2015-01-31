@@ -63,11 +63,21 @@ void C_proc()
 }
 #endif
 
-extern "C" int app_main();
+extern "C" int main(int argc, char **argv);
 void app_proc()
 {
-    int res = app_main();
+    int argc = 1;
+    char *appname = (char*)MM::instance()->alloc(4);
+    Mem::copy(appname, "app", 4);
+    char * argv[] = {
+        appname,
+        NULL
+    };
+
+    int res = main(argc, argv);
     Platform::video()->printf("\n\nApplication exit with code: %d\nHalting...\n", res);
+
+    MM::instance()->free(appname);
 
     while (true) {
         //Timer::get()->wait(500);

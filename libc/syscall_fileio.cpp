@@ -28,26 +28,6 @@ ssize_t syscall_writev(int fd, const struct iovec *iov, int iovcnt)
     return -EINVAL;
 }
 
-int syscall_open(const char *name, int flags, int mode)
-{
-    (void)mode;
-    if (name == NULL) {
-        errno = ENOENT;
-        return -1;
-    }
-
-    VFS *vfs = Platform::vfs();
-    Filesystem *fs = vfs->access(name);
-
-    if (fs == NULL) {
-        errno = ENOENT;
-        return -1;
-    }
-
-    String base = vfs->stripslash(vfs->basedir(name, fs));
-    return fs->open(base, flags);
-}
-
 int syscall_ioctl(int fd, long cmd, long arg)
 {
     (void)fd;
@@ -69,11 +49,31 @@ int syscall_ioctl(int fd, long cmd, long arg)
     return -1;
 }
 
+int syscall_open(const char *name, int flags, int mode)
+{
+    (void)mode;
+    if (name == NULL) {
+        errno = ENOENT;
+        return -1;
+    }
+
+    VFS *vfs = Platform::vfs();
+    Filesystem *fs = vfs->access(name);
+
+    if (fs == NULL) {
+        errno = ENOENT;
+        return -1;
+    }
+
+    String base = vfs->stripslash(vfs->basedir(name, fs));
+    return fs->open(base, flags);
+}
+
 int syscall_read(int fd, void *buf, size_t cnt)
 {
     VFS *vfs = Platform::vfs();
     Filesystem *fs = vfs->accessHandle(fd);
-    if (fd == NULL) {
+    if (fs == NULL) {
         errno = EPERM;
         return -1;
     }
@@ -85,7 +85,7 @@ int syscall_close(int fd)
 {
     VFS *vfs = Platform::vfs();
     Filesystem *fs = vfs->accessHandle(fd);
-    if (fd == NULL) {
+    if (fs == NULL) {
         errno = EPERM;
         return -1;
     }
