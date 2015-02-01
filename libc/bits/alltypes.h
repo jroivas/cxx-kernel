@@ -230,6 +230,7 @@ typedef unsigned _Reg nlink_t;
 
 #if defined(__NEED_off_t) && !defined(__DEFINED_off_t)
 typedef _Int64 off_t;
+#define loff_t off_t
 #define __DEFINED_off_t
 #endif
 

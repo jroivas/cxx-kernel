@@ -1,0 +1,12 @@
+diff --git a/include/pthread.h b/include/pthread.h
+index 2697e8b..a13b6b5 100644
+--- a/include/pthread.h
++++ b/include/pthread.h
+@@ -29,6 +29,7 @@ extern "C" {
+ 
+ #include <sched.h>
+ #include <time.h>
++#include <unistd.h>
+ 
+ #define PTHREAD_CREATE_JOINABLE 0
+ #define PTHREAD_CREATE_DETACHED 1

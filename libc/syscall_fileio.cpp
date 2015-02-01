@@ -4,6 +4,7 @@
 #include <fs/filesystem.hh>
 #include <sys/ioctl.h>
 #include <termios.h>
+#include <sys/uio.h>
 
 ssize_t syscall_writev(int fd, const struct iovec *iov, int iovcnt)
 {
