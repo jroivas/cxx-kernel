@@ -114,6 +114,25 @@ ssize_t DevFS::read(int fh, char *buf, size_t count)
     return -1;
 }
 
+int DevFS::fseek(
+    int fd, long offs_hi, long offs_low,
+    loff_t *result, unsigned int orig)
+{
+    String name = getName(fd);
+    if (name == "random"
+        || name == "urandom") {
+        return 0;
+    }
+
+    (void)offs_hi;
+    (void)offs_low;
+    (void)result;
+    (void)orig;
+
+    errno = EBADF;
+    return -1;
+}
+
 ssize_t DevFS::write(int fh, const char *buf, size_t count)
 {
     (void)fh;

@@ -5,9 +5,9 @@
 #include <sys/syscall.h>
 #include <errno.h>
 
+//FIXME Types to be configurable by architecture
 long syscall_va(long num, va_list al)
 {
-    //Platform::video()->printf("Syssy\n");
     switch (num) {
         case __NR_writev:
             {
@@ -16,7 +16,22 @@ long syscall_va(long num, va_list al)
                 unsigned long vlen = va_arg(al, unsigned long);
                 return syscall_writev(fd, vec, vlen);
             }
-
+        case __NR_readv:
+            {
+                unsigned long fd = va_arg(al, unsigned long);
+                const struct iovec *vec = va_arg(al, const struct iovec*);
+                unsigned long vlen = va_arg(al, unsigned long);
+                return syscall_readv(fd, vec, vlen);
+            }
+        case __NR__llseek:
+            {
+                unsigned long fd = va_arg(al, unsigned long);
+                unsigned long high = va_arg(al, unsigned long);
+                unsigned long low = va_arg(al, unsigned long);
+                unsigned int orig = va_arg(al, unsigned int);
+                loff_t *res = va_arg(al, loff_t*);
+                return syscall_llseek(fd, high, low, res, orig);
+            }
         case __NR_open:
             {
                 const char *fname = va_arg(al, const char*);

@@ -28,6 +28,50 @@ ssize_t syscall_writev(int fd, const struct iovec *iov, int iovcnt)
     return -EINVAL;
 }
 
+ssize_t syscall_readv(int fd, const struct iovec *iov, int iovcnt)
+{
+    if (fd == 1 || fd == 2) {
+        errno = EPERM;
+        return -1;
+    }
+
+    VFS *vfs = Platform::vfs();
+    Filesystem *fs = vfs->accessHandle(fd);
+    if (fs == NULL) {
+        errno = EPERM;
+        return -1;
+    }
+
+    ssize_t cnt = 0;
+    for (int vptr = 0; vptr < iovcnt; ++vptr) {
+        size_t len = iov[vptr].iov_len;
+        if ((ssize_t)len < 0) {
+            return -EINVAL;
+        }
+        size_t got = 0;
+        char *target = (char*)iov[vptr].iov_base;
+        while (got < len) {
+            size_t rcnt = fs->read(fd, target, len - got);
+            if (rcnt <= 0) break;
+            target += rcnt;
+            got += rcnt;
+        }
+        cnt += got;
+    }
+    return cnt;
+}
+
+int syscall_llseek(int fd, long high, long low, loff_t* res, int orig)
+{
+    (void)fd;
+    (void)high;
+    (void)low;
+    (void)res;
+    (void)orig;
+    errno = EPERM;
+    return -1;
+}
+
 int syscall_ioctl(int fd, long cmd, long arg)
 {
     (void)fd;

@@ -1,6 +1,7 @@
 #ifndef __FILESYSTEM_HH
 #define __FILESYSTEM_HH
 
+#include <fcntl.h>
 #include <sys/types.h>
 #include <string.hh>
 #include <list.hh>
@@ -69,6 +70,10 @@ public:
 
     virtual int stat(int fd, struct stat *st) = 0;
     virtual int flush(int fd) = 0;
+
+    virtual int fseek(
+        int fd, long offs_hi, long offs_low,
+        loff_t *result, unsigned int orig) = 0;
 
     // Dir operations
     virtual Dir *opendir(String name) = 0;

@@ -1,0 +1,13 @@
+diff --git a/src/internal/syscall.h b/src/internal/syscall.h
+index b3fe7c0..86fee34 100644
+--- a/src/internal/syscall.h
++++ b/src/internal/syscall.h
+@@ -49,7 +49,7 @@ long __syscall_ret(unsigned long), __syscall(syscall_arg_t, ...),
+ #define __SYSCALL_DISP(b,...) __SYSCALL_CONCAT(b,__SYSCALL_NARGS(__VA_ARGS__))(__VA_ARGS__)
+ 
+ #define __syscall(...) __SYSCALL_DISP(__syscall,__VA_ARGS__)
+-#define syscall(...) __syscall_ret(__syscall(__VA_ARGS__))
++//#define syscall(...) __syscall_ret(__syscall(__VA_ARGS__))
+ 
+ #define socketcall __socketcall
+ #define socketcall_cp __socketcall_cp

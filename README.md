@@ -16,8 +16,11 @@ Major design decisions to keep it simple and efficient:
 ## Building
 
 You need C and C++ compiler, nasm and CMake.
-First clone this git repository and make a build folder under it.
-There you can run cmake:
+First clone this git repository, and update musl libc source code:
+
+    ./3rdparty/musl/update_musl.sh
+
+After that make a build folder. There you can run cmake:
 
     mkdir build
     cd build

@@ -32,6 +32,10 @@ public:
     virtual ssize_t read(int fh, char *buf, size_t count);
     virtual ssize_t write(int fh, const char *buf, size_t count);
 
+    virtual int fseek(
+        int fd, long offs_hi, long offs_low,
+        loff_t *result, unsigned int orig);
+
     virtual int symlink(String target, String linkpath);
     virtual int rename(String oldpath, String newpath);
     virtual int unlink(String path);
