@@ -1,4 +1,4 @@
-#include "mutex.h"
+#include "mutex.hh"
 #include "types.h"
 #include "arch/platform.h"
 
@@ -43,4 +43,17 @@ bool Mutex::wait()
 void Mutex::abort()
 {
     //unlock();
+}
+
+LockMutex::LockMutex(ptr_val_t volatile *ptr)
+    : Mutex(ptr)
+{
+    lock();
+}
+
+LockMutex::~LockMutex()
+{
+    if (isLocked()) {
+        unlock();
+    }
 }

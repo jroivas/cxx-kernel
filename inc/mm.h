@@ -3,7 +3,7 @@
 
 #ifdef __cplusplus
 
-#include "mutex.h"
+#include "mutex.hh"
 #include "types.h"
 
 struct PtrInfo;

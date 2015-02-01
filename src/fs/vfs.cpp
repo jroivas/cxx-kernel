@@ -81,7 +81,7 @@ String VFS::basedir(String file, Filesystem *fs)
     if (fs == NULL) {
         return file;
     }
-    return file.rigth(fs->mountpoint().length() + 1);
+    return file.right(fs->mountpoint().length() + 1);
 }
 
 String VFS::stripslash(String name)

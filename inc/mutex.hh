@@ -6,6 +6,12 @@ class Mutex;
 #include "types.h"
 #include "atomic.hh"
 
+#if __cplusplus >= 201103L
+#define STATE_DELETE = delete
+#else
+#define STATE_DELETE {}
+#endif
+
 class Mutex
 {
 public:
@@ -24,6 +30,16 @@ private:
     ptr_val_t volatile *m_ptr;
 };
 
+class LockMutex : public Mutex
+{
+public:
+    LockMutex() STATE_DELETE;
+
+    LockMutex(ptr_val_t volatile *ptr);
+    ~LockMutex();
+};
+
+
 inline void Mutex::lock() {
     if (m_ptr == NULL) return;
 
@@ -38,4 +54,5 @@ inline void Mutex::unlock() {
 
     while ((Platform_CAS(m_ptr, 1, 0))==0) ;
 }
+
 #endif

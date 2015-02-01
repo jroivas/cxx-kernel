@@ -2,7 +2,7 @@
 #define TASK_H
 
 #include "types.h"
-#include "mutex.h"
+#include "mutex.hh"
 
 //#define TASK_MAGIC 0x42
 #define MAX_PRIORITY 20

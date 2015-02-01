@@ -1,7 +1,7 @@
 #ifndef FB_H
 #define FB_H
 
-#include "mutex.h"
+#include "mutex.hh"
 
 class FB
 {

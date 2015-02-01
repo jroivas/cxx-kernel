@@ -1,5 +1,5 @@
 #include <fs/filesystem.hh>
-#include <mutex.h>
+#include <mutex.hh>
 #include <mm.h>
 #include <platform.h>
 
@@ -47,8 +47,7 @@ Dirent *Dir::next()
 
 int Filesystem::mapfile(const String &fs, const String &name, Filesystem *owner)
 {
-    Mutex mtx(&m_mutex);
-    mtx.lock();
+    LockMutex mtx(&m_mutex);
 
     ++m_filehandle;
     FileData *tmp = new FileData(
@@ -59,93 +58,76 @@ int Filesystem::mapfile(const String &fs, const String &name, Filesystem *owner)
 
     m_files.append(tmp);
 
-    mtx.unlock();
-
     return tmp->m_id;
 }
 
 int Filesystem::getfile(const String &fs, const String &name) const
 {
-    Mutex mtx(&m_mutex);
-    mtx.lock();
+    LockMutex mtx(&m_mutex);
 
     for (uint32_t i = 0; i < m_files.size(); ++i) {
         FileData *tmp = (FileData*)m_files.at(i);
         if (tmp->m_fs == fs && tmp->m_name == name) {
-            mtx.unlock();
             return tmp->m_id;
         }
     }
-    mtx.unlock();
 
     return -1;
 }
 
 const String Filesystem::getFS(int fh) const
 {
-    Mutex mtx(&m_mutex);
-    mtx.lock();
+    LockMutex mtx(&m_mutex);
 
     for (uint32_t i = 0; i < m_files.size(); ++i) {
         FileData *tmp = (FileData*)m_files.at(i);
         if (tmp->m_id == fh) {
-            mtx.unlock();
             return tmp->m_fs;
         }
     }
-    mtx.unlock();
 
     return "";
 }
 
 Filesystem *Filesystem::getFilesystem(int fh)
 {
-    Mutex mtx(&m_mutex);
-    mtx.lock();
+    LockMutex mtx(&m_mutex);
 
     for (uint32_t i = 0; i < m_files.size(); ++i) {
         FileData *tmp = (FileData*)m_files.at(i);
         if (tmp->m_id == fh) {
-            mtx.unlock();
             return tmp->m_owner;
         }
     }
-    mtx.unlock();
 
     return NULL;
 }
 
 const String Filesystem::getName(int fh) const
 {
-    Mutex mtx(&m_mutex);
-    mtx.lock();
+    LockMutex mtx(&m_mutex);
 
     for (uint32_t i = 0; i < m_files.size(); ++i) {
         FileData *tmp = (FileData*)m_files.at(i);
         if (tmp->m_id == fh) {
-            mtx.unlock();
             return tmp->m_name;
         }
     }
-    mtx.unlock();
 
     return "";
 }
 
 bool Filesystem::closefile(int fh)
 {
-    Mutex mtx(&m_mutex);
-    mtx.lock();
+    LockMutex mtx(&m_mutex);
 
     for (uint32_t i = 0; i < m_files.size(); ++i) {
         FileData *tmp = (FileData*)m_files.at(i);
         if (tmp->m_id == fh) {
             m_files.deleteAt(i);
-            mtx.unlock();
             return true;
         }
     }
-    mtx.unlock();
 
     return false;
 }

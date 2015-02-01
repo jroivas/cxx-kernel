@@ -3,7 +3,7 @@
 
 #include "task.h"
 #include "list.hh"
-#include "mutex.h"
+#include "mutex.hh"
 
 #define TASK_POOLS 4
 

@@ -3,8 +3,7 @@
 
 #include "types.h"
 #include "regs.h"
-#include "mutex.h"
-//#define MM_SLEEP (1<<0) //XXX
+#include "mutex.hh"
 
 class BIOS
 {

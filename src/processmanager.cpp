@@ -1,7 +1,7 @@
 #include "processmanager.h"
 #include "arch/platform.h"
 #include "kernel.h"
-#include "mutex.h"
+#include "mutex.hh"
 
 #define SCHEDULING_GRANULARITY (KERNEL_FREQUENCY >> 1)
 #define SCHEDULING_GRANULARITY_MIN (KERNEL_FREQUENCY / 50)

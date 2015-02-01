@@ -1,6 +1,7 @@
 #ifndef PAGING_H
 #define PAGING_H
-#include "mutex.h"
+
+#include "mutex.hh"
 #include "types.h"
 
 struct ElfSectionTable

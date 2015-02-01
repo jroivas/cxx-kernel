@@ -21,6 +21,7 @@ set(BASE_FLAGS "${BASE_FLAGS} -Wextra")
 set(BASE_FLAGS "${BASE_FLAGS} -fomit-frame-pointer")
 
 set(CMAKE_CXX_FLAGS "${BASE_FLAGS}")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -no-builtin")
