@@ -13,6 +13,9 @@ public:
     {
         return String("DevFS");
     }
+    virtual void setPhysical(FilesystemPhys *)
+    {
+    }
     virtual Filesystem *mount(String mountpoint, String options);
     virtual const String &mountpoint() const
     {

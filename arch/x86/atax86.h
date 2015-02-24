@@ -1,7 +1,7 @@
 #ifndef _ATA_X86_H
 #define _ATA_X86_H
 
-#include "ata.h"
+#include "ata.hh"
 
 class ATAX86 : public ATA
 {

@@ -1,5 +1,5 @@
-#ifndef PCI_H
-#define PCI_H
+#ifndef PCI_HH
+#define PCI_HH
 
 #include "bus.h"
 #include "types.h"

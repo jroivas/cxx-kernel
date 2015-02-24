@@ -1,4 +1,4 @@
-#include "ata.h"
+#include "ata.hh"
 #include "arch/platform.h"
 #include "timer.h"
 #include "arch/x86/port.h"
@@ -671,4 +671,33 @@ bool ATA::select(Device *d)
     ((DevicePrivate*)d)->readSector(tmp, 1, 0);
 
     return true;
+}
+
+ATAPhys::ATAPhys(ATA::Device *dev)
+    : m_dev(dev)
+{
+
+}
+
+bool ATAPhys::read(
+    uint8_t *buffer,
+    uint32_t sectors,
+    uint32_t pos,
+    uint32_t pos_hi)
+{
+    return Platform::ata()->read(m_dev, buffer, sectors, pos, pos_hi);
+}
+
+bool ATAPhys::write(
+    uint8_t *buffer,
+    uint32_t sectors,
+    uint32_t pos,
+    uint32_t pos_hi)
+{
+    return Platform::ata()->write(m_dev, buffer, sectors, pos, pos_hi);
+}
+
+uint64_t ATAPhys::size() const
+{
+    return Platform::ata()->deviceSize(m_dev);
 }

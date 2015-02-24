@@ -1,7 +1,7 @@
 #ifndef _PCI_X86_H
 #define _PCI_X86_H
 
-#include "pci.h"
+#include "pci.hh"
 
 class PCIX86 : public PCI
 {

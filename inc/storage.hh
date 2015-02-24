@@ -1,5 +1,5 @@
-#ifndef STORAGE_H
-#define STORAGE_H
+#ifndef STORAGE_HH
+#define STORAGE_HH
 
 #include "types.h"
 

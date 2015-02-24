@@ -6,12 +6,13 @@
 #include "kb.h"
 #include "mm.h"
 #include "fb.h"
-#include "ata.h"
+#include "ata.hh"
 #include "processmanager.h"
 #include "task.h"
 #include "syscall.hh"
 #include "fs/vfs.hh"
 #include "fs/devfs.hh"
+#include "fs/clothesfs.hh"
 
 #ifdef ARCH_LINUX
 #include "arch/linux/virtualdisc.h"
@@ -211,6 +212,11 @@ int Kernel::run()
 #endif
     }
 
+    VFS *vfs = Platform::vfs();
+    vfs->register_filesystem(new DevFS);
+    vfs->mount("/dev", "DevFS", "");
+    ClothesFilesystem *cfs = new ClothesFilesystem;
+
 #ifdef FEATURE_STORAGE
     PCI *pcidev = Platform::pci();
     if (pcidev != NULL) {
@@ -223,11 +229,22 @@ int Kernel::run()
     if (ata != NULL) {
         ata->init();
         ATA::Device *dev = ata->getDevice();
+        bool mounted = false;
         while (dev != NULL) {
             if ((ata->deviceModel(dev) == ATA::STORAGE_SATA
                 || ata->deviceModel(dev) == ATA::STORAGE_PATA)
                 && ata->deviceSize(dev) > 0) {
                 break;
+            }
+
+            if (!mounted) {
+                video->printf("Mounting...\n");
+                ATAPhys *ataphys = new ATAPhys(dev);
+                cfs->setPhysical(ataphys);
+                vfs->register_filesystem(cfs);
+                vfs->mount("/cfs", "ClothesFS", "");
+                mounted = true;
+                video->printf("Mounted\n");
             }
             dev = ata->nextDevice(dev);
         }
@@ -245,9 +262,6 @@ int Kernel::run()
         video->printf("Done.\n");
     }
 
-    VFS *vfs = Platform::vfs();
-    vfs->register_filesystem(new DevFS);
-    vfs->mount("/dev", "DevFS", "");
 #endif
 
 #ifdef ARCH_LINUX

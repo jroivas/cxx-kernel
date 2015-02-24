@@ -1,9 +1,10 @@
-#ifndef _ATA_H
-#define _ATA_H
+#ifndef _ATA_HH
+#define _ATA_HH
 
 #include "types.h"
-#include "pci.h"
-#include "storage.h"
+#include "pci.hh"
+#include "storage.hh"
+#include "filesystem.hh"
 
 class ATA : public Storage
 {
@@ -39,6 +40,31 @@ protected:
 
     static void interrupt_handler(unsigned int num, void *data);
     unsigned int m_interrupt;
+};
+
+class ATAPhys : public FilesystemPhys
+{
+public:
+    ATAPhys(ATA::Device *dev);
+    virtual bool read(
+        uint8_t *buffer,
+        uint32_t sectors,
+        uint32_t pos,
+        uint32_t pos_hi);
+    virtual bool write(
+        uint8_t *buffer,
+        uint32_t sectors,
+        uint32_t pos,
+        uint32_t pos_hi);
+
+    virtual uint64_t size() const;
+    virtual uint32_t sectorSize() const
+    {
+        // Hardcoded for now
+        return 512;
+    }
+protected:
+    ATA::Device *m_dev;
 };
 
 #endif

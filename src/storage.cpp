@@ -1,4 +1,4 @@
-#include "storage.h"
+#include "storage.hh"
 
 void Storage::addDevice(Device *dev)
 {

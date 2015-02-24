@@ -1,9 +1,10 @@
 #ifndef __CLOTHESFS_HH
 #define __CLOTHESFS_HH
 
-#include <stdint.h>
-#include <stddef.h>
-#include <string.h>
+//#include <stdint.h>
+//#include <stddef.h>
+//#include <string.h>
+#include <string.hh>
 #include <filesystem.hh>
 
 #ifdef USE_CUSTOM_STRING
@@ -13,24 +14,6 @@
 #include <string>
 #define STD_STRING_TYPE std::string
 #endif
-
-class ClothesPhys
-{
-public:
-    virtual bool read(
-        uint8_t *buffer,
-        uint32_t sectors,
-        uint32_t pos,
-        uint32_t pos_hi) = 0;
-    virtual bool write(
-        uint8_t *buffer,
-        uint32_t sectors,
-        uint32_t pos,
-        uint32_t pos_hi) = 0;
-
-    virtual uint64_t size() const = 0;
-    virtual uint32_t sectorSize() const = 0;
-};
 
 class ClothesFS
 {
@@ -139,9 +122,9 @@ public:
             m_data = new uint8_t[m_fs->m_blocksize];
             m_content = new uint8_t[m_fs->m_blocksize];
 
-            memmove(m_parent, another.m_parent, m_fs->m_blocksize);
-            memmove(m_data, another.m_data, m_fs->m_blocksize);
-            memmove(m_content, another.m_content, m_fs->m_blocksize);
+            Mem::move(m_parent, another.m_parent, m_fs->m_blocksize);
+            Mem::move(m_data, another.m_data, m_fs->m_blocksize);
+            Mem::move(m_content, another.m_content, m_fs->m_blocksize);
         }
 
         bool next();
@@ -183,7 +166,7 @@ public:
     ClothesFS();
     ~ClothesFS();
 
-    void setPhysical(ClothesPhys *phys)
+    void setPhysical(FilesystemPhys *phys)
     {
         m_phys = phys;
     }
@@ -226,7 +209,7 @@ protected:
     uint8_t baseType(uint8_t type) const;
     bool validType(uint8_t type, uint8_t valid) const;
 
-    ClothesPhys *m_phys;
+    FilesystemPhys *m_phys;
     uint32_t m_blocksize;
     uint32_t m_blocks;
     uint32_t m_freechain;
@@ -243,6 +226,10 @@ public:
     virtual inline const String type() const
     {
         return String("ClothesFS");
+    }
+    virtual void setPhysical(FilesystemPhys *phys)
+    {
+        m_clothes.setPhysical(phys);
     }
     virtual Filesystem *mount(String mountpoint, String options);
     virtual const String &mountpoint() const

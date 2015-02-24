@@ -1,4 +1,4 @@
-#include "pci.h"
+#include "pci.hh"
 #include "mm.h"
 #include "arch/platform.h"
 
