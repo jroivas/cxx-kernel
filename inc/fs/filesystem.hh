@@ -87,11 +87,18 @@ public:
     Filesystem *getFilesystem(int fh);
 
 protected:
-    int mapfile(const String &fs, const String &name, Filesystem *owner);
+    int mapfile(
+        const String &fs,
+        const String &name,
+        Filesystem *owner,
+        void *custom);
     int getfile(const String &fs, const String &name) const;
     const String getFS(int fh) const;
     const String getName(int fh) const;
+    void *getCustom(int fh);
     bool closefile(int fh);
+    uint32_t pathParts(String path) const;
+    String pathPart(String path, uint32_t index) const;
 
     static int m_filehandle;
     static List m_files;

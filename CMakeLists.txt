@@ -4,6 +4,9 @@ project(kernel)
 
 include_directories(${CMAKE_SOURCE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/inc)
+if (STORAGE)
+    include_directories(${CMAKE_SOURCE_DIR}/inc/fs)
+endif()
 include_directories(${CMAKE_SOURCE_DIR}/arch)
 include_directories(${CMAKE_SOURCE_DIR}/app)
 if (NOT PLATFORM STREQUAL "LINUX")
@@ -33,6 +36,8 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -save-temps")
 find_program(GCC_LD ld REQUIRED)
 
+add_definitions(-DUSE_CUSTOM_STRING)
+add_definitions(-DSTD_STRING_TYPE=String)
 
 set(PLATFORM_ERROR_MSG "Plase define PLATFORM to x86, ARM or LINUX (example: -DPLATFORM=x86)")
 set(ARCH_ERROR_MSG "Plase define ARCH (example: -DARCH=i386)")

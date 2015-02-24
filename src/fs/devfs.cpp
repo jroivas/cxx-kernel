@@ -47,7 +47,7 @@ int DevFS::open(String path, int flags)
     //FIXME
     if (path == "random"
         || path == "urandom") {
-        int res =  mapfile(type(), path, this);
+        int res =  mapfile(type(), path, this, NULL);
         return res;
     }
     errno = ENOENT;

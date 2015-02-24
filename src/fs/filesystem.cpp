@@ -10,11 +10,12 @@ List Filesystem::m_files;
 class FileData
 {
 public:
-    FileData(int id, String fs, String name, Filesystem *owner)
+    FileData(int id, String fs, String name, Filesystem *owner, void *custom)
         : m_fs(fs),
         m_name(name),
         m_id(id),
-        m_owner(owner)
+        m_owner(owner),
+        m_custom(custom)
     {
     }
 
@@ -22,6 +23,7 @@ public:
     String m_name;
     int m_id;
     Filesystem *m_owner;
+    void *m_custom;
 };
 
 void Dir::reset()
@@ -45,7 +47,11 @@ Dirent *Dir::next()
     return res;
 }
 
-int Filesystem::mapfile(const String &fs, const String &name, Filesystem *owner)
+int Filesystem::mapfile(
+    const String &fs,
+    const String &name,
+    Filesystem *owner,
+    void *custom)
 {
     LockMutex mtx(&m_mutex);
 
@@ -54,7 +60,8 @@ int Filesystem::mapfile(const String &fs, const String &name, Filesystem *owner)
         m_filehandle,
         fs,
         name,
-        owner);
+        owner,
+        custom);
 
     m_files.append(tmp);
 
@@ -87,6 +94,20 @@ const String Filesystem::getFS(int fh) const
     }
 
     return "";
+}
+
+void *Filesystem::getCustom(int fh)
+{
+    LockMutex mtx(&m_mutex);
+
+    for (uint32_t i = 0; i < m_files.size(); ++i) {
+        FileData *tmp = (FileData*)m_files.at(i);
+        if (tmp->m_id == fh) {
+            return tmp->m_custom;
+        }
+    }
+
+    return NULL;
 }
 
 Filesystem *Filesystem::getFilesystem(int fh)
@@ -130,4 +151,36 @@ bool Filesystem::closefile(int fh)
     }
 
     return false;
+}
+
+uint32_t Filesystem::pathParts(String path) const
+{
+    uint32_t cnt = 0;
+    size_t len = path.length();
+    for (size_t p = 0; p < len; ++p) {
+        char c = path[p];
+        if (c == '/') {
+            ++cnt;
+        }
+    }
+    return cnt;
+}
+
+String Filesystem::pathPart(String path, uint32_t index) const
+{
+    uint32_t cnt = 0;
+    String res;
+
+    size_t len = path.length();
+    for (size_t p = 0; p < len; ++p) {
+        char c = path[p];
+        if (c == '/') {
+            ++cnt;
+            if (res.length() > 0) break;
+        } else if (cnt == index) {
+            res += c;
+        }
+    }
+
+    return res;
 }
