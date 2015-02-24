@@ -149,6 +149,13 @@ void ClothesFS::clearBuffer(uint8_t *buf, uint32_t size)
     }
 }
 
+void ClothesFS::setPhysical(FilesystemPhys *phys)
+{
+    m_phys = phys;
+    m_blocks = m_phys->size() / m_blocksize;
+    m_block_in_sectors = m_blocksize / m_phys->sectorSize();
+}
+
 bool ClothesFS::format(
     const char *volid)
 {
@@ -539,6 +546,7 @@ ClothesFS::Iterator ClothesFS::list(
         returnError(iter);
     }
 
+    // FIXME free old
     iter.m_parent = (uint8_t*)new uint8_t[m_blocksize];
     iter.m_data = (uint8_t*)new uint8_t[m_blocksize];
     iter.m_content = (uint8_t*)new uint8_t[m_blocksize];
@@ -808,21 +816,16 @@ ClothesFS::Iterator ClothesFilesystem::findFile(
     uint32_t parent)
 {
     ClothesFS::Iterator iter;
-    Platform::video()->printf("det: %d\n", m_clothes->detect());
     uint32_t parts = pathParts(path);
 
     if (part > parts) {
-        Platform::video()->printf("aa: %d %d\n", part, parts);
         return iter;
     }
-    Platform::video()->printf("bb: %d\n", parent);
     String fname = pathPart(path, part);
 
-    Platform::video()->printf("fname: %s\n", fname.c_str());
     iter = m_clothes->list(parent);
 
     while (iter.ok()) {
-        Platform::video()->printf("name: %s\n", iter.name().c_str());
         if (iter.name() == fname) {
             if (part == parts - 1 || part == parts) {
                 return iter;
@@ -848,28 +851,20 @@ int ClothesFilesystem::open(String path, int flags)
 {
     (void)flags;
 
-    Platform::video()->printf("Open: %s\n", path.c_str());
-
     ClothesFS::Iterator iter = findFile(path);
     //TODO Create file
-    Platform::video()->printf("iterc\n");
     if (!iter.ok()) {
-        Platform::video()->printf("noc\n");
         errno = ENOENT;
         return -1;
     }
-    Platform::video()->printf("type\n");
-    if (iter.type() & ClothesFS::META_FILE) {
+    if ((iter.type() & ClothesFS::META_FILE) == 0) {
         errno = EPERM;
         return -1;
     }
 
-    Platform::video()->printf("datait\n");
     ClothesFS::Iterator *data = new ClothesFS::Iterator();
-    Platform::video()->printf("ass\n");
     data->assign(iter);
 
-    Platform::video()->printf("map\n");
     int res = mapfile(type(), path, this, data);
     return res;
 #if 0

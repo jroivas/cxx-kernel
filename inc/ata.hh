@@ -65,6 +65,7 @@ public:
     }
 protected:
     ATA::Device *m_dev;
+    bool m_selected;
 };
 
 #endif

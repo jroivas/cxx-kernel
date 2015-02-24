@@ -175,11 +175,7 @@ public:
     ClothesFS();
     ~ClothesFS();
 
-    void setPhysical(FilesystemPhys *phys)
-    {
-        m_phys = phys;
-        Platform::video()->printf("PHY: %x\n", m_phys);
-    }
+    void setPhysical(FilesystemPhys *phys);
     inline uint32_t blockSize() const
     {
         return m_blocksize;

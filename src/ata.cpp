@@ -45,7 +45,7 @@
 #define ATA_IDENT_COMMANDSETS  164
 #define ATA_IDENT_MAX_LBA_EXT  200
 
-#define ATA_MAX_WAIT_CNT 0xFF
+#define ATA_MAX_WAIT_CNT 0xFFF
 
 #define ATA_INTERRUPT_BASE 14
 
@@ -654,8 +654,7 @@ bool ATA::read(Device *d, uint8_t *buffer, uint16_t sectors, uint32_t addr, uint
 {
     if (d == NULL) return false;
 
-    bool res = ((DevicePrivate*)d)->readSector(buffer, sectors, addr, addr_hi);
-    return res;
+    return ((DevicePrivate*)d)->readSector(buffer, sectors, addr, addr_hi);
 }
 
 bool ATA::write(Device *d, uint8_t *buffer, uint16_t sectors, uint32_t addr, uint32_t addr_hi)
@@ -679,7 +678,8 @@ bool ATA::select(Device *d)
 }
 
 ATAPhys::ATAPhys(ATA::Device *dev)
-    : m_dev(dev)
+    : m_dev(dev),
+    m_selected(false)
 {
 
 }
@@ -691,7 +691,7 @@ bool ATAPhys::read(
     uint32_t pos_hi)
 {
     Platform::ata()->select(m_dev);
-    return Platform::ata()->read(m_dev, buffer, sectors, pos, pos_hi);
+    return Platform::ata()->read(m_dev, buffer, sectors, pos / 512, pos_hi);
 }
 
 bool ATAPhys::write(
@@ -701,7 +701,7 @@ bool ATAPhys::write(
     uint32_t pos_hi)
 {
     Platform::ata()->select(m_dev);
-    return Platform::ata()->write(m_dev, buffer, sectors, pos, pos_hi);
+    return Platform::ata()->write(m_dev, buffer, sectors, pos / 512, pos_hi);
 }
 
 uint64_t ATAPhys::size() const

@@ -42,13 +42,14 @@ int main(int argc, char **argv)
         printf("\n");
     }
     if (fd4 != NULL) {
-        int cnt = 10;
-        int res = fread(buf, 1, cnt, fd3);
+        int cnt = 36;
+        int res = fread(buf, 1, cnt, fd4);
         printf("res: %d\n", res);
 
         printf("Data: ");
-        for (int i = 0; i < cnt; ++i) {
-            printf("%u ", (unsigned char)buf[i]);
+        for (int i = 0; i < res; ++i) {
+            printf("%x %c\n", (unsigned char)buf[i], (unsigned char)buf[i]);
+            //printf("%c", (unsigned char)buf[i]);
         }
         printf("\n");
     }
