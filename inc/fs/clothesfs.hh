@@ -5,6 +5,7 @@
 //#include <stddef.h>
 //#include <string.h>
 #include <string.hh>
+#include <platform.h>
 #include <filesystem.hh>
 
 #ifdef USE_CUSTOM_STRING
@@ -118,13 +119,21 @@ public:
             m_data_index = another.m_data_index;
             m_ok = another.m_ok;
 
-            m_parent = new uint8_t[m_fs->m_blocksize];
-            m_data = new uint8_t[m_fs->m_blocksize];
-            m_content = new uint8_t[m_fs->m_blocksize];
+            if (m_fs != NULL) {
+                m_parent = new uint8_t[m_fs->m_blocksize];
+                m_data = new uint8_t[m_fs->m_blocksize];
+                m_content = new uint8_t[m_fs->m_blocksize];
 
-            Mem::move(m_parent, another.m_parent, m_fs->m_blocksize);
-            Mem::move(m_data, another.m_data, m_fs->m_blocksize);
-            Mem::move(m_content, another.m_content, m_fs->m_blocksize);
+                if (another.m_parent != NULL) {
+                    Mem::move(m_parent, another.m_parent, m_fs->m_blocksize);
+                }
+                if (another.m_data != NULL) {
+                    Mem::move(m_data, another.m_data, m_fs->m_blocksize);
+                }
+                if (another.m_content != NULL) {
+                    Mem::move(m_content, another.m_content, m_fs->m_blocksize);
+                }
+            }
         }
 
         bool next();
@@ -169,6 +178,7 @@ public:
     void setPhysical(FilesystemPhys *phys)
     {
         m_phys = phys;
+        Platform::video()->printf("PHY: %x\n", m_phys);
     }
     inline uint32_t blockSize() const
     {
@@ -219,7 +229,7 @@ protected:
 class ClothesFilesystem : public Filesystem
 {
 public:
-    ClothesFilesystem() {}
+    ClothesFilesystem();
     ClothesFilesystem(const ClothesFilesystem &fs);
     virtual ~ClothesFilesystem() {}
 
@@ -229,7 +239,7 @@ public:
     }
     virtual void setPhysical(FilesystemPhys *phys)
     {
-        m_clothes.setPhysical(phys);
+        m_clothes->setPhysical(phys);
     }
     virtual Filesystem *mount(String mountpoint, String options);
     virtual const String &mountpoint() const
@@ -277,7 +287,7 @@ protected:
         uint32_t parent=1);
     String m_mountpoint;
     String m_opts;
-    ClothesFS m_clothes;
+    ClothesFS *m_clothes;
 };
 
 #endif

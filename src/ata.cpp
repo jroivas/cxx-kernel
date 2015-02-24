@@ -359,7 +359,12 @@ bool ATA::DevicePrivate::prepareAccess(uint16_t sectors, uint32_t addr, uint32_t
         head = (addr & 0xF000000) >> 24;
     } else {
         //Platform::video()->printf("WARNING: CHS\n");
-        sect = (addr % m_sect) + 1;
+        if (m_sect > 0) {
+            sect = (addr % m_sect) + 1;
+        } else {
+            // FIXME
+            sect = 0;
+        }
         cyl = (addr + 1 - sect) / (m_head * m_sect);
         head = (addr + 1 - sect) % (m_head * m_sect) / m_sect;
         io_addr[0] = sect;
@@ -369,7 +374,6 @@ bool ATA::DevicePrivate::prepareAccess(uint16_t sectors, uint32_t addr, uint32_t
         io_addr[4] = 0;
         io_addr[5] = 0;
     }
-
 
     if (!waitStatus()) return false;
 
@@ -546,12 +550,12 @@ void ATA::DevicePrivate::detect()
     }
 
     if (!m_lba) {
-        m_sect = (*(uint8_t*)(buf+ATA_IDENT_SECTORS));
-        m_cyl = (*(uint16_t*)(buf+ATA_IDENT_CYLINDERS));
-        m_head = (*(uint8_t*)(buf+ATA_IDENT_HEADS));
-        if (m_sect>0) m_size = (((m_cyl*m_head+m_head)*m_sect+(m_sect-1))*512);
+        m_sect = (*(uint8_t*)(buf + ATA_IDENT_SECTORS));
+        m_cyl = (*(uint16_t*)(buf + ATA_IDENT_CYLINDERS));
+        m_head = (*(uint8_t*)(buf + ATA_IDENT_HEADS));
+        if (m_sect > 0) m_size = (((m_cyl*m_head+m_head)*m_sect+(m_sect-1))*512);
         else m_size = 0;
-        //Platform::video()->printf("Size: sec %u cyl %u head %u == %u (%u MB)\n",sec,cyl,head,m_size,m_size/1024/1024);
+        //Platform::video()->printf("Size: sec %u cyl %u head %u == %u (%u MB)\n",m_sect,m_cyl,m_head,m_size,m_size/1024/1024);
     } else {
         m_size = *(uint32_t*)(buf+ATA_IDENT_MAX_LBA)*512;
     }
@@ -650,7 +654,8 @@ bool ATA::read(Device *d, uint8_t *buffer, uint16_t sectors, uint32_t addr, uint
 {
     if (d == NULL) return false;
 
-    return ((DevicePrivate*)d)->readSector(buffer, sectors, addr, addr_hi);
+    bool res = ((DevicePrivate*)d)->readSector(buffer, sectors, addr, addr_hi);
+    return res;
 }
 
 bool ATA::write(Device *d, uint8_t *buffer, uint16_t sectors, uint32_t addr, uint32_t addr_hi)
@@ -685,6 +690,7 @@ bool ATAPhys::read(
     uint32_t pos,
     uint32_t pos_hi)
 {
+    Platform::ata()->select(m_dev);
     return Platform::ata()->read(m_dev, buffer, sectors, pos, pos_hi);
 }
 
@@ -694,6 +700,7 @@ bool ATAPhys::write(
     uint32_t pos,
     uint32_t pos_hi)
 {
+    Platform::ata()->select(m_dev);
     return Platform::ata()->write(m_dev, buffer, sectors, pos, pos_hi);
 }
 

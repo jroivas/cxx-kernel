@@ -231,23 +231,25 @@ int Kernel::run()
         ATA::Device *dev = ata->getDevice();
         bool mounted = false;
         while (dev != NULL) {
+            video->printf("dev %x...\n", dev);
             if ((ata->deviceModel(dev) == ATA::STORAGE_SATA
                 || ata->deviceModel(dev) == ATA::STORAGE_PATA)
                 && ata->deviceSize(dev) > 0) {
+                if (!mounted) {
+                    video->printf("Mounting...\n");
+                    ATAPhys *ataphys = new ATAPhys(dev);
+                    cfs->setPhysical(ataphys);
+                    vfs->register_filesystem(cfs);
+                    vfs->mount("/cfs", "ClothesFS", "");
+                    mounted = true;
+                    video->printf("Mounted\n");
+                }
                 break;
             }
 
-            if (!mounted) {
-                video->printf("Mounting...\n");
-                ATAPhys *ataphys = new ATAPhys(dev);
-                cfs->setPhysical(ataphys);
-                vfs->register_filesystem(cfs);
-                vfs->mount("/cfs", "ClothesFS", "");
-                mounted = true;
-                video->printf("Mounted\n");
-            }
             dev = ata->nextDevice(dev);
         }
+#if 0
         uint8_t buffer[512];
         for (uint32_t cc=0; cc<512; cc++) {
             buffer[cc] = 0;
@@ -260,6 +262,7 @@ int Kernel::run()
             }
         }
         video->printf("Done.\n");
+#endif
     }
 
 #endif

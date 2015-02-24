@@ -11,7 +11,12 @@ static uint32_t metadata_id = 0x42;
 static uint32_t payload_id = 0x4242;
 
 #ifdef USE_CUSTOM_STRING
-#define returnError(X) return (X);
+//#define returnError(X) return (X);
+#define returnError(X)\
+do {\
+    Platform::video()->printf("ERROR @%d  %s\n", __LINE__, __PRETTY_FUNCTION__);\
+    return (X);\
+} while(0);
 #else
 #define returnError(X)\
 do {\
@@ -760,8 +765,14 @@ bool ClothesFS::Iterator::remove()
 
 /* Kernel adaptation */
 
+ClothesFilesystem::ClothesFilesystem()
+    : m_clothes(new ClothesFS)
+{
+}
+
 ClothesFilesystem::ClothesFilesystem(const ClothesFilesystem &fs)
 {
+    m_clothes = fs.m_clothes;
     m_mountpoint = fs.m_mountpoint;
     m_opts = fs.m_mountpoint;
 }
@@ -769,6 +780,7 @@ ClothesFilesystem::ClothesFilesystem(const ClothesFilesystem &fs)
 Filesystem *ClothesFilesystem::mount(String mountpoint, String options)
 {
     ClothesFilesystem *tmp = new ClothesFilesystem();
+    tmp->m_clothes = m_clothes;
     tmp->m_mountpoint = mountpoint;
     tmp->m_opts = options;
     return tmp;
@@ -796,18 +808,23 @@ ClothesFS::Iterator ClothesFilesystem::findFile(
     uint32_t parent)
 {
     ClothesFS::Iterator iter;
+    Platform::video()->printf("det: %d\n", m_clothes->detect());
     uint32_t parts = pathParts(path);
 
-    if (part >= parts) {
+    if (part > parts) {
+        Platform::video()->printf("aa: %d %d\n", part, parts);
         return iter;
     }
+    Platform::video()->printf("bb: %d\n", parent);
     String fname = pathPart(path, part);
 
-    iter = m_clothes.list(parent);
+    Platform::video()->printf("fname: %s\n", fname.c_str());
+    iter = m_clothes->list(parent);
 
     while (iter.ok()) {
+        Platform::video()->printf("name: %s\n", iter.name().c_str());
         if (iter.name() == fname) {
-            if (part == parts - 1) {
+            if (part == parts - 1 || part == parts) {
                 return iter;
             } else if (part < parts - 1) {
                 if (iter.type() & ClothesFS::META_DIR) {
@@ -831,20 +848,28 @@ int ClothesFilesystem::open(String path, int flags)
 {
     (void)flags;
 
+    Platform::video()->printf("Open: %s\n", path.c_str());
+
     ClothesFS::Iterator iter = findFile(path);
     //TODO Create file
+    Platform::video()->printf("iterc\n");
     if (!iter.ok()) {
+        Platform::video()->printf("noc\n");
         errno = ENOENT;
         return -1;
     }
+    Platform::video()->printf("type\n");
     if (iter.type() & ClothesFS::META_FILE) {
         errno = EPERM;
         return -1;
     }
 
+    Platform::video()->printf("datait\n");
     ClothesFS::Iterator *data = new ClothesFS::Iterator();
+    Platform::video()->printf("ass\n");
     data->assign(iter);
 
+    Platform::video()->printf("map\n");
     int res = mapfile(type(), path, this, data);
     return res;
 #if 0
