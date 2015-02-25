@@ -178,6 +178,10 @@ elseif (APP STREQUAL "randomfile")
     set(APP_FILES
         randomfile/randomfile.c
         )
+elseif (APP STREQUAL "readfile")
+    set(APP_FILES
+        readfile/readfile.c
+        )
 elseif (NOT DEFINED APP OR APP STREQUAL "hello" OR APP STREQUAL "" )
     set(APP_FILES
         hello/hello.c

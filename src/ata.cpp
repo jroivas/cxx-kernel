@@ -421,7 +421,7 @@ bool ATA::DevicePrivate::poll(bool extra)
 bool ATA::DevicePrivate::readSector(uint8_t *buffer, uint16_t sectors, uint32_t addr, uint32_t addr_hi)
 {
     uint8_t cmd = 0;
-    if (buffer==NULL) return false;
+    if (buffer == NULL) return false;
 
     if (!prepareAccess(sectors, addr, addr_hi)) return false;
 
@@ -437,11 +437,11 @@ bool ATA::DevicePrivate::readSector(uint8_t *buffer, uint16_t sectors, uint32_t 
 
     uint8_t *tmp = buffer;
     if (!m_dma) {
-        for (uint32_t i=0; i<sectors; i++) {
+        for (uint32_t i = 0; i < sectors; i++) {
             if (!poll(true)) return false;
 
             readBuffer(data(), (uint32_t*)tmp, 512);
-            tmp+=512;
+            tmp += 512;
         }
         wait();
     }
@@ -454,7 +454,7 @@ bool ATA::DevicePrivate::readSector(uint8_t *buffer, uint16_t sectors, uint32_t 
 bool ATA::DevicePrivate::writeSector(uint8_t *buffer, uint16_t sectors, uint32_t addr, uint32_t addr_hi)
 {
     uint8_t cmd = 0;
-    if (buffer==NULL) return false;
+    if (buffer == NULL) return false;
 
     if (!prepareAccess(sectors, addr, addr_hi)) return false;
 
@@ -467,7 +467,7 @@ bool ATA::DevicePrivate::writeSector(uint8_t *buffer, uint16_t sectors, uint32_t
 
     uint8_t *tmp = buffer;
     if (!m_dma) {
-        for (uint32_t i=0; i<sectors; i++) {
+        for (uint32_t i = 0; i < sectors; i++) {
             if (!poll()) return false;
 
             writeBuffer(data(), (uint32_t*)tmp, 512);
@@ -691,7 +691,19 @@ bool ATAPhys::read(
     uint32_t pos_hi)
 {
     Platform::ata()->select(m_dev);
-    return Platform::ata()->read(m_dev, buffer, sectors, pos / 512, pos_hi);
+    bool res = Platform::ata()->read(m_dev, buffer, sectors, pos / 512, pos_hi);
+
+#if 0
+    for (int i = 0; i < 512; ++i) {
+        char c = buffer[i];
+        Platform::video()->printf("%2x %c ", c, (c!='\n'&&c!='\r'&&c>0x16)?c:' ');
+        if ((i + 1) % 16 == 0)
+            Platform::video()->printf("\n");
+    }
+    Platform::video()->printf("\n");
+#endif
+
+    return res;
 }
 
 bool ATAPhys::write(

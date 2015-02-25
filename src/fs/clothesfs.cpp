@@ -629,6 +629,7 @@ uint64_t ClothesFS::Iterator::read(
                 ++start;
             }
         }
+
         uint32_t pos = 4  * m_data_index + start;
         if (pos >= m_fs->blockSize() - 4) {
             uint32_t next_block = m_fs->dataToNum(

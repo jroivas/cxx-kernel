@@ -236,6 +236,7 @@ public:
     virtual void setPhysical(FilesystemPhys *phys)
     {
         m_clothes->setPhysical(phys);
+        m_clothes->detect();
     }
     virtual Filesystem *mount(String mountpoint, String options);
     virtual const String &mountpoint() const

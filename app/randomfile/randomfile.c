@@ -13,12 +13,10 @@ int main(int argc, char **argv)
     int fd2 = open("/dev/urandom", O_RDONLY);
 
     FILE *fd3 = fopen("/dev/urandom", "r");
-    FILE *fd4 = fopen("/cfs/test", "r");
 
     printf("fd : %d\n", fd);
     printf("fd2: %d\n", fd2);
     printf("fd3: %d\n", fd3);
-    printf("fd4: %d\n", fd4);
     if (fd >= 0) {
         int res = read(fd, buf, 10);
         printf("res: %d\n", res);
@@ -41,20 +39,7 @@ int main(int argc, char **argv)
         }
         printf("\n");
     }
-    if (fd4 != NULL) {
-        int cnt = 36;
-        int res = fread(buf, 1, cnt, fd4);
-        printf("res: %d\n", res);
 
-        printf("Data: ");
-        for (int i = 0; i < res; ++i) {
-            printf("%x %c\n", (unsigned char)buf[i], (unsigned char)buf[i]);
-            //printf("%c", (unsigned char)buf[i]);
-        }
-        printf("\n");
-    }
-
-    fclose(fd4);
     fclose(fd3);
     close(fd);
     close(fd2);
