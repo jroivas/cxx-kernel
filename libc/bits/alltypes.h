@@ -127,7 +127,8 @@ typedef struct { union { int __i[5]; void *__p[5]; } __u; } pthread_barrier_t;
 #endif
 
 #if defined(__NEED_size_t) && !defined(__DEFINED_size_t)
-typedef unsigned _Addr size_t;
+//typedef unsigned _Addr size_t;
+typedef long unsigned _Addr size_t;
 #define __DEFINED_size_t
 #endif
 

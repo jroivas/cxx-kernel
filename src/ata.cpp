@@ -691,19 +691,7 @@ bool ATAPhys::read(
     uint32_t pos_hi)
 {
     Platform::ata()->select(m_dev);
-    bool res = Platform::ata()->read(m_dev, buffer, sectors, pos / 512, pos_hi);
-
-#if 0
-    for (int i = 0; i < 512; ++i) {
-        char c = buffer[i];
-        Platform::video()->printf("%2x %c ", c, (c!='\n'&&c!='\r'&&c>0x16)?c:' ');
-        if ((i + 1) % 16 == 0)
-            Platform::video()->printf("\n");
-    }
-    Platform::video()->printf("\n");
-#endif
-
-    return res;
+    return Platform::ata()->read(m_dev, buffer, sectors, pos / 512, pos_hi);
 }
 
 bool ATAPhys::write(
