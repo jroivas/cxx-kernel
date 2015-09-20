@@ -1,5 +1,6 @@
 #include "syscall_arch.h"
 #include "syscall_fileio.h"
+#include "syscall_mem.h"
 #include <stdarg.h>
 #include <platform.h>
 #include <sys/syscall.h>
@@ -8,61 +9,90 @@
 //FIXME Types to be configurable by architecture
 long syscall_va(long num, va_list al)
 {
+    //Platform::video()->printf("syscall %d\n", num);
     switch (num) {
         case __NR_writev:
-            {
-                unsigned long fd = va_arg(al, unsigned long);
-                const struct iovec *vec = va_arg(al, const struct iovec*);
-                unsigned long vlen = va_arg(al, unsigned long);
-                return syscall_writev(fd, vec, vlen);
-            }
+        {
+            unsigned long fd = va_arg(al, unsigned long);
+            const struct iovec *vec = va_arg(al, const struct iovec*);
+            unsigned long vlen = va_arg(al, unsigned long);
+            return syscall_writev(fd, vec, vlen);
+        }
         case __NR_readv:
-            {
-                unsigned long fd = va_arg(al, unsigned long);
-                const struct iovec *vec = va_arg(al, const struct iovec*);
-                unsigned long vlen = va_arg(al, unsigned long);
-                return syscall_readv(fd, vec, vlen);
-            }
+        {
+            unsigned long fd = va_arg(al, unsigned long);
+            const struct iovec *vec = va_arg(al, const struct iovec*);
+            unsigned long vlen = va_arg(al, unsigned long);
+            return syscall_readv(fd, vec, vlen);
+        }
         case __NR__llseek:
-            {
-                unsigned long fd = va_arg(al, unsigned long);
-                unsigned long high = va_arg(al, unsigned long);
-                unsigned long low = va_arg(al, unsigned long);
-                unsigned int orig = va_arg(al, unsigned int);
-                loff_t *res = va_arg(al, loff_t*);
-                return syscall_llseek(fd, high, low, res, orig);
-            }
+        {
+            unsigned long fd = va_arg(al, unsigned long);
+            unsigned long high = va_arg(al, unsigned long);
+            unsigned long low = va_arg(al, unsigned long);
+            unsigned int orig = va_arg(al, unsigned int);
+            loff_t *res = va_arg(al, loff_t*);
+            return syscall_llseek(fd, high, low, res, orig);
+        }
         case __NR_open:
-            {
-                const char *fname = va_arg(al, const char*);
-                int flags = va_arg(al, int);
-                int mode = va_arg(al, int);
-                return syscall_open(fname, flags, mode);
-            }
+        {
+            const char *fname = va_arg(al, const char*);
+            int flags = va_arg(al, int);
+            int mode = va_arg(al, int);
+            return syscall_open(fname, flags, mode);
+        }
         case __NR_ioctl:
-            {
-                int fd = va_arg(al, int);
-                long cmd = va_arg(al, long);
-                long arg = va_arg(al, long);
-                return syscall_ioctl(fd, cmd, arg);
-            }
+        {
+            int fd = va_arg(al, int);
+            long cmd = va_arg(al, long);
+            long arg = va_arg(al, long);
+            return syscall_ioctl(fd, cmd, arg);
+        }
         case __NR_read:
-            {
-                int fd = va_arg(al, int);
-                void *buf = va_arg(al, void*);
-                size_t cnt = va_arg(al, size_t);
-                return syscall_read(fd, buf, cnt);
-            }
+        {
+            int fd = va_arg(al, int);
+            void *buf = va_arg(al, void*);
+            size_t cnt = va_arg(al, size_t);
+            return syscall_read(fd, buf, cnt);
+        }
         case __NR_close:
-            {
-                int fd = va_arg(al, int);
-                return syscall_close(fd);
+        {
+            int fd = va_arg(al, int);
+            return syscall_close(fd);
+        }
+        case __NR_fcntl64:
+        {
+            int fd = va_arg(al, int);
+            int cmd = va_arg(al, int);
+            if (cmd == F_SETFD || cmd == F_GETFD) {
+                int args = va_arg(al, int);
+                Platform::video()->printf("fcntl64 on %d %d %d\n", fd, cmd, args);
+                int res = syscall_fcntl(fd, cmd, args);
+                Platform::video()->printf(" --> %d %d\n", res, errno);
+                return res;
+            } else {
+                Platform::video()->printf("fcntl64 on %d %d\n", fd, cmd);
             }
+            errno = EINVAL;
+            return -1;
+        }
+        case __NR_mmap2:
+        {
+            void *addr = va_arg(al, void*);
+            size_t len = va_arg(al, size_t);
+            int prot = va_arg(al, int);
+            int flags = va_arg(al, int);
+            int fd = va_arg(al, int);
+            off_t pgoffs = va_arg(al, off_t);
+            return (long)syscall_mmap(addr, len, prot, flags, fd, pgoffs);
+        }
 
         default:
             Platform::video()->printf("Unsupported syscall %lld\n", num);
             break;
     }
+
+    Platform::video()->printf("syscall ERR %d\n", num);
     errno = EINVAL;
     return -EINVAL;
 }

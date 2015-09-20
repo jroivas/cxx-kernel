@@ -23,7 +23,7 @@ long long int llabs(long long int j)
 }
 #endif
 
-uint64_t __udivmoddi4(uint64_t num, uint64_t den, uint64_t *rem_p)
+uint64_t my__udivmoddi4(uint64_t num, uint64_t den, uint64_t *rem_p)
 {
     uint64_t quot = 0, qbit = 1;
 
@@ -55,14 +55,14 @@ uint64_t __udivmoddi4(uint64_t num, uint64_t den, uint64_t *rem_p)
 
 extern "C" uint64_t my__udivdi3(uint64_t num, uint64_t den)
 {
-    return __udivmoddi4(num, den, NULL);
+    return my__udivmoddi4(num, den, NULL);
 }
 
 extern "C" uint64_t my__umoddi3(uint64_t num, uint64_t den)
 {
     uint64_t v = 0;
 
-    (void) __udivmoddi4(num, den, &v);
+    (void) my__udivmoddi4(num, den, &v);
     return v;
 }
 
@@ -80,7 +80,7 @@ extern "C" int64_t my__divdi3(int64_t num, int64_t den)
         minus ^= 1;
     }
 
-    v = __udivmoddi4(num, den, NULL);
+    v = my__udivmoddi4(num, den, NULL);
 
     if (minus) v = -v;
 
@@ -101,13 +101,14 @@ extern "C" int64_t my__moddi3(int64_t num, int64_t den)
         minus ^= 1;
     }
 
-    (void) __udivmoddi4(num, den, (uint64_t *)&v);
+    (void) my__udivmoddi4(num, den, (uint64_t *)&v);
 
     if (minus) v = -v;
 
     return v;
 }
 
+#if 1
 extern "C" unsigned int __aeabi_uidiv(unsigned int num, unsigned int den)
 {
     unsigned int x = 0;
@@ -162,4 +163,4 @@ lldiv_t lldiv(long long int numer, long long int denom)
     result.rem = numer % denom;
     return result;
 }
-
+#endif

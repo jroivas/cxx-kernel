@@ -115,9 +115,9 @@ restoreUserProcess:
 [global changeProcess]
 changeProcess:
     ; FIXME
-    mov bx, 0x10
-    mov fs, bx
-    mov gs, bx
+    ;mov bx, 0x10
+    ;mov fs, bx
+    ;mov gs, bx
 
     mov ebp, esp
     mov ecx, [ebp+4]   ;lock

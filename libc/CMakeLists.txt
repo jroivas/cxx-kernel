@@ -1,7 +1,18 @@
+set(LIBC_INIT_FILES
+    pthread/pthread_init.cpp
+    )
 set(LIBC_FILES
     syscall.cpp
     syscall_fileio.cpp
+    syscall_mem.cpp
     thread.cpp
+    pthread/pthread.cpp
+    pthread/pthread_mutex.cpp
+    pthread/pthread_cond.cpp
+    pthread/sem.cpp
+    )
+add_library(libc_init
+    ${LIBC_INIT_FILES}
     )
 add_library(libc
     ${LIBC_FILES}

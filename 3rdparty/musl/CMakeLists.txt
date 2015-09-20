@@ -505,7 +505,6 @@ set(MUSL_THREAD
     ${MUSL_PREFIX}/thread/cnd_destroy.c
     ${MUSL_PREFIX}/thread/cnd_init.c
     ${MUSL_PREFIX}/thread/cnd_signal.c
-    ${MUSL_PREFIX}/thread/cnd_timedwait.c
     ${MUSL_PREFIX}/thread/cnd_wait.c
     ${MUSL_PREFIX}/thread/__futex.c
     ${MUSL_PREFIX}/thread/__lock.c
@@ -516,6 +515,38 @@ set(MUSL_THREAD
     ${MUSL_PREFIX}/thread/mtx_timedlock.c
     ${MUSL_PREFIX}/thread/mtx_trylock.c
     ${MUSL_PREFIX}/thread/mtx_unlock.c
+    ${MUSL_PREFIX}/thread/sem_destroy.c
+    ${MUSL_PREFIX}/thread/sem_getvalue.c
+    ${MUSL_PREFIX}/thread/sem_init.c
+    ${MUSL_PREFIX}/thread/sem_open.c
+    ${MUSL_PREFIX}/thread/sem_post.c
+    ${MUSL_PREFIX}/thread/sem_trywait.c
+    ${MUSL_PREFIX}/thread/sem_unlink.c
+    ${MUSL_PREFIX}/thread/sem_wait.c
+    ${MUSL_PREFIX}/thread/__set_thread_area.c
+    ${MUSL_PREFIX}/thread/synccall.c
+    ${MUSL_PREFIX}/thread/__syscall_cp.c
+    ${MUSL_PREFIX}/thread/syscall_cp.c
+    ${MUSL_PREFIX}/thread/thrd_create.c
+    ${MUSL_PREFIX}/thread/thrd_exit.c
+    ${MUSL_PREFIX}/thread/thrd_join.c
+    ${MUSL_PREFIX}/thread/thrd_sleep.c
+    ${MUSL_PREFIX}/thread/thrd_yield.c
+    ${MUSL_PREFIX}/thread/tls.c
+    ${MUSL_PREFIX}/thread/__tls_get_addr.c
+    ${MUSL_PREFIX}/thread/tss_create.c
+    ${MUSL_PREFIX}/thread/tss_delete.c
+    ${MUSL_PREFIX}/thread/tss_set.c
+    ${MUSL_PREFIX}/thread/__unmapself.c
+    ${MUSL_PREFIX}/thread/vmlock.c
+    ${MUSL_PREFIX}/thread/__wait.c
+    ${MUSL_PREFIX}/thread/pthread_cleanup_push.c
+    )
+
+set(MUSL_PTHREAD
+    ${MUSL_PREFIX}/thread/cnd_timedwait.c
+    ${MUSL_PREFIX}/thread/__timedwait.c
+    ${MUSL_PREFIX}/thread/sem_timedwait.c
     ${MUSL_PREFIX}/thread/pthread_atfork.c
     ${MUSL_PREFIX}/thread/pthread_attr_destroy.c
     ${MUSL_PREFIX}/thread/pthread_attr_get.c
@@ -599,33 +630,6 @@ set(MUSL_THREAD
     ${MUSL_PREFIX}/thread/pthread_spin_trylock.c
     ${MUSL_PREFIX}/thread/pthread_spin_unlock.c
     ${MUSL_PREFIX}/thread/pthread_testcancel.c
-    ${MUSL_PREFIX}/thread/sem_destroy.c
-    ${MUSL_PREFIX}/thread/sem_getvalue.c
-    ${MUSL_PREFIX}/thread/sem_init.c
-    ${MUSL_PREFIX}/thread/sem_open.c
-    ${MUSL_PREFIX}/thread/sem_post.c
-    ${MUSL_PREFIX}/thread/sem_timedwait.c
-    ${MUSL_PREFIX}/thread/sem_trywait.c
-    ${MUSL_PREFIX}/thread/sem_unlink.c
-    ${MUSL_PREFIX}/thread/sem_wait.c
-    ${MUSL_PREFIX}/thread/__set_thread_area.c
-    ${MUSL_PREFIX}/thread/synccall.c
-    ${MUSL_PREFIX}/thread/__syscall_cp.c
-    ${MUSL_PREFIX}/thread/syscall_cp.c
-    ${MUSL_PREFIX}/thread/thrd_create.c
-    ${MUSL_PREFIX}/thread/thrd_exit.c
-    ${MUSL_PREFIX}/thread/thrd_join.c
-    ${MUSL_PREFIX}/thread/thrd_sleep.c
-    ${MUSL_PREFIX}/thread/thrd_yield.c
-    ${MUSL_PREFIX}/thread/__timedwait.c
-    ${MUSL_PREFIX}/thread/tls.c
-    ${MUSL_PREFIX}/thread/__tls_get_addr.c
-    ${MUSL_PREFIX}/thread/tss_create.c
-    ${MUSL_PREFIX}/thread/tss_delete.c
-    ${MUSL_PREFIX}/thread/tss_set.c
-    ${MUSL_PREFIX}/thread/__unmapself.c
-    ${MUSL_PREFIX}/thread/vmlock.c
-    ${MUSL_PREFIX}/thread/__wait.c
     )
 
 set(MUSL_EXIT

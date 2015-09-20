@@ -1,4 +1,6 @@
 KERNEL_SPACE equ 0x10
+KERNEL_FS equ 0x30
+KERNEL_GS equ 0x38
 
 [extern irq_handler]
 [extern isr_handler]
@@ -32,7 +34,9 @@ __irq_timer:
     mov ax, KERNEL_SPACE
     mov ds, ax
     mov es, ax
+    mov ax, KERNEL_FS
     mov fs, ax
+    mov ax, KERNEL_GS
     mov gs, ax
 
     mov ecx, esp
@@ -71,8 +75,12 @@ __irq_common:
     mov ax, KERNEL_SPACE
     mov ds, ax
     mov es, ax
+    mov ax, KERNEL_FS
     mov fs, ax
+    mov ax, KERNEL_GS
     mov gs, ax
+    ;mov fs, ax
+    ;mov gs, ax
 
     mov ecx, esp
     push ecx
@@ -112,7 +120,9 @@ __isr_common:
     mov ax, KERNEL_SPACE
     mov ds, ax
     mov es, ax
+    mov ax, KERNEL_FS
     mov fs, ax
+    mov ax, KERNEL_GS
     mov gs, ax
 
     mov ecx, esp

@@ -121,13 +121,13 @@ const void *List::item(const List::ListObject *iter) const
 void *List::at(uint32_t i)
 {
     ListObject *obj = m_first;
-    uint32_t c = 0;
-
     if (obj == NULL) {
         return NULL;
     }
+
+    uint32_t c = 0;
     while (c < i && obj->next != NULL) {
-        c++;
+        ++c;
         obj = obj->next;
     }
     if (c != i) {

@@ -106,6 +106,9 @@ public:
 
     Filesystem *getFilesystem(int fh);
 
+    int getFcntl(int fh);
+    int setFcntl(int fh, int mode);
+
 protected:
     int mapfile(
         const String &fs,

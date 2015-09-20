@@ -18,7 +18,8 @@ struct gdt_ptr_t
     unsigned int base;
 } __attribute__((packed));
 
-struct gdt_entry_t __gdt[8];
+#define GDT_TABLE_SIZE 9
+struct gdt_entry_t __gdt[GDT_TABLE_SIZE];
 struct gdt_ptr_t __gdt_ptr;
 
 extern "C" void gdt_flush();
@@ -89,9 +90,70 @@ void gdt_set_gate(int num, unsigned long base, unsigned long limit, unsigned cha
     __gdt[num].access = access;
 }
 
+#define GDT_FS 6
+#define GDT_GS 7
+
+ptr_val_t get_gdt_base(ptr_val_t num)
+{
+    ptr_val_t res = __gdt[num].base_low;
+    res |= __gdt[num].base_middle << 16;
+    res |= __gdt[num].base_high << 24;
+
+    return res;
+}
+
+void set_gdt_base(ptr_val_t num, ptr_val_t base)
+{
+    __gdt[num].base_low = (base & 0xFFFF);
+    __gdt[num].base_middle = (base >> 16) & 0xFF;
+    __gdt[num].base_high = (base >> 24) & 0xFF;
+}
+
+ptr_val_t get_gs_base()
+{
+    return get_gdt_base(GDT_GS);
+}
+
+void set_gs_base(ptr_val_t base)
+{
+    set_gdt_base(GDT_GS, base);
+#ifdef ARCH_X86
+    asm volatile ("mov %0, %%gs" : : "r"(GDT_GS << 3 /*| 3*/));
+#endif
+}
+
+ptr_val_t get_fs_base()
+{
+    return get_gdt_base(GDT_FS);
+}
+
+void set_fs_base(ptr_val_t base)
+{
+    set_gdt_base(GDT_FS, base);
+#ifdef ARCH_X86
+    asm volatile ("mov %0, %%fs" : : "r"(GDT_FS << 3 /*| 3*/));
+#endif
+}
+
+struct tls_control
+{
+    struct tls_control* self;
+    void *tls_base;
+};
+
+void tls_setup(char *tls, const char *init_data, uint32_t init_part, uint32_t init_size)
+{
+    Mem::copy(tls, init_data, init_part);
+    Mem::set(tls + init_part, 0, init_size - init_part);
+    struct tls_control *tcb = (struct tls_control*)(tls + init_size);
+    tcb->self = tcb;
+
+    set_gs_base(reinterpret_cast<ptr_val_t>(tcb));
+}
+
 void gdt_init()
 {
-    __gdt_ptr.limit = (sizeof(struct gdt_entry_t) * 7) - 1;
+    __gdt_ptr.limit = (sizeof(struct gdt_entry_t) * GDT_TABLE_SIZE) - 1;
     __gdt_ptr.base = (ptr_val_t)&__gdt;
 
     Mem::set(&__tss0, 0, sizeof(tss_t));
@@ -99,7 +161,8 @@ void gdt_init()
     __tss0.ds = (unsigned short)0x10;
     __tss0.cs = (unsigned short)0x10;
     __tss0.es = (unsigned short)0x10;
-    __tss0.gs = (unsigned short)0x10;
+    //__tss0.gs = (unsigned short)0x10;
+    __tss0.gs = (GDT_GS << 3 | 3);
     __tss0.ss0 = (unsigned short)0x10;
     __tss0.esp0 = get_esp();
     __tss0.iopb = (unsigned short)sizeof(tss_t) - 1;
@@ -109,23 +172,44 @@ void gdt_init()
     __tss1.ds = (unsigned short)0x20;
     __tss1.cs = (unsigned short)0x20;
     __tss1.es = (unsigned short)0x20;
-    __tss1.gs = (unsigned short)0x20;
+    //__tss1.gs = (unsigned short)0x20;
+    __tss1.gs = (GDT_GS << 3 | 3);
     __tss1.ss1 = (unsigned short)0x20;
     __tss1.esp0 = get_esp();
     __tss1.iopb = (unsigned short)sizeof(tss_t) - 1;
 
     gdt_set_gate(0, 0, 0, 0, 0);
+    // Kernel code
     gdt_set_gate(1, 0, 0xFFFFFFFF, 0x9A, 0xCF);
+    // Kernel data
     gdt_set_gate(2, 0, 0xFFFFFFFF, 0x92, 0xCF);
+    // Us code
     gdt_set_gate(3, 0, 0xFFFFFFFF, 0xFA, 0xCF);
+    // Us data
     gdt_set_gate(4, 0, 0xFFFFFFFF, 0xF2, 0xCF);
+    // TSS
     gdt_set_gate(5, (unsigned long) &__tss0, sizeof(tss_t) - 1, 0x89, 0x40);
-    gdt_set_gate(6, (unsigned long) &__tss1, sizeof(tss_t) - 1, 0xE9, 0x40);
+    //gdt_set_gate(6, (unsigned long) &__tss1, sizeof(tss_t) - 1, 0xE9, 0x40);
+    //F
+    gdt_set_gate(GDT_FS, 0, 0xFFFFFFFF, 0x92, 0xCF);
+    //G
+    gdt_set_gate(GDT_GS, 0, 0xFFFFFFFF, 0x92, 0xCF);
+
+    // Thread local storage
+    // Externs defined by linker script
+    extern char tcb0[];
+    extern ptr_val_t tbss_data;
+    extern ptr_val_t tbss_data_end;
+    extern ptr_val_t tdata_data;
+    extern ptr_val_t tdata_data_end;
+    tls_setup(tcb0, (const char*)tbss_data, tbss_data_end, tbss_data_end + tdata_data_end - tdata_data);
 
     gdt_flush();
     tss_flush();
 
+/* XXX tss_flush does the same
 #ifdef ARCH_X86
     asm volatile("ltr %%ax": : "a" (0x28));
 #endif
+*/
 }

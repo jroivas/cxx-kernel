@@ -44,7 +44,7 @@ SECTIONS
 	. += 0xC0000000;
 	.text : AT(ADDR(.text) - phys)
 */
-	.text 0x100000 : 
+	.text 0x100000 :
 	{
 		code = .;
 		*(.text*)
@@ -121,6 +121,23 @@ SECTIONS
 		*(.gnu.linkonce.b*)
 		. = ALIGN(4096);
 	}
+	.tdata :
+	{
+		tdata_data = .;
+		*(.tdata .tdata.* .gnu.linkonce.td.*)
+		tdata_data_end = .;
+	}
+	.tbss :
+	{
+		tbss_data = .;
+		*(.tbss .tbss.* .gnu.linkonce.tb.*)
+		*(.tcommon)
+		tbss_data_end = .;
+		. = ALIGN(64);
+	}
+	.tls_template_size = SIZEOF(.tdata) + SIZEOF(.tbss);
+	tcb0 = .;
+	. = . + .tls_template_size + 256;
 	
 	/DISCARD/ :
 	{
@@ -133,3 +150,12 @@ SECTIONS
 	end = .; _end = .; __end = .; kernel_end = .;
 
 }
+/*
+PHDRS {
+	text PT_LOAD FILEHDR PHDRS;
+	tls PT_TLS;
+	dynamic PT_DYNAMIC;
+	eh_frame PT_GNU_EH_FRAME;
+	note PT_NOTE;
+}
+*/

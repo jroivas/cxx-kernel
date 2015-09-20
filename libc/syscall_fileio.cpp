@@ -76,6 +76,7 @@ int syscall_llseek(int fd, long high, long low, loff_t* res, int orig)
 int syscall_ioctl(int fd, long cmd, long arg)
 {
     (void)fd;
+    Platform::video()->printf("ioctl %d %d (%d) %x\n", fd, cmd, TCGETS, arg);
     if (cmd == TCGETS) {
         struct termios *argp = (struct termios *)arg;
 
@@ -111,7 +112,8 @@ int syscall_open(const char *name, int flags, int mode)
     }
 
     String base = vfs->stripslash(vfs->basedir(name, fs));
-    return fs->open(base, flags);
+    int res = fs->open(base, flags);
+    return res;
 }
 
 int syscall_read(int fd, void *buf, size_t cnt)
@@ -136,4 +138,24 @@ int syscall_close(int fd)
     }
 
     return fs->close(fd);
+}
+
+int syscall_fcntl(int fd, int cmd, int arg)
+{
+    VFS *vfs = Platform::vfs();
+    Filesystem *fs = vfs->accessHandle(fd);
+    if (fs == NULL) {
+        errno = EPERM;
+        return -1;
+    }
+
+    if (cmd == F_SETFD) {
+        return fs->setFcntl(fd, arg);
+    }
+    else if (cmd == F_GETFD) {
+        return fs->getFcntl(fd);
+    }
+
+    errno = ENOENT;
+    return -1;
 }

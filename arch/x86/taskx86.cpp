@@ -47,7 +47,7 @@ void TaskX86::init(ptr_val_t addr, ptr_val_t stack, uint32_t flags)
     m_tss.ds = (unsigned short)0x10;
     m_tss.cs = (unsigned short)0x10;
     m_tss.es = (unsigned short)0x10;
-    m_tss.gs = (unsigned short)0x10;
+    //m_tss.gs = (unsigned short)0x10;
     m_tss.ss0 = (unsigned short)0x10;
 
     m_tss.eip = addr;
@@ -59,6 +59,11 @@ void TaskX86::init(ptr_val_t addr, ptr_val_t stack, uint32_t flags)
 
     m_tss.esp0 = m_stack_syscall;
     m_tss.iopb = (unsigned short)sizeof(task_tss_t) - 1;
+
+/* FIXME
+    extern ptr_val_t tls_data;
+    set_gs_base((ptr_val_t)&tls_data);
+*/
 }
 
 void TaskX86::switchTo(volatile ptr_val_t *lock, ptr_t killer)

@@ -62,7 +62,6 @@ extern "C" void _main(unsigned long multiboot, unsigned long magic)
     // Initialize paging
     paging_init((MultibootInfo *)multiboot);
 
-
     /* Run the kernel */
 
     Kernel *k = new Kernel();
@@ -85,7 +84,7 @@ extern "C" void _atexit()
     }
 #else
 #ifndef ARCH_LINUX
-    __cxa_finalize(0);
+    //__cxa_finalize(0);
 #endif
 #endif
 }

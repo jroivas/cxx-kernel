@@ -2,6 +2,7 @@
 #include "types.h"
 
 #ifndef ARCH_LINUX
+#if 0
 struct CXA
 {
     void (*d)(void *);
@@ -13,6 +14,7 @@ struct CXA
 
 static CXA __cxa_funcs[CXA_MAX_SIZE];
 static unsigned int __cxa_func_cnt = 0;
+#endif
 
 void *__dso_handle = 0;
 
@@ -20,6 +22,7 @@ void __cxa_pure_virtual()
 {
 }
 
+#if 0
 unsigned int __cxa_find_free()
 {
     if (__cxa_func_cnt < CXA_MAX_SIZE) {
@@ -86,4 +89,5 @@ extern "C" int __aeabi_atexit(void* object, void (*destroyer)(void*), void* dso_
 {
     return __cxa_atexit(destroyer, object, dso_handle);
 }
+#endif
 #endif

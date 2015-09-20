@@ -119,7 +119,6 @@ if (APP STREQUAL "python")
         ${PYTHON_PATH}/Python/formatter_unicode.c
         ${PYTHON_PATH}/Python/fileutils.c
         ${PYTHON_PATH}/Python/dynload_shlib.c # FIXME
-        #${PYTHON_PATH}/Python/dynload_stub.c
         ${PYTHON_PATH}/Python/thread.c
         )
 

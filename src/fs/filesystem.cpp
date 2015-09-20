@@ -2,6 +2,7 @@
 #include <mutex.hh>
 #include <mm.h>
 #include <platform.h>
+#include <errno.h>
 
 int Filesystem::m_filehandle = 2;
 ptr_val_t Filesystem::m_mutex = 0;
@@ -15,7 +16,8 @@ public:
         m_name(name),
         m_id(id),
         m_owner(owner),
-        m_custom(custom)
+        m_custom(custom),
+        m_fcntl(0)
     {
     }
 
@@ -24,6 +26,7 @@ public:
     int m_id;
     Filesystem *m_owner;
     void *m_custom;
+    int m_fcntl;
 };
 
 void Dir::reset()
@@ -151,6 +154,37 @@ bool Filesystem::closefile(int fh)
     }
 
     return false;
+}
+
+int Filesystem::getFcntl(int fh)
+{
+    LockMutex mtx(&m_mutex);
+
+    for (uint32_t i = 0; i < m_files.size(); ++i) {
+        FileData *tmp = (FileData*)m_files.at(i);
+        if (tmp->m_id == fh) {
+            return tmp->m_fcntl;
+        }
+    }
+
+    errno = EBADF;
+    return -1;
+}
+
+int Filesystem::setFcntl(int fh, int mode)
+{
+    LockMutex mtx(&m_mutex);
+
+    for (uint32_t i = 0; i < m_files.size(); ++i) {
+        FileData *tmp = (FileData*)m_files.at(i);
+        if (tmp->m_id == fh) {
+            tmp->m_fcntl = mode;
+            return 0;
+        }
+    }
+
+    errno = EBADF;
+    return -1;
 }
 
 uint32_t Filesystem::pathParts(String path) const
