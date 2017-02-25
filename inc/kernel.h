@@ -29,7 +29,6 @@ private:
     VFS *vfs;
     PCI *pcidev;
     SysCall *sys;
-    ProcessManager *pmanager;
 
     void initVideo();
     void initFileSystem();
