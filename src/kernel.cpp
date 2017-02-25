@@ -116,6 +116,9 @@ Kernel::Kernel()
         platform = NULL;
         return;
     }
+    vfs = NULL;
+    pcidev = NULL;
+    pmanager = NULL;
 
     Timer::get()->setFrequency(KERNEL_FREQUENCY);
     KB::get();
@@ -132,16 +135,8 @@ Kernel::~Kernel()
 #include "arch/arm/gpio.h"
 #endif
 
-int Kernel::run()
+void Kernel::initVideo()
 {
-    if (platform == NULL) {
-        return 1;
-    }
-    if (platform->state() == NULL) {
-        return 1;
-    }
-    platform->state()->startInterrupts();
-
     if (video != NULL) {
         video->clear();
 #if 0
@@ -165,12 +160,17 @@ int Kernel::run()
         video->printf("Ticks: %lu!\n",Timer::get()->getTicks());
 #endif
     }
+}
 
-    VFS *vfs = Platform::vfs();
+void Kernel::initFileSystem()
+{
+    vfs = Platform::vfs();
     vfs->register_filesystem(new DevFS);
     vfs->mount("/dev", "DevFS", "");
-    ClothesFilesystem *cfs = new ClothesFilesystem;
+}
 
+void Kernel::initPCI()
+{
 #ifdef FEATURE_STORAGE
     PCI *pcidev = Platform::pci();
     if (pcidev != NULL) {
@@ -179,6 +179,12 @@ int Kernel::run()
         pcidev->setVerbose();
         pcidev->scanDevices();
     }
+#endif
+}
+
+void Kernel::initATA(Filesystem *cfs)
+{
+#ifdef FEATURE_STORAGE
     ATA *ata = Platform::ata();
     if (ata != NULL) {
         ata->init();
@@ -203,24 +209,12 @@ int Kernel::run()
 
             dev = ata->nextDevice(dev);
         }
-#if 0
-        uint8_t buffer[512];
-        for (uint32_t cc=0; cc<512; cc++) {
-            buffer[cc] = 0;
-        }
-
-        video->printf("Reading...\n");
-        for (uint32_t sec=0; sec<6; sec++) {
-            if (ata->read(dev, buffer, 1,  sec)) {
-                video->printf("ATA: Ok %d. %x %x %x\n", sec, buffer[0], buffer[1], buffer[2]);
-            }
-        }
-        video->printf("Done.\n");
-#endif
     }
-
 #endif
+}
 
+void Kernel::initVirtualDisc()
+{
 #ifdef ARCH_LINUX
 #ifdef FEATURE_STORAGE
     VirtualDisc *vd = new VirtualDisc();
@@ -238,7 +232,35 @@ int Kernel::run()
     }
 #endif
 #endif
+}
 
+void Kernel::drawTestData()
+{
+#ifdef FEATURE_GRAPHICS
+    video->printf("FB3.2\n");
+    platform->fb()->swap();
+    platform->fb()->blit();
+#if 1
+    for (int j=0; j<120; j++) {
+        platform->fb()->putPixel(j,10,255,255,255);
+    }
+    platform->fb()->swap();
+    platform->fb()->blit();
+    video->printf("FB5\n");
+#if 1
+    for (int j=100; j<120; j++) {
+        for (int i=100; i<200; i++) {
+            platform->fb()->putPixel(i,100+j,255,0,0);
+            platform->fb()->putPixel(j,100+i,0,0,255);
+        }
+    }
+#endif
+#endif
+#endif
+}
+
+int Kernel::initFrameBuffer()
+{
 #ifdef FEATURE_GRAPHICS
     FB::ModeConfig conf;
     conf.width=800;
@@ -252,25 +274,10 @@ int Kernel::run()
     if (vconf != NULL) {
         video->printf("FB3\n");
         platform->fb()->configure(vconf);
-        video->printf("FB3.2\n");
-        platform->fb()->swap();
-        platform->fb()->blit();
-#if 1
-        for (int j=0; j<120; j++) {
-            platform->fb()->putPixel(j,10,255,255,255);
-        }
-        platform->fb()->swap();
-        platform->fb()->blit();
-        video->printf("FB5\n");
-#if 1
-        for (int j=100; j<120; j++) {
-            for (int i=100; i<200; i++) {
-                platform->fb()->putPixel(i,100+j,255,0,0);
-                platform->fb()->putPixel(j,100+i,0,0,255);
-            }
-        }
-#endif
-#endif
+
+        // TODO: Can be removed
+        drawTestData();
+
 #if 1
         video->printf("C++ test kernel\n");
         platform->fb()->swap();
@@ -278,20 +285,57 @@ int Kernel::run()
 #endif
     }
 #endif
-    //video->printf("Done\n");
+    return 0;
+}
 
-    SysCall *sys = new SysCall();
-    (void)sys;
-
-    ProcessManager *pm = Platform::processManager();
-    if (pm != NULL && Platform::task() != NULL) {
+void Kernel::startProcessManager()
+{
+    pmanager = Platform::processManager();
+    if (pmanager != NULL && Platform::task() != NULL) {
         Task *kernel_task = Platform::task()->create((ptr_val_t)kernel_loop, 0, 0);
         kernel_task->setSize(2);
         kernel_task->setNice(40);
 
-        pm->setRunning();
-        pm->addTask(kernel_task);
+        pmanager->setRunning();
+        pmanager->addTask(kernel_task);
     }
+}
+
+void Kernel::initSysCall()
+{
+    sys = new SysCall();
+}
+
+int Kernel::run()
+{
+    if (platform == NULL) {
+        return 1;
+    }
+    if (platform->state() == NULL) {
+        return 1;
+    }
+    platform->state()->startInterrupts();
+
+    initVideo();
+
+    initFileSystem();
+
+    initPCI();
+
+    ClothesFilesystem *cfs = new ClothesFilesystem;
+
+    initATA(cfs);
+
+    initVirtualDisc();
+
+    int res = initFrameBuffer();
+    if (res != 0) {
+        return res;
+    }
+
+    initSysCall();
+
+    startProcessManager();
 
     //TODO: Setup initial task
     while(1) {}

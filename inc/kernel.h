@@ -3,6 +3,7 @@
 
 #include "video.h"
 #include "states.h"
+#include "syscall.hh"
 #include "arch/platform.h"
 
 /* Kernel HZ, means how often timer will hit on a second.
@@ -25,6 +26,20 @@ public:
 private:
     Video *video;
     Platform *platform;
+    VFS *vfs;
+    PCI *pcidev;
+    SysCall *sys;
+    ProcessManager *pmanager;
+
+    void initVideo();
+    void initFileSystem();
+    void initPCI();
+    void initATA(Filesystem *cfs);
+    void initVirtualDisc();
+    int initFrameBuffer();
+    void drawTestData();
+    void initSysCall();
+    void startProcessManager();
 };
 
 #endif
