@@ -18,52 +18,6 @@
 #include "arch/linux/virtualdisc.h"
 #endif
 
-#if 0
-void B_proc()
-{
-    Platform::video()->printf("v_proc pid %d\n",Platform::processManager()->pid());
-    while (1) {
-        Platform::video()->printf("B");
-        Timer::get()->wait(100);
-    }
-}
-
-void A_proc()
-{
-    uint32_t pid = Platform::processManager()->pid();
-    Platform::video()->printf("a_proc pid %d %d\n",Platform::processManager()->pid(), pid);
-#if 0
-    ProcessManager *pm = Platform::processManager();
-    if (pid==Platform::processManager()->pid()) {
-        Task *t = pm->clone();
-        (void)t;
-        //if (t!=NULL) pm->addTask(t);
-    }
-#endif
-    while (1) {
-        Platform::video()->printf("A");
-        Timer::get()->wait(50);
-    }
-}
-
-void C_proc()
-{
-    Platform::video()->printf("c_proc pid %d\n",Platform::processManager()->pid());
-#ifdef ARCH_x86
-    uint32_t cnt=0;
-    while (1) {
-        Platform::video()->printf("C");
-        if (++cnt % 5 == 0)  {
-            int32_t res = 0;
-            asm ("int $0x99": "=a"(res));
-            Platform::video()->printf("C %x\n",res);
-        }
-        Timer::get()->wait(500);
-    }
-#endif
-}
-#endif
-
 extern "C" int main(int argc, char **argv);
 void app_proc()
 {
