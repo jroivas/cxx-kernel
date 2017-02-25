@@ -48,26 +48,6 @@ void kernel_loop()
     a_task->setName("Application main");
     pm->addTask(a_task);
     a_task->setPriority(40);
-
-#if 0
-    Task *a_task = Platform::task()->create((ptr_val_t)&A_proc, 0, 0);
-    Task *b_task = Platform::task()->create((ptr_val_t)&B_proc, 0, 0);
-    Task *c_task = Platform::task()->create((ptr_val_t)&C_proc, 0, 0);
-
-    a_task->setName("A task");
-    a_task->setSize(100);
-    a_task->setPriority(40);
-
-    b_task->setName("B task");
-    b_task->setNice(10);
-
-    c_task->setPriority(10);
-    c_task->setName("C task");
-
-    pm->addTask(a_task);
-    pm->addTask(b_task);
-    pm->addTask(c_task);
-#endif
 #endif
 
     uint32_t start = Platform::timer()->getTicks();
@@ -290,7 +270,7 @@ int Kernel::initFrameBuffer()
 
 void Kernel::startProcessManager()
 {
-    pmanager = Platform::processManager();
+    ProcessManager *pmanager = Platform::processManager();
     if (pmanager != NULL && Platform::task() != NULL) {
         Task *kernel_task = Platform::task()->create((ptr_val_t)kernel_loop, 0, 0);
         kernel_task->setSize(2);
