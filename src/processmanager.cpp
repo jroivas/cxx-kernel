@@ -43,6 +43,7 @@ void ProcessManager::addTask(Task *t)
     Platform::seizeInterrupts();
 
     Task *current = m_current;
+    Platform::video()->printf("CURR %d %x\n", m_tasks->size(), current);
 
     if (current != NULL) {
         current->lock();
@@ -53,7 +54,7 @@ void ProcessManager::addTask(Task *t)
     }
 
     volatile ptr_val_t *lock = NULL;
-    if (current!=NULL) {
+    if (current != NULL) {
         lock = current->getLock();
         m_tasks->append(current);
         if (current->save()) {
@@ -108,6 +109,7 @@ Task *ProcessManager::schedule()
         TEST_LOCK(current);
     }
     //Platform::video()->printf("Curr %x %d\n",current, current==NULL?0:current->pid());
+    //Platform::video()->printf("Curr %d\n", m_tasks->size());
 
     void *tmp = m_tasks->takeFirst();
     if (tmp == NULL) {

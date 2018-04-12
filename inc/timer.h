@@ -21,6 +21,7 @@ public:
 protected:
     Timer();
     virtual void run(Regs *r);
+    virtual void nop() const;
     unsigned long m_ticks;
     unsigned long m_hz;
 };

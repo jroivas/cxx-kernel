@@ -36,6 +36,7 @@ ssize_t syscall_readv(int fd, const struct iovec *iov, int iovcnt)
         return -1;
     }
 
+#ifdef FEATURE_STORAGE
     VFS *vfs = Platform::vfs();
     Filesystem *fs = vfs->accessHandle(fd);
     if (fs == NULL) {
@@ -60,6 +61,12 @@ ssize_t syscall_readv(int fd, const struct iovec *iov, int iovcnt)
         cnt += got;
     }
     return cnt;
+#else
+    (void)iov;
+    (void)iovcnt;
+    errno = EPERM;
+    return -1;
+#endif
 }
 
 int syscall_llseek(int fd, long high, long low, loff_t* res, int orig)
@@ -103,6 +110,7 @@ int syscall_open(const char *name, int flags, int mode)
         return -1;
     }
 
+#ifdef FEATURE_STORAGE
     VFS *vfs = Platform::vfs();
     Filesystem *fs = vfs->access(name);
 
@@ -113,11 +121,18 @@ int syscall_open(const char *name, int flags, int mode)
 
     String base = vfs->stripslash(vfs->basedir(name, fs));
     int res = fs->open(base, flags);
+
     return res;
+#else
+    (void)flags;
+    errno = ENOENT;
+    return -1;
+#endif
 }
 
 int syscall_read(int fd, void *buf, size_t cnt)
 {
+#ifdef FEATURE_STORAGE
     VFS *vfs = Platform::vfs();
     Filesystem *fs = vfs->accessHandle(fd);
     if (fs == NULL) {
@@ -126,10 +141,18 @@ int syscall_read(int fd, void *buf, size_t cnt)
     }
 
     return fs->read(fd, (char*)buf, cnt);
+#else
+    (void)fd;
+    (void)buf;
+    (void)cnt;
+    errno = ENOENT;
+    return -1;
+#endif
 }
 
 int syscall_close(int fd)
 {
+#ifdef FEATURE_STORAGE
     VFS *vfs = Platform::vfs();
     Filesystem *fs = vfs->accessHandle(fd);
     if (fs == NULL) {
@@ -138,10 +161,16 @@ int syscall_close(int fd)
     }
 
     return fs->close(fd);
+#else
+    (void)fd;
+    errno = ENOENT;
+    return -1;
+#endif
 }
 
 int syscall_fcntl(int fd, int cmd, int arg)
 {
+#ifdef FEATURE_STORAGE
     VFS *vfs = Platform::vfs();
     Filesystem *fs = vfs->accessHandle(fd);
     if (fs == NULL) {
@@ -155,7 +184,11 @@ int syscall_fcntl(int fd, int cmd, int arg)
     else if (cmd == F_GETFD) {
         return fs->getFcntl(fd);
     }
-
+#else
+    (void)fd;
+    (void)cmd;
+    (void)arg;
+#endif
     errno = ENOENT;
     return -1;
 }

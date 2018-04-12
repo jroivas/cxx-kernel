@@ -13,9 +13,9 @@
    On server loads lower is better,
    on desktop higher.
  */
-#define KERNEL_FREQUENCY 100
-//#define KERNEL_FREQUENCY 300
-//#define KERNEL_FREQUENCY 1000
+static const int KERNEL_FREQUENCY = 100;
+//static const int KERNEL_FREQUENCY = 300;
+//static const int KERNEL_FREQUENCY = 1000;
 
 class Kernel
 {

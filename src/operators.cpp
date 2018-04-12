@@ -29,8 +29,24 @@ void operator delete(void *ptr)
     }
 }
 
+void operator delete(void *ptr, long unsigned int)
+{
+    // FIXME
+    if (__operator_paging.isOk()) {
+        MM::instance()->free(ptr);
+    }
+}
+
 void operator delete[](void *ptr)
 {
+    if (__operator_paging.isOk()) {
+        MM::instance()->free(ptr);
+    }
+}
+
+void operator delete[](void *ptr, long unsigned int)
+{
+    // FIXME
     if (__operator_paging.isOk()) {
         MM::instance()->free(ptr);
     }

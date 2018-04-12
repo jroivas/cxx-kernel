@@ -1,12 +1,9 @@
 #ifndef __CLOTHESFS_HH
 #define __CLOTHESFS_HH
 
-//#include <stdint.h>
-//#include <stddef.h>
-//#include <string.h>
 #include <string.hh>
 #include <platform.h>
-#include <filesystem.hh>
+#include <fs/filesystem.hh>
 
 #ifdef USE_CUSTOM_STRING
 #include <string.hh>

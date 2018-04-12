@@ -4,7 +4,6 @@
 #include "types.h"
 #include "mutex.hh"
 
-//#define TASK_MAGIC 0x42
 #define MAX_PRIORITY 20
 #define MAX_NICE     20
 #define TASK_NAME_LEN 42

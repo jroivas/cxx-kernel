@@ -39,10 +39,41 @@ void app_proc()
     }
 }
 
+#if 0
+void k_t1()
+{
+    while(1) {
+        Platform::video()->printf("A");
+        //Timer::get()->wait(1);
+    }
+}
+
+void k_t2()
+{
+    while(1) {
+        Platform::video()->printf("B");
+        //Timer::get()->wait(1);
+    }
+}
+#endif
+
 void kernel_loop()
 {
 #if 1
     ProcessManager *pm = Platform::processManager();
+
+#if 0
+    Task *t1 = Platform::task()->create((ptr_val_t)k_t1, 0, 0);
+    t1->setSize(10);
+    t1->setNice(40);
+
+    Task *t2 = Platform::task()->create((ptr_val_t)k_t2, 0, 0);
+    t2->setSize(10);
+    t2->setNice(40);
+
+    pm->addTask(t1);
+    pm->addTask(t2);
+#endif
 
     Task *a_task = Platform::task()->create((ptr_val_t)&app_proc, 0, 0);
     a_task->setName("Application main");
@@ -98,7 +129,6 @@ Kernel::Kernel()
     }
     vfs = NULL;
     pcidev = NULL;
-    pmanager = NULL;
 
     Timer::get()->setFrequency(KERNEL_FREQUENCY);
     KB::get();
@@ -119,17 +149,10 @@ void Kernel::initVideo()
 {
     if (video != NULL) {
         video->clear();
-#if 0
+
         video->printf("Ticks: %lu!\n",Timer::get()->getTicks());
-        video->printf("Hello world!\n");
-#endif
+
         video->printf("\nC++ kernel %s!!!\n\n", kernel_version);
-#if 0
-        video->printf("And a TAB\t test!\n");
-        video->printf("Removing letter A\bB and continuing.\n");
-        video->printf("\b\b\bABCDEFG\n");
-        video->printf("Ticks: %lu!\n",Timer::get()->getTicks());
-#endif
 
 #if 0
         /* Some random timing... */
@@ -144,9 +167,11 @@ void Kernel::initVideo()
 
 void Kernel::initFileSystem()
 {
+#if FEATURE_STORAGE
     vfs = Platform::vfs();
     vfs->register_filesystem(new DevFS);
     vfs->mount("/dev", "DevFS", "");
+#endif
 }
 
 void Kernel::initPCI()
@@ -164,6 +189,7 @@ void Kernel::initPCI()
 
 void Kernel::initATA(Filesystem *cfs)
 {
+    (void)cfs;
 #ifdef FEATURE_STORAGE
     ATA *ata = Platform::ata();
     if (ata != NULL) {
@@ -247,8 +273,7 @@ int Kernel::initFrameBuffer()
     conf.height=600;
     conf.depth=24;
 
-    //FB::ModeConfig *vconf = platform->fb()->query(NULL);
-    if (platform->fb()==NULL) return 1;
+    if (platform->fb() == NULL) return 1;
 
     FB::ModeConfig *vconf = platform->fb()->query(&conf);
     if (vconf != NULL) {
@@ -272,12 +297,14 @@ void Kernel::startProcessManager()
 {
     ProcessManager *pmanager = Platform::processManager();
     if (pmanager != NULL && Platform::task() != NULL) {
+
         Task *kernel_task = Platform::task()->create((ptr_val_t)kernel_loop, 0, 0);
         kernel_task->setSize(2);
         kernel_task->setNice(40);
 
         pmanager->setRunning();
         pmanager->addTask(kernel_task);
+
     }
 }
 
@@ -302,9 +329,11 @@ int Kernel::run()
 
     initPCI();
 
+#if FEATURE_STORAGE
     ClothesFilesystem *cfs = new ClothesFilesystem;
 
     initATA(cfs);
+#endif
 
     initVirtualDisc();
 

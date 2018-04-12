@@ -128,7 +128,7 @@ changeProcess:
     mov eax, [ebp+8]   ;eip
 
     ; Change stack
-    cmp ebx,0
+    cmp ebx, 0
     jz .changeProcess_no_stack
     mov esp, ebx
 .changeProcess_no_stack:
