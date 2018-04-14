@@ -12,6 +12,7 @@
 #include "pci.hh"
 #include "ata.hh"
 #include "task.h"
+#include "random.h"
 #include "processmanager.h"
 #include "atomic.hh"
 #include "fs/vfs.hh"
@@ -42,6 +43,7 @@ public:
     static Task *task();
     static ProcessManager *processManager();
     static VFS *vfs();
+    static Random *random();
 
     static inline int CAS(ptr_val_t volatile *m_ptr, int cmp, int set)
     {

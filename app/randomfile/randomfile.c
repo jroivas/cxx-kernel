@@ -6,7 +6,7 @@ int main(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
-    printf("Randomizing\n");
+    printf("Randomizing..\n");
 
     char buf[20];
     int fd = open("/dev/urandom", O_RDONLY);

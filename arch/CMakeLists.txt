@@ -1,5 +1,6 @@
 set(ARCH_FILES
     platform.cpp
+    random.cpp
     )
 
 if (PLATFORM STREQUAL "x86")
@@ -16,6 +17,7 @@ if (PLATFORM STREQUAL "x86")
         x86/statesx86.cpp
         x86/timerx86.cpp
         x86/videox86.cpp
+        x86/randomx86.cpp
         x86/x86.cpp
         )
     if (PCI)
@@ -45,11 +47,12 @@ if (PLATFORM STREQUAL "x86")
     set(ARCH_ASM_FILES
         x86/gdt.asm
         x86/idt_handlers.asm
-        x86/memcpy.asm
         )
     set(ARCH_ASM_LATE_FILES
+        x86/memcpy.asm
         x86/pages.asm
         x86/process.asm
+        x86/hwrandom.asm
         )
 
     add_library(arch_setjmp STATIC

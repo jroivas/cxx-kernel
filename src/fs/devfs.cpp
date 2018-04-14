@@ -79,24 +79,6 @@ int DevFS::getattr(String path, int handle)
     return -1;
 }
 
-static unsigned long int rand_seed = 1;
-static bool srand_called = false;
-
-static void srand(unsigned int seed)
-{
-    rand_seed = seed;
-}
-
-static int rand(void)
-{
-    if (!srand_called) {
-        srand(Platform::timer()->getTicks());
-        srand_called = true;
-    }
-    rand_seed = rand_seed * 1103515245 + 12345;
-    return (unsigned int)(rand_seed / 65536) % 32768;
-}
-
 ssize_t DevFS::read(int fh, char *buf, size_t count)
 {
     String name = getName(fh);
@@ -104,7 +86,7 @@ ssize_t DevFS::read(int fh, char *buf, size_t count)
         || name == "urandom") {
         ssize_t cnt = 0;
         for (cnt = 0; cnt < (ssize_t)count; ++cnt) {
-            *buf = (rand() % 256) & 0xFF;
+            *buf = (Platform::random()->getRandomInt() % 256) & 0xFF;
             ++buf;
         }
         return cnt;

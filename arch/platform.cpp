@@ -12,6 +12,7 @@
 #include "x86/pcix86.h"
 #include "x86/atax86.h"
 #include "x86/taskx86.h"
+#include "x86/randomx86.h"
 #endif
 
 #ifdef ARCH_ARM
@@ -40,6 +41,7 @@ static ATA   *__platform_ata   = NULL;
 static Task  *__platform_task  = NULL;
 static ProcessManager *__platform_pm = NULL;
 static VFS   *__platform_vfs   = NULL;
+static Random *__platform_random = NULL;
 
 Platform::Platform()
 {
@@ -202,6 +204,19 @@ VFS *Platform::vfs()
         __platform_vfs = new VFS();
     }
     return __platform_vfs;
+}
+
+Random *Platform::random()
+{
+    #ifdef ARCH_x86
+    if (__platform_random == NULL) {
+        __platform_random = new RandomX86();
+    }
+    #endif
+    if (__platform_random == NULL) {
+        __platform_random = new Random();
+    }
+    return __platform_random;
 }
 
 void Platform::halt()

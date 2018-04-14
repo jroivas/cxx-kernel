@@ -22,6 +22,14 @@ mmx_has:
     add esp, 4
     ret
 
+[global hasHwRandom]
+hasHwRandom:
+    mov eax, 30
+    push eax
+    call cpuid_has_feature
+    add esp, 4
+    ret
+
 [global sse_has]
 sse_has:
     mov eax, 25

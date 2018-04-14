@@ -97,6 +97,15 @@ int syscall_ioctl(int fd, long cmd, long arg)
 
         return 0;
     }
+    if (cmd == TIOCGWINSZ) {
+        struct winsize *argp = (struct winsize *)arg;
+        // FIXME hardcoded
+        argp->ws_col = 80;
+        argp->ws_row = 24;
+        argp->ws_xpixel = 640;
+        argp->ws_ypixel = 480;
+        return 0;
+    }
 
     errno = EINVAL;
     return -1;
