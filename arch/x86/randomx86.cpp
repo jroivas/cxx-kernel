@@ -1,6 +1,6 @@
 #include "randomx86.h"
 
-extern "C" int hasHwRandom();
+extern "C" bool hasHwRandom();
 extern "C" unsigned int getHwRandom();
 
 RandomX86::RandomX86()
