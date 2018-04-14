@@ -1,4 +1,5 @@
 set(MUSL_PREFIX musl/src/)
+set(MUSL_TOP_PREFIX musl)
 
 set(MUSL_INTERNAL
     ${MUSL_PREFIX}/internal/floatscan.c
@@ -66,6 +67,8 @@ set(MUSL_STDIO
     ${MUSL_PREFIX}/stdio/__lockfile.c
     ${MUSL_PREFIX}/stdio/open_memstream.c
     ${MUSL_PREFIX}/stdio/open_wmemstream.c
+    ${MUSL_PREFIX}/stdio/ofl.c
+    ${MUSL_PREFIX}/stdio/ofl_add.c
     ${MUSL_PREFIX}/stdio/__overflow.c
     ${MUSL_PREFIX}/stdio/pclose.c
     ${MUSL_PREFIX}/stdio/perror.c
@@ -488,7 +491,6 @@ set(MUSL_LOCALE
     ${MUSL_PREFIX}/locale/newlocale.c
     ${MUSL_PREFIX}/locale/pleval.c
     ${MUSL_PREFIX}/locale/setlocale.c
-    ${MUSL_PREFIX}/locale/__setlocalecat.c
     ${MUSL_PREFIX}/locale/strcoll.c
     ${MUSL_PREFIX}/locale/strfmon.c
     ${MUSL_PREFIX}/locale/strxfrm.c
@@ -889,7 +891,6 @@ set(MUSL_MISC
     ${MUSL_PREFIX}/misc/getauxval.c
     ${MUSL_PREFIX}/misc/get_current_dir_name.c
     ${MUSL_PREFIX}/misc/getdomainname.c
-    ${MUSL_PREFIX}/misc/getgrouplist.c
     ${MUSL_PREFIX}/misc/gethostid.c
     ${MUSL_PREFIX}/misc/getopt.c
     ${MUSL_PREFIX}/misc/getopt_long.c
@@ -978,6 +979,7 @@ set(MUSL_PASSWD
     ${MUSL_PREFIX}/passwd/getgrent_a.c
     ${MUSL_PREFIX}/passwd/getgrent.c
     ${MUSL_PREFIX}/passwd/getgr_r.c
+    ${MUSL_PREFIX}/passwd/getgrouplist.c
     ${MUSL_PREFIX}/passwd/getpwent_a.c
     ${MUSL_PREFIX}/passwd/getpwent.c
     ${MUSL_PREFIX}/passwd/getpw_r.c
@@ -1141,8 +1143,8 @@ set(MUSL_DLSO
     ${MUSL_PREFIX}/ldso/dlinfo.c
     ${MUSL_PREFIX}/ldso/dl_iterate_phdr.c
     ${MUSL_PREFIX}/ldso/dlsym.c
-    ${MUSL_PREFIX}/ldso/dynlink.c
-    ${MUSL_PREFIX}/ldso/start.c
+    ${MUSL_TOP_PREFIX}/ldso/dynlink.c
+    ${MUSL_TOP_PREFIX}/ldso/dlstart.c
     ${MUSL_PREFIX}/ldso/tlsdesc.c
     )
 

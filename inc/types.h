@@ -31,6 +31,7 @@ typedef unsigned long ptr_val_t;
 #ifndef __cplusplus
 typedef __WCHAR_TYPE__ wchar_t;
 #endif
+
 #if 0
 typedef signed char  int8_t;
 typedef unsigned char  uint8_t;

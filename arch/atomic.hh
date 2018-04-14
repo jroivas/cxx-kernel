@@ -1,5 +1,5 @@
-#ifndef _ATOMIC_H
-#define _ATOMIC_H
+#ifndef _ARCH_ATOMIC_HH
+#define _ARCH_ATOMIC_HH
 
 #include "types.h"
 

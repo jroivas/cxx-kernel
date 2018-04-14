@@ -1,3 +1,4 @@
+#define __NEED_locale_t
 #include <pthread_impl.h>
 #include <mm.h>
 

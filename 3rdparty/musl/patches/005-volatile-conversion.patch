@@ -1,0 +1,15 @@
+diff --git a/src/internal/atomic.h b/src/internal/atomic.h
+index ab473dd7..6c412aad 100644
+--- a/src/internal/atomic.h
++++ b/src/internal/atomic.h
+@@ -238,8 +238,8 @@ static inline void *a_cas_p(volatile void *p, void *t, void *s)
+ #define a_or_l a_or_l
+ static inline void a_or_l(volatile void *p, long v)
+ {
+-	if (sizeof(long) == sizeof(int)) a_or(p, v);
+-	else a_or_64(p, v);
++	if (sizeof(long) == sizeof(int)) a_or((volatile int*)p, v);
++	else a_or_64((volatile uint64_t*)p, v);
+ }
+ #endif
+ 

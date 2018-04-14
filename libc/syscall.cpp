@@ -11,21 +11,21 @@ long syscall_va(long num, va_list al)
 {
     //Platform::video()->printf("syscall %d\n", num);
     switch (num) {
-        case __NR_writev:
+        case SYS_writev:
         {
             unsigned long fd = va_arg(al, unsigned long);
             const struct iovec *vec = va_arg(al, const struct iovec*);
             unsigned long vlen = va_arg(al, unsigned long);
             return syscall_writev(fd, vec, vlen);
         }
-        case __NR_readv:
+        case SYS_readv:
         {
             unsigned long fd = va_arg(al, unsigned long);
             const struct iovec *vec = va_arg(al, const struct iovec*);
             unsigned long vlen = va_arg(al, unsigned long);
             return syscall_readv(fd, vec, vlen);
         }
-        case __NR__llseek:
+        case SYS__llseek:
         {
             unsigned long fd = va_arg(al, unsigned long);
             unsigned long high = va_arg(al, unsigned long);
@@ -34,33 +34,33 @@ long syscall_va(long num, va_list al)
             loff_t *res = va_arg(al, loff_t*);
             return syscall_llseek(fd, high, low, res, orig);
         }
-        case __NR_open:
+        case SYS_open:
         {
             const char *fname = va_arg(al, const char*);
             int flags = va_arg(al, int);
             int mode = va_arg(al, int);
             return syscall_open(fname, flags, mode);
         }
-        case __NR_ioctl:
+        case SYS_ioctl:
         {
             int fd = va_arg(al, int);
             long cmd = va_arg(al, long);
             long arg = va_arg(al, long);
             return syscall_ioctl(fd, cmd, arg);
         }
-        case __NR_read:
+        case SYS_read:
         {
             int fd = va_arg(al, int);
             void *buf = va_arg(al, void*);
             size_t cnt = va_arg(al, size_t);
             return syscall_read(fd, buf, cnt);
         }
-        case __NR_close:
+        case SYS_close:
         {
             int fd = va_arg(al, int);
             return syscall_close(fd);
         }
-        case __NR_fcntl64:
+        case SYS_fcntl64:
         {
             int fd = va_arg(al, int);
             int cmd = va_arg(al, int);
@@ -76,7 +76,7 @@ long syscall_va(long num, va_list al)
             errno = EINVAL;
             return -1;
         }
-        case __NR_mmap2:
+        case SYS_mmap2:
         {
             void *addr = va_arg(al, void*);
             size_t len = va_arg(al, size_t);

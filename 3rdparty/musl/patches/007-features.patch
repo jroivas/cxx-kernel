@@ -1,0 +1,14 @@
+diff --git a/include/features.h b/include/features.h
+index f4d651ef..f34f1825 100644
+--- a/include/features.h
++++ b/include/features.h
+@@ -1,7 +1,8 @@
+ #ifndef _FEATURES_H
+ #define _FEATURES_H
+ 
+-#if defined(_ALL_SOURCE) && !defined(_GNU_SOURCE)
++//#if defined(_ALL_SOURCE) && !defined(_GNU_SOURCE)
++#if !defined(_GNU_SOURCE)
+ #define _GNU_SOURCE 1
+ #endif
+ 
