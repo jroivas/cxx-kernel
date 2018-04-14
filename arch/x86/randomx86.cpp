@@ -12,6 +12,6 @@ unsigned int RandomX86::getRandomInt()
 {
     if (hw_rand) return getHwRandom();
 
-    // Fallback to shitty hw gen
+    // Fallback to shitty random gen
     return Random::getRandomInt();
 }
