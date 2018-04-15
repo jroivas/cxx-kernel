@@ -95,14 +95,14 @@ void kernel_loop()
         pm->schedule();
 #endif
 #ifdef FEATURE_GRAPHICS
-        if (Platform::fb()!=nullptr && Platform::fb()->isConfigured()) {
+        if (Platform::fb() != nullptr && Platform::fb()->isConfigured()) {
             Platform::fb()->swap();
             Platform::fb()->blit();
         }
 #endif
 
         /* Update screen */
-        Timer::get()->wait(10);
+        Timer::get()->wait(1);
     }
 }
 

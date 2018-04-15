@@ -58,16 +58,10 @@ if (PLATFORM STREQUAL "x86")
     set(LINKFLAGS "-nostdlib")
     set(LINKFLAGS ${LINKFLAGS} "-ffreestanding")
     set(LINKFLAGS ${LINKFLAGS} "-lgcc")
-    #set(LINKFLAGS ${LINKFLAGS} -melf_i386)
     set(LINKFLAGS ${LINKFLAGS} -T${CMAKE_CURRENT_SOURCE_DIR}/link_x86.ld)
-    #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -nostdinc")
-    #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
-    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
-    #set(CROSS_COMPILE i386-elf-)
     set(CROSS_COMPILE i686-elf-)
     set(CMAKE_C_COMPILER "${CROSS_COMPILE}gcc")
     set(CMAKE_CXX_COMPILER "${CROSS_COMPILE}g++")
-    #set(GCC_LD "${CROSS_COMPILE}ld")
     set(GCC_LD "${CROSS_COMPILE}gcc")
 elseif (PLATFORM STREQUAL "ARM")
     enable_language(ASM-ATT)
@@ -84,9 +78,6 @@ elseif (PLATFORM STREQUAL "ARM")
     add_definitions(-DPLATFORM_qemu=1)
 elseif (PLATFORM STREQUAL "LINUX")
     add_definitions(-DARCH_LINUX)
-    #set(LINKFLAGS ${LINKFLAGS} -T${CMAKE_CURRENT_SOURCE_DIR}/link_linux.ld)
-    #set(LINKFLAGS ${LINKFLAGS} -nostartfiles)
-
     set(GCC_LD g++)
 else()
     message(FATAL_ERROR ${PLATFORM_ERROR_MSG})
@@ -149,9 +140,6 @@ if (PLATFORM STREQUAL "LINUX")
     set(libc_files "")
     set(libc_deps "")
 else()
-    #set(libc_files $<TARGET_FILE:libc> $<TARGET_FILE:osdevlibc>)
-    #set(libc_deps libc osdevlibc)
-    #include_directories("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/osdevlibc/include")
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/musl/musl/arch/generic")
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/musl/musl/arch/${ARCH}")
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/musl/musl/src/internal")
@@ -172,12 +160,6 @@ add_subdirectory(src)
 add_subdirectory(arch)
 add_subdirectory(3rdparty)
 add_subdirectory(app)
-
-#set(APP app/hello.c)
-#add_library(app STATIC
-#    ${APP}
-#    )
-
 
 add_custom_command(OUTPUT kernel.bin
     COMMAND ${GCC_LD} ${LINKFLAGS} -o kernel.bin
@@ -234,24 +216,6 @@ add_custom_target(kernel ALL
     )
 
 if (PLATFORM STREQUAL "x86")
-    #add_custom_command(OUTPUT kernel.iso
-    #    COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/isofiles/boot/grub
-    #    COMMAND cp -f kernel.bin ${CMAKE_CURRENT_BINARY_DIR}/isofiles/boot/kernel
-    #    COMMAND cp -f ${CMAKE_CURRENT_SOURCE_DIR}/stage2_eltorito ${CMAKE_CURRENT_BINARY_DIR}/isofiles/boot/grub
-    #    COMMAND cp -f ${CMAKE_CURRENT_SOURCE_DIR}/menu.lst ${CMAKE_CURRENT_BINARY_DIR}/isofiles/boot/grub
-    #    COMMAND rm -f ${CMAKE_CURRENT_BINARY_DIR}/kernel.iso
-    #    COMMAND genisoimage -R -b boot/grub/stage2_eltorito -no-emul-boot -quiet -boot-load-size 4 -boot-info-table -o ${CMAKE_CURRENT_BINARY_DIR}/kernel.iso ${CMAKE_CURRENT_BINARY_DIR}/isofiles
-    #    DEPENDS menu.lst
-    #    DEPENDS stage2_eltorito
-    #    DEPENDS kernel.bin
-    #    )
-    #add_custom_target(kernel_image ALL
-    #    DEPENDS kernel.iso
-    #    )
-    #add_custom_target(run
-    #    COMMAND kvm -serial mon:stdio -cdrom ${CMAKE_CURRENT_BINARY_DIR}/kernel.iso
-    #    DEPENDS kernel.iso
-    #    )
     add_custom_target(run
         COMMAND kvm -serial mon:stdio -kernel ${CMAKE_CURRENT_BINARY_DIR}/kernel.bin
         DEPENDS kernel.bin
