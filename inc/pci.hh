@@ -100,6 +100,7 @@ public:
 protected:
     uint32_t getVendor(uint32_t bus, uint32_t device, uint32_t func);
     uint32_t getDevice(uint32_t bus, uint32_t device, uint32_t func);
+    uint32_t getPciAddr(uint32_t bus, uint32_t device, uint32_t func, uint32_t reg);
     uint32_t getConfig(uint32_t bus, uint32_t device, uint32_t func, uint32_t reg);
     void setConfig(uint32_t bus, uint32_t device, uint32_t func, uint32_t reg, uint32_t val);
     virtual void systemPut(uint32_t val) = 0;

@@ -36,31 +36,26 @@ PCI::~PCI()
 {
 }
 
-uint32_t PCI::getConfig(uint32_t bus, uint32_t device, uint32_t func, uint32_t reg)
+uint32_t PCI::getPciAddr(uint32_t bus, uint32_t device, uint32_t func, uint32_t reg)
 {
-    uint32_t addr = 0;
-
-    addr = 1 << 31;
+    uint32_t addr = 1 << 31;
     addr |= ((bus & 0xFF) << 16);
     addr |= ((device & 0x1F) << 11);
     addr |= ((func & 0x7) << 8);
     addr |= (reg & 0xFC);
 
-    systemPut(addr);
+    return addr;
+}
+
+uint32_t PCI::getConfig(uint32_t bus, uint32_t device, uint32_t func, uint32_t reg)
+{
+    systemPut(getPciAddr(bus, device, func, reg));
     return systemGet();
 }
 
 void PCI::setConfig(uint32_t bus, uint32_t device, uint32_t func, uint32_t reg, uint32_t val)
 {
-    uint32_t addr = 0;
-
-    addr = 1 << 31;
-    addr |= ((bus & 0xFF) << 16);
-    addr |= ((device & 0x1F) << 11);
-    addr |= ((func & 0x7) << 8);
-    addr |= (reg & 0xFC);
-
-    systemPut(addr);
+    systemPut(getPciAddr(bus, device, func, reg));
     systemPutData(val);
 }
 

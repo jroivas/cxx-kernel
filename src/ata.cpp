@@ -383,7 +383,7 @@ bool ATA::DevicePrivate::prepareAccess(uint16_t sectors, uint32_t addr, uint32_t
 
 
     //if (!waitStatus(ATA_STATUS_DRQ, ATA_STATUS_DRQ)) 
-    //	select(head);
+    //    select(head);
 
     //if (!waitStatus(ATA_STATUS_DRQ, ATA_STATUS_DRQ)) return false;
 

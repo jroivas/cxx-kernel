@@ -4,8 +4,8 @@
 class Bus
 {
 public:
-	Bus() { }
-	virtual ~Bus() { }
+    Bus() { }
+    virtual ~Bus() { }
 };
 
 #endif

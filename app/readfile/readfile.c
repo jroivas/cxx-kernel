@@ -22,9 +22,9 @@ int main(int argc, char **argv)
             printf("%c", (unsigned char)buf[i]);
         }
         printf("\n");
-    }
 
-    fclose(fd);
+        fclose(fd);
+    }
 
     return 0;
 }

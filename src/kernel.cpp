@@ -39,61 +39,16 @@ void app_proc()
     }
 }
 
-#if 0
-void k_t1()
-{
-    while(1) {
-        Platform::video()->printf("A");
-        //Timer::get()->wait(1);
-    }
-}
-
-void k_t2()
-{
-    while(1) {
-        Platform::video()->printf("B");
-        //Timer::get()->wait(1);
-    }
-}
-#endif
-
 void kernel_loop()
 {
-#if 1
     ProcessManager *pm = Platform::processManager();
-
-#if 0
-    Task *t1 = Platform::task()->create((ptr_val_t)k_t1, 0, 0);
-    t1->setSize(10);
-    t1->setNice(40);
-
-    Task *t2 = Platform::task()->create((ptr_val_t)k_t2, 0, 0);
-    t2->setSize(10);
-    t2->setNice(40);
-
-    pm->addTask(t1);
-    pm->addTask(t2);
-#endif
-
 
     Task *a_task = Platform::task()->create((ptr_val_t)&app_proc, 0, 0);
     a_task->setName("Application main");
     pm->addTask(a_task);
     a_task->setPriority(40);
-#endif
 
-    uint32_t start = Platform::timer()->getTicks();
-    (void)start;
     while (1) {
-        //FIXME
-#if 0
-        uint32_t end = Platform::timer()->getTicks();
-        Platform::video()->printf("Diff: %d\n",end-start);
-#endif
-#if 0
-        ProcessManager *pm = Platform::processManager();
-        pm->schedule();
-#endif
 #ifdef FEATURE_GRAPHICS
         if (Platform::fb() != nullptr && Platform::fb()->isConfigured()) {
             Platform::fb()->swap();
@@ -151,18 +106,9 @@ void Kernel::initVideo()
     if (video != nullptr) {
         video->clear();
 
-        video->printf("Ticks: %lu!\n",Timer::get()->getTicks());
+        video->printf("Ticks: %lu!\n", Timer::get()->getTicks());
 
         video->printf("\nC++ kernel %s!!!\n\n", kernel_version);
-
-#if 0
-        /* Some random timing... */
-        volatile int b = 5;
-        for (int i=0; i<0x1FFFFFF; i++) { b = b + i; }
-        video->printf("Ticks: %lu!\n",Timer::get()->getTicks());
-        for (int i=0; i<0x1FFFFF; i++) { b = b + i; }
-        video->printf("Ticks: %lu!\n",Timer::get()->getTicks());
-#endif
     }
 }
 
@@ -270,9 +216,9 @@ int Kernel::initFrameBuffer()
 {
 #ifdef FEATURE_GRAPHICS
     FB::ModeConfig conf;
-    conf.width=800;
-    conf.height=600;
-    conf.depth=24;
+    conf.width = 800;
+    conf.height = 600;
+    conf.depth = 24;
 
     if (platform->fb() == nullptr) return 1;
 
@@ -283,7 +229,6 @@ int Kernel::initFrameBuffer()
 
         // TODO: Can be removed
         drawTestData();
-
 #if 1
         video->printf("C++ test kernel\n");
         platform->fb()->swap();

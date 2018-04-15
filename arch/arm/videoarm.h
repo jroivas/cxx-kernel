@@ -6,11 +6,11 @@
 class VideoARM : public Video
 {
 public:
-	VideoARM();
-	virtual void putCh(char c);
+    VideoARM();
+    virtual void putCh(char c);
 
 protected:
-	void setCursor();
+    void setCursor();
 };
 
 #endif

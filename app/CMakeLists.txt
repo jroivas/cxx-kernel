@@ -195,7 +195,6 @@ add_library(app
     ${APP_FILES}
     )
 
-add_custom_target(ALWAYS_DO_RENAME_MAIN
+add_custom_command(TARGET app POST_BUILD
     COMMAND objcopy --redefine-sym main=app_main ${CMAKE_CURRENT_BINARY_DIR}/libapp.a
     )
-add_dependencies(app ALWAYS_DO_RENAME_MAIN)

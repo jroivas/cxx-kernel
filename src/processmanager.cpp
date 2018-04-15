@@ -105,7 +105,6 @@ Task *ProcessManager::schedule()
     Task *current = m_current;
 
     if (current != nullptr) {
-        //current->lock();
         TEST_LOCK(current);
     }
     //Platform::video()->printf("Curr %x %d\n",current, current==nullptr?0:current->pid());
@@ -135,7 +134,6 @@ Task *ProcessManager::schedule()
         while(1) ;
     }
 
-    //next->lock();
     TEST_LOCK(next);
 
     volatile ptr_val_t *lock = nullptr;
@@ -176,7 +174,6 @@ Task *ProcessManager::schedule()
     Platform::video()->printf("\n:::%d\n",next->pid());
 #endif
 
-    //Platform::continueInterrupts();
     next->unlock();
 
     next->restore(lock);

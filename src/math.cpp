@@ -2,27 +2,6 @@
 #include "osmath.h"
 #include "types.h"
 
-#if 0
-#define ABS_STUB(j)\
-    if (j < 0) {\
-        j *= -1;\
-    }\
-    return j;
-
-int abs(int j)
-{
-    ABS_STUB(j);
-}
-long int labs(long int j)
-{
-    ABS_STUB(j);
-}
-long long int llabs(long long int j)
-{
-    ABS_STUB(j);
-}
-#endif
-
 uint64_t my__udivmoddi4(uint64_t num, uint64_t den, uint64_t *rem_p)
 {
     uint64_t quot = 0, qbit = 1;
