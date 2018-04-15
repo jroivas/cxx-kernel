@@ -36,5 +36,5 @@ void IDTARM::installHandler(unsigned int i, idt_handler_t high, idt_handler_t bo
 idt_routine_t IDTARM::getRoutine(unsigned int i)
 {
 	(void)i;
-	return NULL;
+	return nullptr;
 }

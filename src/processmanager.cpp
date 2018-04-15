@@ -16,7 +16,7 @@ ProcessManager::ProcessManager()
     m_tasks = new List();
     m_pool_index = 0;
     m_pool_target = 0;
-    m_current = NULL;
+    m_current = nullptr;
     m_running = false;
     m_pid = 1;
 
@@ -25,7 +25,7 @@ ProcessManager::ProcessManager()
 
 uint32_t ProcessManager::approxPool(Task *t, uint32_t base)
 {
-    if (t == NULL) {
+    if (t == nullptr) {
         return TASK_POOLS - 1;
     }
 
@@ -38,14 +38,14 @@ uint32_t ProcessManager::approxPool(Task *t, uint32_t base)
 
 void ProcessManager::addTask(Task *t)
 {
-    if (t == NULL) return;
+    if (t == nullptr) return;
 
     Platform::seizeInterrupts();
 
     Task *current = m_current;
     Platform::video()->printf("CURR %d %x\n", m_tasks->size(), current);
 
-    if (current != NULL) {
+    if (current != nullptr) {
         current->lock();
     }
 
@@ -53,8 +53,8 @@ void ProcessManager::addTask(Task *t)
         t->setPid(++m_pid);
     }
 
-    volatile ptr_val_t *lock = NULL;
-    if (current != NULL) {
+    volatile ptr_val_t *lock = nullptr;
+    if (current != nullptr) {
         lock = current->getLock();
         m_tasks->append(current);
         if (current->save()) {
@@ -70,7 +70,7 @@ void ProcessManager::addTask(Task *t)
 
 void ProcessManager::doKill()
 {
-    if (m_current == NULL) return;
+    if (m_current == nullptr) return;
     m_tasks->deleteAll(m_current);
 }
 
@@ -104,18 +104,18 @@ Task *ProcessManager::schedule()
     Platform::seizeInterrupts();
     Task *current = m_current;
 
-    if (current != NULL) {
+    if (current != nullptr) {
         //current->lock();
         TEST_LOCK(current);
     }
-    //Platform::video()->printf("Curr %x %d\n",current, current==NULL?0:current->pid());
+    //Platform::video()->printf("Curr %x %d\n",current, current==nullptr?0:current->pid());
     //Platform::video()->printf("Curr %d\n", m_tasks->size());
 
     void *tmp = m_tasks->takeFirst();
-    if (tmp == NULL) {
+    if (tmp == nullptr) {
         current->unlock();
         Platform::continueInterrupts();
-        return NULL;
+        return nullptr;
     }
 
     Task *next = (Task*)tmp;
@@ -124,7 +124,7 @@ Task *ProcessManager::schedule()
         Platform::continueInterrupts();
         return current;
     }
-    if (current != NULL) {
+    if (current != nullptr) {
         m_tasks->append(current);
     }
 
@@ -138,8 +138,8 @@ Task *ProcessManager::schedule()
     //next->lock();
     TEST_LOCK(next);
 
-    volatile ptr_val_t *lock = NULL;
-    if (current != NULL) {
+    volatile ptr_val_t *lock = nullptr;
+    if (current != nullptr) {
         lock = current->getLock();
     }
 
@@ -186,5 +186,5 @@ Task *ProcessManager::schedule()
 
 Task *ProcessManager::clone()
 {
-    return NULL;
+    return nullptr;
 }

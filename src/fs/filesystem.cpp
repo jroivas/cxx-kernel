@@ -41,7 +41,7 @@ void Dir::update()
 Dirent *Dir::next()
 {
     if (m_index >= m_items.size()) {
-        return NULL;
+        return nullptr;
     }
 
     Dirent *res = (Dirent *)m_items.at(m_index);
@@ -110,7 +110,7 @@ void *Filesystem::getCustom(int fh)
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 Filesystem *Filesystem::getFilesystem(int fh)
@@ -124,7 +124,7 @@ Filesystem *Filesystem::getFilesystem(int fh)
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 const String Filesystem::getName(int fh) const

@@ -2,15 +2,15 @@
 
 List::List()
 {
-    m_first = NULL;
-    m_last = NULL;
+    m_first = nullptr;
+    m_last = nullptr;
     m_size = 0;
 }
 
 void List::addFirst(void *val)
 {
     ListObject *obj = new ListObject(val);
-    if (m_first != NULL) {
+    if (m_first != nullptr) {
         ListObject *tmp = m_first;
         obj->next = tmp;
     } else {
@@ -22,7 +22,7 @@ void List::addFirst(void *val)
 
 void List::append(void *val)
 {
-    if (m_last == NULL) {
+    if (m_last == nullptr) {
         addFirst(val);
         return;
     }
@@ -36,20 +36,20 @@ void List::append(void *val)
 
 void *List::first()
 {
-    if (m_first == NULL) return NULL;
+    if (m_first == nullptr) return nullptr;
     return m_first->ptr;
 }
 
 void *List::takeFirst()
 {
-    if (m_first == NULL) return NULL;
+    if (m_first == nullptr) return nullptr;
 
     ListObject *tmp = m_first;
-    if (tmp->next != NULL) {
+    if (tmp->next != nullptr) {
         m_first = tmp->next;
     } else {
-        m_first = NULL;
-        m_last = NULL;
+        m_first = nullptr;
+        m_last = nullptr;
     }
     void *val = tmp->ptr;
     m_size--;
@@ -59,34 +59,34 @@ void *List::takeFirst()
 
 void *List::last()
 {
-    if (m_last == NULL) return NULL;
+    if (m_last == nullptr) return nullptr;
     return m_last->ptr;
 }
 
 void List::deleteAll(void *val)
 {
-    if (m_first == NULL) return;
+    if (m_first == nullptr) return;
 
     ListObject *obj = m_first;
-    ListObject *prev = NULL;
+    ListObject *prev = nullptr;
 
-    while (obj != NULL) {
+    while (obj != nullptr) {
         if (obj->ptr == val) {
-            if (prev == NULL) {
+            if (prev == nullptr) {
                 m_first = obj->next;
             } else {
                 prev->next = obj->next;
             }
             if (m_last == obj) {
                 m_last = prev;
-                prev->next = NULL;
+                prev->next = nullptr;
             }
             m_size--;
             delete obj;
             obj = prev->next;
         }
         prev = obj;
-        if (obj != NULL) {
+        if (obj != nullptr) {
             obj = obj->next;
         }
     }
@@ -104,16 +104,16 @@ const List::ListObject *List::begin() const
 
 const List::ListObject *List::next(const List::ListObject *iter) const
 {
-    if (iter == NULL) {
-        return NULL;
+    if (iter == nullptr) {
+        return nullptr;
     }
     return iter->next;
 }
 
 const void *List::item(const List::ListObject *iter) const
 {
-    if (iter == NULL) {
-        return NULL;
+    if (iter == nullptr) {
+        return nullptr;
     }
     return iter->ptr;
 }
@@ -121,17 +121,17 @@ const void *List::item(const List::ListObject *iter) const
 void *List::at(uint32_t i)
 {
     ListObject *obj = m_first;
-    if (obj == NULL) {
-        return NULL;
+    if (obj == nullptr) {
+        return nullptr;
     }
 
     uint32_t c = 0;
-    while (c < i && obj->next != NULL) {
+    while (c < i && obj->next != nullptr) {
         ++c;
         obj = obj->next;
     }
     if (c != i) {
-        return NULL;
+        return nullptr;
     }
 
     return obj->ptr;
@@ -139,10 +139,10 @@ void *List::at(uint32_t i)
 
 bool List::appendAfter(uint32_t i, void *val)
 {
-    if (val == NULL) {
+    if (val == nullptr) {
         return false;
     }
-    if (m_first == NULL) {
+    if (m_first == nullptr) {
         addFirst(val);
         return true;
     }
@@ -150,16 +150,16 @@ bool List::appendAfter(uint32_t i, void *val)
     ListObject *obj = m_first;
     uint32_t c = 0;
 
-    if (obj == NULL) {
+    if (obj == nullptr) {
         return false;
     }
-    while (c < i && obj->next != NULL) {
+    while (c < i && obj->next != nullptr) {
         c++;
         obj = obj->next;
     }
 
     ListObject *another_obj = new ListObject(val);
-    if (obj->next != NULL) {
+    if (obj->next != nullptr) {
         another_obj->next = obj->next;
     } else {
         m_last = another_obj;
@@ -172,10 +172,10 @@ bool List::appendAfter(uint32_t i, void *val)
 
 bool List::addAt(uint32_t i, void *val)
 {
-    if (val == NULL) {
+    if (val == nullptr) {
         return false;
     }
-    if (m_first == NULL || i == 0) {
+    if (m_first == nullptr || i == 0) {
         addFirst(val);
         return true;
     }
@@ -183,16 +183,16 @@ bool List::addAt(uint32_t i, void *val)
     ListObject *obj = m_first;
     uint32_t c = 0;
 
-    if (obj == NULL) {
+    if (obj == nullptr) {
         return false;
     }
-    while (c + 1 < i && obj->next != NULL) {
+    while (c + 1 < i && obj->next != nullptr) {
         c++;
         obj = obj->next;
     }
 
     ListObject *another_obj = new ListObject(val);
-    if (obj->next != NULL) {
+    if (obj->next != nullptr) {
         another_obj->next = obj->next;
     }
     obj->next = another_obj;
@@ -203,14 +203,14 @@ bool List::addAt(uint32_t i, void *val)
 
 bool List::deleteAt(uint32_t i)
 {
-    if (m_first == NULL) {
+    if (m_first == nullptr) {
         return false;
     }
 
     if (i == 0) {
-        if (m_first->next==NULL) {
-            m_first = NULL;
-            m_last = NULL;
+        if (m_first->next==nullptr) {
+            m_first = nullptr;
+            m_last = nullptr;
             m_size = 0;
         } else {
             m_first = m_first->next;
@@ -222,10 +222,10 @@ bool List::deleteAt(uint32_t i)
     ListObject *obj = m_first;
     uint32_t c = 0;
 
-    if (obj == NULL) {
+    if (obj == nullptr) {
         return false;
     }
-    while (c + 1 < i && obj->next != NULL) {
+    while (c + 1 < i && obj->next != nullptr) {
         c++;
         obj = obj->next;
     }
@@ -233,21 +233,21 @@ bool List::deleteAt(uint32_t i)
         return false;
     }
 
-    if (obj->next != NULL) {
+    if (obj->next != nullptr) {
         ListObject *tmp = obj->next;
         obj->next = tmp->next;
         if (tmp == m_last) {
             m_last = obj->next;
         }
-        if (tmp->next == NULL) {
+        if (tmp->next == nullptr) {
             m_last = obj;
         }
         m_size--;
         delete tmp;
     }
     else {
-        m_first = NULL;
-        m_last = NULL;
+        m_first = nullptr;
+        m_last = nullptr;
         m_size = 0;
         delete obj;
     }

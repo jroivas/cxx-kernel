@@ -40,7 +40,7 @@ public:
 	void setAddress(uint32_t adr) { adr &= 0xFFFFF000; adr |= val&0xFFF; val = adr; }
 
 	bool isAvail() { return ((getAddress()==0) && (!getPresent())); }
-	bool copyTo(Page *p) { if (p==NULL) return false; p->val = val; return true; }
+	bool copyTo(Page *p) { if (p==nullptr) return false; p->val = val; return true; }
 
 	void alloc(PageType type=KernelPage);
 	void copyPhys(Page p);

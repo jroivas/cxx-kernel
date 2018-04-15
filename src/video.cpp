@@ -12,11 +12,11 @@
 #define TAB_SIZE 8
 #define SCROLL_SIZE 1
 
-static Video *__global_video = NULL;
+static Video *__global_video = nullptr;
 
 Video *Video::get()
 {
-    if (__global_video==NULL) {
+    if (__global_video==nullptr) {
         __global_video = Platform::video();
     }
     return __global_video;
@@ -30,8 +30,8 @@ Video::Video()
     m_width = 80;
     m_height = 25;
 
-    m_videomem = NULL;
-    m_font = NULL;
+    m_videomem = nullptr;
+    m_font = nullptr;
 }
 
 Video::~Video()
@@ -63,10 +63,10 @@ void Video::resize(int width, int height)
 
 void Video::clear()
 {
-    if (Platform::fb() != NULL && Platform::fb()->isConfigured()) {
+    if (Platform::fb() != nullptr && Platform::fb()->isConfigured()) {
         Platform::fb()->clear();
     } else {
-        if (m_videomem == NULL) return;
+        if (m_videomem == nullptr) return;
         unsigned int i = 0;
         unsigned int csize = size();
 
@@ -80,14 +80,14 @@ void Video::clear()
 
 void Video::scroll()
 {
-    if (Platform::fb() != NULL && Platform::fb()->isConfigured()) {
+    if (Platform::fb() != nullptr && Platform::fb()->isConfigured()) {
         if (m_y >= height()) {
             Platform::fb()->clear();
             m_x = 0;
             m_y = 0;
         }
     } else {
-        if (m_videomem == NULL) return;
+        if (m_videomem == nullptr) return;
         if (m_y >= height()) {
             unsigned int ss = (height() - 2) * width();
             Mem::copy(m_videomem, m_videomem + SCROLL_SIZE * width() * 2, ss * 2);
@@ -359,8 +359,8 @@ void Video::putCh(char c)
 
     scroll();
 
-    if (Platform::fb() != NULL && Platform::fb()->isConfigured()) {
-        if (m_font == NULL) {
+    if (Platform::fb() != nullptr && Platform::fb()->isConfigured()) {
+        if (m_font == nullptr) {
             m_font = new KernelFont();
             //clear();
             m_x = 0;
@@ -373,7 +373,7 @@ void Video::putCh(char c)
             c);
         m_x++;
     } else {
-        if (m_videomem == NULL) return;
+        if (m_videomem == nullptr) return;
         unsigned int offset = m_y*width() + m_x;
 
         m_videomem[offset] = c | VIDEO_COLOR_MASK;

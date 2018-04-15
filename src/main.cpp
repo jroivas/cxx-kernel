@@ -44,14 +44,14 @@ extern "C" void _main(unsigned long multiboot, unsigned long magic)
     extern void (* init_array_start)();
     extern void (* init_array_end)();
 
-    if (start_ctors!=NULL) {
+    if (start_ctors!=nullptr) {
         void (**constructor)() = & start_ctors;
         while (constructor<&end_ctors) {
             ((void (*) (void)) (*constructor)) ();
             ++constructor;
         }
     }
-    if (init_array_start != NULL) {
+    if (init_array_start != nullptr) {
         void (**constructor)() =  &init_array_start;
         while (constructor < &init_array_end) {
             ((void (*) (void)) (*constructor)) ();

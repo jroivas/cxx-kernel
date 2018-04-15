@@ -85,8 +85,8 @@ uint32_t PCI::getDevice(uint32_t bus, uint32_t device, uint32_t func)
 PCI::HeaderGeneric *PCI::getHeader(uint32_t bus, uint32_t device, uint32_t func)
 {
     HeaderGeneric *tmp = (HeaderGeneric*)MM::instance()->alloc(sizeof(struct HeaderGeneric));
-    if (tmp == NULL) {
-        return NULL;
+    if (tmp == nullptr) {
+        return nullptr;
     }
     for (int i = 0; i < 16; i++) {
         tmp->reg[i] = getConfig(bus, device, func, i * 4);
@@ -101,7 +101,7 @@ void PCI::setHeader(uint32_t bus, uint32_t device, uint32_t func, uint32_t reg, 
 
 void PCI::set(DeviceIterator *iter, uint32_t reg, uint8_t val)
 {
-    if (iter == NULL) return;
+    if (iter == nullptr) return;
     setHeader(iter->bus, iter->dev, iter->func, reg, val);
 }
 
@@ -153,12 +153,12 @@ PCI::DeviceIterator *PCI::startIter()
 
 void PCI::endIter(DeviceIterator *iter)
 {
-    if (iter != NULL) delete iter;
+    if (iter != nullptr) delete iter;
 }
 
 PCI::HeaderGeneric *PCI::findNextDevice(DeviceIterator *iter, uint8_t classcode, uint8_t subclass)
 {
-    if (iter == NULL) return NULL;
+    if (iter == nullptr) return nullptr;
     while (iter->bus < 0x100) {
         while (iter->dev < 0x20) {
             bool multi = false;
@@ -185,7 +185,7 @@ PCI::HeaderGeneric *PCI::findNextDevice(DeviceIterator *iter, uint8_t classcode,
         iter->bus++;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 PCI::HeaderGeneric *PCI::getCurrent(DeviceIterator *iter)
@@ -196,5 +196,5 @@ PCI::HeaderGeneric *PCI::getCurrent(DeviceIterator *iter)
         HeaderGeneric *hdr = getHeader(iter->bus, iter->dev, iter->func);
         return hdr;
     }
-    return NULL;
+    return nullptr;
 }

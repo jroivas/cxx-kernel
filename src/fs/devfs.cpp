@@ -47,7 +47,7 @@ int DevFS::open(String path, int flags)
     //FIXME
     if (path == "random"
         || path == "urandom") {
-        int res = mapfile(type(), path, this, NULL);
+        int res = mapfile(type(), path, this, nullptr);
         return res;
     }
     errno = ENOENT;
@@ -163,13 +163,13 @@ int DevFS::flush(int fd)
 Dir *DevFS::opendir(String name)
 {
     (void)name;
-    return NULL;
+    return nullptr;
 }
 
 Dirent *DevFS::readdir(Dir *dir)
 {
     (void)dir;
-    return NULL;
+    return nullptr;
 }
 
 void DevFS::rewinddir(Dir *dir)

@@ -17,10 +17,10 @@ IDTX86::IDTX86() : IDT()
     Mem::set(&idt, 0, sizeof(Entry) * INTERRUPTS);
 
     for (int i = 0; i < IRQ_ROUTINES; i++) {
-        routines[i] = NULL;
+        routines[i] = nullptr;
     }
     for (int i = 0; i < ISR_HANDLERS; i++) {
-        handlers[i] = NULL;
+        handlers[i] = nullptr;
     }
 
     load();
@@ -38,7 +38,7 @@ void IDTX86::installRoutine(unsigned int i, idt_routine_t handler)
 
 void IDTX86::uninstallRoutine(unsigned int i)
 {
-    routines[i] = NULL;
+    routines[i] = nullptr;
 }
 
 void IDTX86::installHandler(unsigned int i, idt_handler_t high, idt_handler_t bottom, void *data)
@@ -52,11 +52,11 @@ void IDTX86::installHandler(unsigned int i, idt_handler_t high, idt_handler_t bo
     //TODO: create a thread if necessary
 
     /* Installing handler */
-    if (handlers[i]==NULL) {
+    if (handlers[i]==nullptr) {
         handlers[i] = h;
     } else {
         Handler *p = handlers[i];
-        while (p->next != NULL) {
+        while (p->next != nullptr) {
             p = p->next;
         }
         p->next = h;
@@ -75,7 +75,7 @@ IDTX86::Handler *IDTX86::getHandler(unsigned int i)
 
 IDTX86::Handler *IDTX86::handler(unsigned int i)
 {
-    if (get() == NULL) return NULL;
+    if (get() == nullptr) return nullptr;
     return ((IDTX86*)get())->getHandler(i);
 }
 
@@ -217,7 +217,7 @@ void IDTX86::initIRQ()
 
 extern "C" int irq_handler(Regs * r)
 {
-    if (r == NULL) {
+    if (r == nullptr) {
         VideoX86 tmp;
         tmp.printf("ERROR! IRQ, regs. \n");
 
@@ -227,7 +227,7 @@ extern "C" int irq_handler(Regs * r)
     }
 
     int (*routine)(Regs *r);
-    routine = NULL;
+    routine = nullptr;
 
     if (r->int_no < 32) {
         Port::out(0x20, 0x20);
@@ -236,13 +236,13 @@ extern "C" int irq_handler(Regs * r)
 
     routine = IDTX86::get()->routine(r->int_no);
     int res = 0;
-    if (routine != NULL) {
+    if (routine != nullptr) {
         res = routine(r);
     }
 
     IDTX86::Handler *handler = IDTX86::handler(r->int_no);
-    while (handler != NULL) {
-        if (handler->high_half != NULL) {
+    while (handler != nullptr) {
+        if (handler->high_half != nullptr) {
             handler->high_half(r->int_no, handler->data);
         }
         //handler->bottom_half(r->int_no, handler->data); //FIXME
@@ -261,7 +261,7 @@ extern uint32_t debug_ptr;
 extern uint32_t debug_ptr_cr2;
 extern "C" int isr_handler(Regs * r)
 {
-    if (r == NULL) {
+    if (r == nullptr) {
         VideoX86 tmp;
         tmp.clear();
         tmp.printf("ERROR! ISR, regs. \n");
@@ -296,7 +296,7 @@ extern "C" int isr_handler(Regs * r)
     }
 
     IDTX86::Handler *handler = IDTX86::handler(r->int_no);
-    while (handler != NULL) {
+    while (handler != nullptr) {
         handler->high_half(r->int_no, handler->data);
         //handler->bottom_half(r->int_no, handler->data); //FIXME
         handler = handler->next;

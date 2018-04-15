@@ -47,7 +47,7 @@ void *Paging::alloc(size_t cnt, unsigned int align, Alloc do_map)
     _d->lock();
     (void)align;
     (void)do_map;
-    void *res = NULL;
+    void *res = nullptr;
     ptr_val_t pos = 0;
 #if 0
     ptr_val_t pp = 0;
@@ -55,7 +55,7 @@ void *Paging::alloc(size_t cnt, unsigned int align, Alloc do_map)
         pos = 0;
         if (_d->map(&pos, PAGING_MAP_R0, 1)) {
             cnt--;
-            if (res==NULL && pos!=0) {
+            if (res==nullptr && pos!=0) {
                 res=(void*)pos;
                 pp = pos;
             } else {
@@ -66,7 +66,7 @@ void *Paging::alloc(size_t cnt, unsigned int align, Alloc do_map)
                 }
             }
         } else {
-            res = NULL;
+            res = nullptr;
             break;
         }
 #else
@@ -74,7 +74,7 @@ void *Paging::alloc(size_t cnt, unsigned int align, Alloc do_map)
         res = (void*)pos;
 #endif
     } else {
-        res = NULL;
+        res = nullptr;
     }
 
     _d->unlock();
@@ -90,7 +90,7 @@ void *Paging::allocStatic(size_t size, ptr_t phys)
 
     ptr_val_t tmp = (ptr_val_t)_d->freePageAddress();
 
-    if (phys != NULL) {
+    if (phys != nullptr) {
         *phys = tmp;
     }
 
@@ -116,7 +116,7 @@ void Paging::map(void *phys, void *virt, unsigned int flags)
 {
     _d->lock();
     if (!_d->mapPhys(phys, (ptr_t)virt, flags)) {
-        if (virt != NULL) {
+        if (virt != nullptr) {
             *(ptr_val_t*)virt = 0;
         }
     }

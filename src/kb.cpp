@@ -4,11 +4,11 @@
 #include "video.h"
 #include "arch/platform.h"
 
-static KB *__global_kb = NULL;
+static KB *__global_kb = nullptr;
 
 KB *KB::get()
 {
-    if (__global_kb==NULL) {
+    if (__global_kb == nullptr) {
         __global_kb = Platform::kb();
     }
     return __global_kb;
@@ -16,7 +16,7 @@ KB *KB::get()
 
 int KB::handler(Regs *r)
 {
-    if (__global_kb == NULL) {
+    if (__global_kb == nullptr) {
         return -1;
     }
 

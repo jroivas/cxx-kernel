@@ -6,7 +6,7 @@ using namespace __cxxabiv1;
 
 int __cxa_guard_acquire(__guard *g)
 {
-    if (g == NULL) return 0;
+    if (g == nullptr) return 0;
 
     Mutex m;
     m.assign((unsigned long volatile*)g);
@@ -17,7 +17,7 @@ int __cxa_guard_acquire(__guard *g)
 
 void __cxa_guard_release (__guard *g)
 {
-    if (g == NULL) return;
+    if (g == nullptr) return;
 
     Mutex m;
     m.assign((unsigned long volatile*)g);
@@ -26,7 +26,7 @@ void __cxa_guard_release (__guard *g)
 
 void __cxa_guard_abort(__guard *g)
 {
-    if (g == NULL) return;
+    if (g == nullptr) return;
 
     Mutex m;
     m.assign((unsigned long volatile*)g);

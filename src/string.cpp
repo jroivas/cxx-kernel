@@ -17,7 +17,7 @@ void *Mem::copy(void *dest, const void *src, size_t size)
 
 void *Mem::move(void *dest, const void *src, size_t size)
 {
-    if (dest == NULL || src == NULL) return NULL;
+    if (dest == nullptr || src == nullptr) return nullptr;
     if (dest == src) return dest;
 
     if (dest > src) {
@@ -70,7 +70,7 @@ extern "C" void *memmove(void *dest, const void *src, size_t n)
 
 String::String()
     : m_length(0),
-    m_str(NULL),
+    m_str(nullptr),
     m_null(0)
 {
 }
@@ -98,15 +98,15 @@ String::String(char c)
 
 String::~String()
 {
-    if (m_str != NULL) {
+    if (m_str != nullptr) {
         MM::instance()->free(m_str);
-        m_str = NULL;
+        m_str = nullptr;
     }
 }
 
 void String::init(const char *str, ssize_t len)
 {
-    if (str != NULL) {
+    if (str != nullptr) {
         if (len >= 0) {
             m_length = len;
         } else {
@@ -116,17 +116,17 @@ void String::init(const char *str, ssize_t len)
         Mem::copy((void*)m_str, (void*)str, m_length);
         m_str[m_length] = 0;
     } else {
-        m_str = NULL;
+        m_str = nullptr;
     }
 }
 
 size_t String::length(const char *str)
 {
-    if (str == NULL) return 0;
+    if (str == nullptr) return 0;
 
     unsigned int cnt = 0;
     const char *tmp = str;
-    while (*tmp != NULL) {
+    while (*tmp != 0) {
         cnt++;
         tmp++;
     }

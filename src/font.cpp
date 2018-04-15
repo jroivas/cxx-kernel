@@ -10,8 +10,8 @@ KernelFont::KernelFont()
 
 void KernelFont::drawFont(FB *fb, int x, int y, unsigned char c)
 {
-    if (fb == NULL) return;
-    if (current == NULL) return;
+    if (fb == nullptr) return;
+    if (current == nullptr) return;
 
 #ifdef FEATURE_GRAPHICS
     for (int32_t i=0; i<RAWFONT(current)->height; i++) {
@@ -33,12 +33,12 @@ void KernelFont::drawFont(FB *fb, int x, int y, unsigned char c)
 
 uint8_t KernelFont::width()
 {
-    if (current == NULL) return 0;
+    if (current == nullptr) return 0;
     return RAWFONT(current)->width;
 }
 
 uint8_t KernelFont::height()
 {
-    if (current == NULL) return 0;
+    if (current == nullptr) return 0;
     return RAWFONT(current)->height;
 }

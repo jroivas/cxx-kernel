@@ -175,7 +175,7 @@ struct __ptcb {
     struct __ptcb *__next;
 };
 
-static struct __ptcb *__cleanup_stack = NULL;
+static struct __ptcb *__cleanup_stack = nullptr;
 
 extern "C"
 void _pthread_cleanup_push(struct __ptcb *p, void (*f)(void *), void *x)

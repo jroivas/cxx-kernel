@@ -23,10 +23,11 @@ FB::ModeConfig *X11::query(FB::ModeConfig *prefer)
 
 bool X11::configure(ModeConfig *mode)
 {
-    if (mode==NULL) return false;
+    if (mode == nullptr) return false;
+    XInitThreads();
 
-    m_disp = XOpenDisplay(NULL);
-    if (m_disp == NULL) {
+    m_disp = XOpenDisplay(nullptr);
+    if (m_disp == nullptr) {
         return false;
     }
 
@@ -49,7 +50,7 @@ bool X11::configure(ModeConfig *mode)
         mode->height,
         (mode->depth < 32) ? mode->depth : 24);
 
-    m_gc = XCreateGC(m_disp, m_pix, 0, NULL);
+    m_gc = XCreateGC(m_disp, m_pix, 0, nullptr);
     XSetForeground(m_disp, m_gc, white);
 
     XMapWindow(m_disp, m_win);

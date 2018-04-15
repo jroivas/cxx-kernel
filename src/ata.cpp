@@ -68,7 +68,7 @@ public:
         m_dma(false),
         m_ata(a)
     {
-        next = NULL;
+        next = nullptr;
         m_class = CLASS_ATA;
     }
     void setup(uint32_t pri, uint32_t sec, DeviceType type)
@@ -201,7 +201,7 @@ protected:
 
 uint8_t ATA::DevicePrivate::read(uint32_t port)
 {
-    if (m_ata==NULL) return 0;
+    if (m_ata==nullptr) return 0;
     return m_ata->systemPortIn(port);
 }
 
@@ -421,7 +421,7 @@ bool ATA::DevicePrivate::poll(bool extra)
 bool ATA::DevicePrivate::readSector(uint8_t *buffer, uint16_t sectors, uint32_t addr, uint32_t addr_hi)
 {
     uint8_t cmd = 0;
-    if (buffer == NULL) return false;
+    if (buffer == nullptr) return false;
 
     if (!prepareAccess(sectors, addr, addr_hi)) return false;
 
@@ -454,7 +454,7 @@ bool ATA::DevicePrivate::readSector(uint8_t *buffer, uint16_t sectors, uint32_t 
 bool ATA::DevicePrivate::writeSector(uint8_t *buffer, uint16_t sectors, uint32_t addr, uint32_t addr_hi)
 {
     uint8_t cmd = 0;
-    if (buffer == NULL) return false;
+    if (buffer == nullptr) return false;
 
     if (!prepareAccess(sectors, addr, addr_hi)) return false;
 
@@ -569,7 +569,7 @@ void ATA::DevicePrivate::detect()
 
 ATA::ATA()
 {
-    m_devices = NULL;
+    m_devices = nullptr;
     m_pci = Platform::pci();
     m_interrupt = ATA_INTERRUPT_BASE;
 }
@@ -581,13 +581,13 @@ ATA::~ATA()
 void ATA::init()
 {
     // TODO Cleanup
-    if (m_pci != NULL) {
+    if (m_pci != nullptr) {
         PCI::DeviceIterator *i = m_pci->startIter();
-        PCI::HeaderGeneric *hdr = NULL;
+        PCI::HeaderGeneric *hdr = nullptr;
         /* Go thorought all the controllers */
         do {
             hdr = m_pci->findNextDevice(i, 0x1, 0x1);
-            if (hdr!=NULL && (((PCI::HeaderCommon*)hdr)->headerType&0x1F)==0) {
+            if (hdr!=nullptr && (((PCI::HeaderCommon*)hdr)->headerType&0x1F)==0) {
                 m_pci->set(i, 0x3C, 0xFE);
                 hdr = m_pci->getCurrent(i);
                 PCI::Header00 *h = (PCI::Header00*)hdr;
@@ -629,44 +629,44 @@ void ATA::init()
                 addDevice(dev3);
                 addDevice(dev4);
 
-                Platform::idt()->installHandler(m_interrupt++, interrupt_handler, NULL, NULL);
+                Platform::idt()->installHandler(m_interrupt++, interrupt_handler, nullptr, nullptr);
             }
-        } while (hdr!=NULL);
+        } while (hdr!=nullptr);
         m_pci->endIter(i);
     }
 }
 
 uint32_t ATA::deviceSize(Device *d)
 {
-    if (d == NULL) return 0;
+    if (d == nullptr) return 0;
 
     return ((DevicePrivate*)d)->size();
 }
 
 ATA::DeviceModel ATA::deviceModel(Device *d)
 {
-    if (d == NULL) return STORAGE_UNKNOWN;
+    if (d == nullptr) return STORAGE_UNKNOWN;
 
     return ((DevicePrivate*)d)->model();
 }
 
 bool ATA::read(Device *d, uint8_t *buffer, uint16_t sectors, uint32_t addr, uint32_t addr_hi)
 {
-    if (d == NULL) return false;
+    if (d == nullptr) return false;
 
     return ((DevicePrivate*)d)->readSector(buffer, sectors, addr, addr_hi);
 }
 
 bool ATA::write(Device *d, uint8_t *buffer, uint16_t sectors, uint32_t addr, uint32_t addr_hi)
 {
-    if (d == NULL) return false;
+    if (d == nullptr) return false;
 
     return ((DevicePrivate*)d)->writeSector(buffer, sectors, addr, addr_hi);
 }
 
 bool ATA::select(Device *d)
 {
-    if (d == NULL) return false;
+    if (d == nullptr) return false;
 
     uint8_t tmp[512];
     ((DevicePrivate*)d)->select();

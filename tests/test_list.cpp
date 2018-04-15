@@ -16,8 +16,8 @@ int main(int argc, char **argv)
     uint32_t val7 = 72;
 
     TEST_ASSUME(list,l.size()==0);
-    TEST_ASSUME(list,l.first()==NULL);
-    TEST_ASSUME(list,l.last()==NULL);
+    TEST_ASSUME(list,l.first()==nullptr);
+    TEST_ASSUME(list,l.last()==nullptr);
 
     l.append(&val1);
     TEST_ASSUME(list,l.size()==1);
@@ -151,12 +151,12 @@ int main(int argc, char **argv)
 
     TEST_ASSUME(list,p.takeFirst()==&val3);
     TEST_ASSUME(list,p.size()==0);
-    TEST_ASSUME(list,p.first()==NULL);
-    TEST_ASSUME(list,p.last()==NULL);
+    TEST_ASSUME(list,p.first()==nullptr);
+    TEST_ASSUME(list,p.last()==nullptr);
 
-    TEST_ASSUME(list,p.takeFirst()==NULL);
+    TEST_ASSUME(list,p.takeFirst()==nullptr);
     TEST_ASSUME(list,p.size()==0);
-    TEST_ASSUME(list,p.first()==NULL);
-    TEST_ASSUME(list,p.last()==NULL);
+    TEST_ASSUME(list,p.first()==nullptr);
+    TEST_ASSUME(list,p.last()==nullptr);
     TEST_END(list);
 }

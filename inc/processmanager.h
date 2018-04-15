@@ -23,14 +23,14 @@ public:
     }
     bool hasSlice() const
     {
-        if (m_current == NULL) {
+        if (m_current == nullptr) {
             return false;
         }
         return (m_current->slice() > 0);
     }
     void decSlice()
     {
-        if (m_current == NULL) return;
+        if (m_current == nullptr) return;
 
         m_current->lock();
         m_current->decSlice();
@@ -38,7 +38,7 @@ public:
     }
     uint32_t pid() const
     {
-        if (m_current == NULL) {
+        if (m_current == nullptr) {
             return 0;
         }
         return m_current->pid();

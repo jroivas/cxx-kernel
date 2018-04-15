@@ -18,7 +18,7 @@
 #include "arch/linux/virtualdisc.h"
 #endif
 
-extern "C" int main(int argc, char **argv);
+extern "C" int app_main(int argc, char **argv);
 void app_proc()
 {
     int argc = 1;
@@ -26,10 +26,10 @@ void app_proc()
     Mem::copy(appname, "app", 4);
     char * argv[] = {
         appname,
-        NULL
+        nullptr
     };
 
-    int res = main(argc, argv);
+    int res = app_main(argc, argv);
     Platform::video()->printf("\n\nApplication exit with code: %d\nHalting...\n", res);
 
     MM::instance()->free(appname);
@@ -75,6 +75,7 @@ void kernel_loop()
     pm->addTask(t2);
 #endif
 
+
     Task *a_task = Platform::task()->create((ptr_val_t)&app_proc, 0, 0);
     a_task->setName("Application main");
     pm->addTask(a_task);
@@ -94,14 +95,14 @@ void kernel_loop()
         pm->schedule();
 #endif
 #ifdef FEATURE_GRAPHICS
-        if (Platform::fb()!=NULL && Platform::fb()->isConfigured()) {
-                Platform::fb()->swap();
-                Platform::fb()->blit();
+        if (Platform::fb()!=nullptr && Platform::fb()->isConfigured()) {
+            Platform::fb()->swap();
+            Platform::fb()->blit();
         }
 #endif
 
         /* Update screen */
-        Timer::get()->wait(1);
+        Timer::get()->wait(10);
     }
 }
 
@@ -110,25 +111,25 @@ Kernel::Kernel()
     platform = new Platform();
     video = Video::get();
 
-    if (IDT::get() == NULL) {
+    if (IDT::get() == nullptr) {
         delete platform;
         delete video;
-        video = NULL;
-        platform = NULL;
+        video = nullptr;
+        platform = nullptr;
         return;
     }
     IDT::get()->initISR();
     IDT::get()->initIRQ();
 
-    if (Timer::get() == NULL) {
+    if (Timer::get() == nullptr) {
         delete platform;
         delete video;
-        video = NULL;
-        platform = NULL;
+        video = nullptr;
+        platform = nullptr;
         return;
     }
-    vfs = NULL;
-    pcidev = NULL;
+    vfs = nullptr;
+    pcidev = nullptr;
 
     Timer::get()->setFrequency(KERNEL_FREQUENCY);
     KB::get();
@@ -137,7 +138,7 @@ Kernel::Kernel()
 Kernel::~Kernel()
 {
     delete video;
-    video = NULL;
+    video = nullptr;
 }
 
 // XXX
@@ -147,7 +148,7 @@ Kernel::~Kernel()
 
 void Kernel::initVideo()
 {
-    if (video != NULL) {
+    if (video != nullptr) {
         video->clear();
 
         video->printf("Ticks: %lu!\n",Timer::get()->getTicks());
@@ -178,7 +179,7 @@ void Kernel::initPCI()
 {
 #ifdef FEATURE_STORAGE
     PCI *pcidev = Platform::pci();
-    if (pcidev != NULL) {
+    if (pcidev != nullptr) {
         if (pcidev->isAvailable()) video->printf("Found PCI\n");
         else video->printf("PCI not available\n");
         pcidev->setVerbose();
@@ -192,11 +193,11 @@ void Kernel::initATA(Filesystem *cfs)
     (void)cfs;
 #ifdef FEATURE_STORAGE
     ATA *ata = Platform::ata();
-    if (ata != NULL) {
+    if (ata != nullptr) {
         ata->init();
         ATA::Device *dev = ata->getDevice();
         bool mounted = false;
-        while (dev != NULL) {
+        while (dev != nullptr) {
             video->printf("dev %x...\n", dev);
             if ((ata->deviceModel(dev) == ATA::STORAGE_SATA
                 || ata->deviceModel(dev) == ATA::STORAGE_PATA)
@@ -227,7 +228,7 @@ void Kernel::initVirtualDisc()
     vd->append("test.img");
     ATA::Device *dev = vd->getDevice();
     uint8_t buffer[512];
-    if (dev != NULL) {
+    if (dev != nullptr) {
         video->printf("Reading...\n");
         for (uint32_t sec=0; sec<6; sec++) {
             if (vd->read(dev, buffer, 1,  sec)) {
@@ -273,10 +274,10 @@ int Kernel::initFrameBuffer()
     conf.height=600;
     conf.depth=24;
 
-    if (platform->fb() == NULL) return 1;
+    if (platform->fb() == nullptr) return 1;
 
     FB::ModeConfig *vconf = platform->fb()->query(&conf);
-    if (vconf != NULL) {
+    if (vconf != nullptr) {
         video->printf("FB3\n");
         platform->fb()->configure(vconf);
 
@@ -296,15 +297,16 @@ int Kernel::initFrameBuffer()
 void Kernel::startProcessManager()
 {
     ProcessManager *pmanager = Platform::processManager();
-    if (pmanager != NULL && Platform::task() != NULL) {
+    if (pmanager != nullptr && Platform::task() != nullptr) {
 
         Task *kernel_task = Platform::task()->create((ptr_val_t)kernel_loop, 0, 0);
-        kernel_task->setSize(2);
-        kernel_task->setNice(40);
+        if (kernel_task != nullptr) {
+            kernel_task->setSize(2);
+            kernel_task->setNice(40);
 
-        pmanager->setRunning();
-        pmanager->addTask(kernel_task);
-
+            pmanager->setRunning();
+            pmanager->addTask(kernel_task);
+        }
     }
 }
 
@@ -315,10 +317,10 @@ void Kernel::initSysCall()
 
 int Kernel::run()
 {
-    if (platform == NULL) {
+    if (platform == nullptr) {
         return 1;
     }
-    if (platform->state() == NULL) {
+    if (platform->state() == nullptr) {
         return 1;
     }
     platform->state()->startInterrupts();

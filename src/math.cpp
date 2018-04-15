@@ -55,7 +55,7 @@ uint64_t my__udivmoddi4(uint64_t num, uint64_t den, uint64_t *rem_p)
 
 extern "C" uint64_t my__udivdi3(uint64_t num, uint64_t den)
 {
-    return my__udivmoddi4(num, den, NULL);
+    return my__udivmoddi4(num, den, nullptr);
 }
 
 extern "C" uint64_t my__umoddi3(uint64_t num, uint64_t den)
@@ -80,7 +80,7 @@ extern "C" int64_t my__divdi3(int64_t num, int64_t den)
         minus ^= 1;
     }
 
-    v = my__udivmoddi4(num, den, NULL);
+    v = my__udivmoddi4(num, den, nullptr);
 
     if (minus) v = -v;
 

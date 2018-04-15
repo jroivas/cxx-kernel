@@ -89,7 +89,7 @@ Task *TaskX86::clone(TaskX86::CloneFlags flags)
 {
     (void)flags;
     TaskX86 *t = new TaskX86();
-    if (t == NULL) return NULL;
+    if (t == nullptr) return nullptr;
     //FIXME TODO
 
     return t;
@@ -98,7 +98,7 @@ Task *TaskX86::clone(TaskX86::CloneFlags flags)
 Task *TaskX86::create(ptr_val_t addr, ptr_val_t stack, uint32_t flags)
 {
     TaskX86 *t = new TaskX86();
-    if (t == NULL) return NULL;
+    if (t == nullptr) return nullptr;
 
     t->init(addr, stack, flags);
     return t;

@@ -24,7 +24,7 @@ Vesa::~Vesa()
 
 int Vesa::modeDiff(FB::ModeConfig *conf, FB::ModeConfig *cmp)
 {
-    if (conf == NULL || cmp == NULL) return -1;
+    if (conf == nullptr || cmp == nullptr) return -1;
     int diff = 0;
 
     if (conf->width!=cmp->width) diff++;
@@ -101,14 +101,14 @@ FB::ModeConfig *Vesa::query(FB::ModeConfig *prefer)
     vbe_info_t *info = (vbe_info_t *)bios->alloc(sizeof(vbe_info_t));
     if (!getVESA(info)) {
         m.unlock();
-        return NULL;
+        return nullptr;
     }
 
     uint16_t *loc = (uint16_t*)VBE_Ptr((uint32_t)info->video_mode_ptr);
     //Platform::video()->printf("=== VBE2 %d %x %x\n",(loc<(uint16_t*)(info+sizeof(info))),loc,info+sizeof(info));
-    if (loc == NULL) {
+    if (loc == nullptr) {
         m.unlock();
-        return NULL;
+        return nullptr;
     }
 
     //Platform::video()->printf("=== Has MMX? %s\n",mmx_has()?"YES":"NO");
@@ -132,12 +132,12 @@ FB::ModeConfig *Vesa::query(FB::ModeConfig *prefer)
         if ((r.eax&0xFF) != 0x4f) {
             Platform::video()->printf("=== VBE2 mode info not supported\n");
             m.unlock();
-            return NULL;
+            return nullptr;
         }
         if ((r.eax&0xFF00) != 0) {
             Platform::video()->printf("=== VBE2 mode info failed %d %d\n", i, loc[i]);
             m.unlock();
-            return NULL;
+            return nullptr;
         }
         if (modeinfo->memory_model != 4 && modeinfo->memory_model != 6) {
             //Platform::video()->printf("=== a: %x\n",modeinfo->memory_model);
@@ -182,7 +182,7 @@ FB::ModeConfig *Vesa::query(FB::ModeConfig *prefer)
         conf->bytes_per_line = modeinfo->bytes_per_scan_line; //modeinfo->x_resolution * modeinfo->bits_per_pixel/8;
         conf->id = loc[i];
 
-        if (prefer==NULL) {
+        if (prefer==nullptr) {
             if (bestdiff==-1) {
                 bestdiff=0;
                 copyMode(res, conf);
@@ -208,7 +208,7 @@ FB::ModeConfig *Vesa::query(FB::ModeConfig *prefer)
     if (bestdiff == -1) {
         MM::instance()->free(res);
         m.unlock();
-        return NULL;
+        return nullptr;
     }
 
     // TODO make this cleaner
@@ -265,7 +265,7 @@ void Vesa::setMode(ModeConfig *mode)
 
 bool Vesa::configure(ModeConfig *mode)
 {
-    if (mode==NULL) return false;
+    if (mode == nullptr) return false;
 
     setMode(mode);
     if (FB::configure(mode)) {

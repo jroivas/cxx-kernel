@@ -76,6 +76,7 @@ if (PLATFORM STREQUAL "LINUX")
         linux/idtlinux.cpp
         linux/timerlinux.cpp
         linux/stateslinux.cpp
+        linux/tasklinux.cpp
         )
     if (GRAPHICS)
         set(ARCH_FILES

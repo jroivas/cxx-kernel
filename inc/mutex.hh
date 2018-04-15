@@ -41,13 +41,13 @@ public:
 
 
 inline void Mutex::lock() {
-    if (m_ptr == NULL) return;
+    if (m_ptr == nullptr) return;
 
     Platform_CAS(m_ptr, 0, 1);
 }
 
 inline void Mutex::unlock() {
-    if (m_ptr == NULL) return;
+    if (m_ptr == nullptr) return;
 
     // If already unlocked return
     if (*m_ptr == 0) return;

@@ -7,7 +7,7 @@ class Timer
 {
 public:
     static Timer *get();
-    void wait(unsigned long ticks_to_wait) const;
+    virtual void wait(unsigned long ticks_to_wait) const;
     unsigned long getTicks() const
     {
         return m_ticks;
@@ -22,7 +22,7 @@ protected:
     Timer();
     virtual void run(Regs *r);
     virtual void nop() const;
-    unsigned long m_ticks;
+    volatile unsigned long m_ticks;
     unsigned long m_hz;
 };
 

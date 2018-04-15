@@ -75,7 +75,7 @@ void Page::alloc(PageType type)
 	if (!isAvail()) return;
 	Paging p;
 	void *page = p.getPage();
-	if (page==NULL) return;
+	if (page==nullptr) return;
 
 	setAddress((ptr_val_t)page);
 
@@ -100,12 +100,12 @@ PageTable::PageTable()
 Page *PageTable::get(uint32_t i)
 {
 	if (i<PAGES_PER_TABLE) return &pages[i];
-	return NULL;
+	return nullptr;
 }
 
 bool PageTable::copyTo(PageTable *table)
 {
-	if (table==NULL) return false;
+	if (table==nullptr) return false;
 
 	//Paging p;
 	for (int i=0; i<PAGES_PER_TABLE; i++) {
@@ -353,7 +353,7 @@ PagingPrivate::PagingPrivate()
 {
 	m.assign(&__page_mapping_mutex);
 	m_static.assign(&__page_mapping_static_mutex);
-	data = NULL;
+	data = nullptr;
 	pageCnt = 0;
 	__mem_size = 0;
 	is_ok = false;
@@ -407,7 +407,7 @@ PagingPrivate::~PagingPrivate()
 bool PagingPrivate::init(void *platformData)
 {
 	(void)platformData;
-	if (data!=NULL) return false;
+	if (data!=nullptr) return false;
 	is_ok = false;
 
 #if 0
@@ -416,7 +416,7 @@ bool PagingPrivate::init(void *platformData)
 
 
 #if 0
-	if (platformData!=NULL) {
+	if (platformData!=nullptr) {
 		MultibootInfo *info = (MultibootInfo*)platformData;
 		MemoryMap *mmap = (MemoryMap*)(info->mmap_addr);
 		ptr32_val_t  info_end = info->mmap_addr + info->mmap_length;
@@ -452,7 +452,7 @@ bool PagingPrivate::init(void *platformData)
 	data = (void*)new Bits(pageCnt);
 
 	directory = (void*)new PageDir();
-	while (directory==NULL) ;
+	while (directory==nullptr) ;
 #endif
 
 #if 0
@@ -555,7 +555,7 @@ void PagingPrivate::unlockStatic()
 
 bool PagingPrivate::identityMapFrame(Page *p, ptr_val_t addr, MapType type, MapPermissions perms)
 {
-	if (p==NULL) return false;
+	if (p==nullptr) return false;
 	bool res = true;
 
 	uint32_t i = addr/PAGE_SIZE;
@@ -579,7 +579,7 @@ bool PagingPrivate::identityMapFrame(Page *p, ptr_val_t addr, MapType type, MapP
 
 bool PagingPrivate::mapFrame(Page *p, MapType type, MapPermissions perms)
 {
-	if (p==NULL) return false;
+	if (p==nullptr) return false;
 
 	//Already mapped
 	if (!p->isAvail()) {
@@ -630,7 +630,7 @@ void *PagingPrivate::getPage()
 	uint32_t i = BITS(data)->findUnset(&ok);
 	if (!ok) {
 		//TODO handle out of pages/memory
-		return NULL;
+		return nullptr;
 	}
 
 	BITS(data)->set(i);
@@ -670,7 +670,7 @@ bool PagingPrivate::mapPhys(void *phys, ptr_t virt, unsigned int flags)
 #endif
 
 	Page *p = PDIR(directory)->getPage(i, PageDir::PageDoReserve);
-	if (p==NULL) {
+	if (p==nullptr) {
 		//while(1);
 		return false;
 	}
@@ -685,7 +685,7 @@ bool PagingPrivate::mapPhys(void *phys, ptr_t virt, unsigned int flags)
 		res = identityMapFrame(p, (ptr_val_t)phys, MapPageKernel, MapPageRW);
 	}
 	
-	if (virt!=NULL) {
+	if (virt!=nullptr) {
 		*virt = i;
 	}
 	return res;
@@ -717,7 +717,7 @@ bool PagingPrivate::map(ptr_t virt, unsigned int flags, unsigned int cnt)
 	vptr = i;
 	while (cnt>0) {
 		Page *p = PDIR(directory)->getPage(i, PageDir::PageDoReserve);
-		if (p==NULL) {
+		if (p==nullptr) {
 			return false;
 		}
 		if (!p->isAvail()) {
@@ -734,7 +734,7 @@ bool PagingPrivate::map(ptr_t virt, unsigned int flags, unsigned int cnt)
 		i+=PAGE_SIZE;
 	}
 
-	if (virt!=NULL) {
+	if (virt!=nullptr) {
 		*virt = vptr;
 	}
 #endif
@@ -744,7 +744,7 @@ bool PagingPrivate::map(ptr_t virt, unsigned int flags, unsigned int cnt)
 		cnt--;
 	}
 		
-	if (virt!=NULL) {
+	if (virt!=nullptr) {
 		*virt = vptr;
 	}
 
@@ -760,7 +760,7 @@ void *PagingPrivate::unmap(void *ptr)
 	i/=PAGE_SIZE;
 
 	Page *p = PDIR(directory)->getPage(i, PageDir::PageDontReserve);
-	if (p==NULL) return NULL;
+	if (p==nullptr) return nullptr;
 
 	if (p->isAvail()) {
 		p->setPresent(false);
@@ -771,7 +771,7 @@ void *PagingPrivate::unmap(void *ptr)
 		BITS(data)->clear(i);
 	}
 #endif
-	return NULL;
+	return nullptr;
 }
 
 ptr8_t PagingPrivate::freePageAddress()
@@ -832,7 +832,7 @@ ptr_val_t PagingPrivate::memSize()
 PageDir::PageDir()
 {
 	for (int i=0; i<TABLES_PER_DIRECTORY; i++) {
-		tables[i] = NULL;
+		tables[i] = nullptr;
 		tablesPhys[i] = 0;
 	}
 	phys = (ptr_t)tablesPhys;
@@ -843,7 +843,7 @@ PageTable *PageDir::getTable(uint32_t i)
 	if (i<TABLES_PER_DIRECTORY) {
 		return tables[i];
 	}
-	return NULL;
+	return nullptr;
 }
 
 Page *PageDir::getPage(ptr_val_t addr, PageReserve reserve)
@@ -852,7 +852,7 @@ Page *PageDir::getPage(ptr_val_t addr, PageReserve reserve)
 	uint32_t index = addr / PAGES_PER_TABLE;
 
 	//We already have the table
-	if (tables[index]!=NULL) {
+	if (tables[index]!=nullptr) {
 		return tables[index]->get(addr%PAGES_PER_TABLE);
 	}
 	else if (reserve==PageDoReserve) {
@@ -864,12 +864,12 @@ Page *PageDir::getPage(ptr_val_t addr, PageReserve reserve)
 			*vid = 0x1745; //E
 			while (1);
 */
-			return NULL;
+			return nullptr;
 		}
 		tablesPhys[index] = physPtr | PAGING_MAP_R2;
 		return tables[index]->get(addr%PAGES_PER_TABLE);
 	}
-	return NULL;
+	return nullptr;
 }
 
 void PageDir::copyTo(PageDir *dir)
@@ -877,7 +877,7 @@ void PageDir::copyTo(PageDir *dir)
 	ptr_t offs = (ptr_t)((ptr_val_t)dir->tablesPhys - (ptr_val_t)dir);
 	dir->phys = (ptr_val_t)phys + offs;
 	for (int i=0; i<TABLES_PER_DIRECTORY; i++) {
-		if (tables[i]!=NULL) {
+		if (tables[i]!=nullptr) {
 			if (1) {
 				dir->tables[i] = tables[i];
 				dir->tablesPhys[i] = tablesPhys[i];

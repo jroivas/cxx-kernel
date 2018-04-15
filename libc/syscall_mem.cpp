@@ -14,17 +14,17 @@ void *syscall_mmap(void *addr, size_t length, int prot,
     (void)fd;
     (void)pgoffset;
 
-    if (addr != NULL) {
+    if (addr != nullptr) {
         printf("ERROR: mmap, non-NULL addr not supported!\n");
-        return NULL;
+        return nullptr;
     }
     if (fd >= 0) {
         printf("ERROR: mmap of files not supported!\n");
-        return NULL;
+        return nullptr;
     }
     if (pgoffset > 0) {
         printf("ERROR: mmap offset not supported!\n");
-        return NULL;
+        return nullptr;
     }
 
     printf("mmap: %x %d %d %d %d %d\n", addr, length, prot, flags, fd, pgoffset);

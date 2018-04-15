@@ -13,7 +13,7 @@
 
 static MM __mm_static_instance;
 static volatile ptr_val_t  __mm_mutex;
-static ptr_t __mm_last_free = NULL;
+static ptr_t __mm_last_free = nullptr;
 
 #define SIZEMASK 0xFFFFFFFF
 
@@ -21,7 +21,7 @@ static ptr_t __mm_last_free = NULL;
 #define PAGE_SIZE 4096
 void getTiming(struct timeval *start)
 {
-    gettimeofday(start, NULL);
+    gettimeofday(start, nullptr);
 }
 double diffTiming(struct timeval *start, struct timeval *end)
 {
@@ -70,9 +70,9 @@ struct PtrInfo
 };
 
 MM::MM()
-    : m_lastPage(NULL),
-    m_freeTop(NULL),
-    m_freeMax(NULL)
+    : m_lastPage(nullptr),
+    m_freeTop(nullptr),
+    m_freeMax(nullptr)
 {
     m.assign(&__mm_mutex);
 }
@@ -88,10 +88,10 @@ void *MM::allocPage(size_t cnt)
 #ifdef USE_LINUX
     void *block;
     size_t block_size = cnt * PAGE_SIZE;
-    block = mmap(NULL, block_size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+    block = mmap(nullptr, block_size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 
     if (block == (void*)-1) {
-        return NULL;
+        return nullptr;
     }
 
     return block;
@@ -115,11 +115,11 @@ void padding(const char *ch, int n)
 int depth(PtrInfo *p)
 {
     int s = 0;
-    while (p!=NULL) {
-        if (p->prev!=NULL) {
+    while (p!=nullptr) {
+        if (p->prev!=nullptr) {
             p = (PtrInfo*)((ptr_val_t)p->prev-sizeof(PtrInfo));
             s++;
-        } else if (p->next!=NULL) {
+        } else if (p->next!=nullptr) {
             p = (PtrInfo*)((ptr_val_t)p->next-sizeof(PtrInfo));
             s++;
         } else {
@@ -131,7 +131,7 @@ int depth(PtrInfo *p)
 
 void travel(PtrInfo *p, int level)
 {
-    if (p==NULL) {
+    if (p==nullptr) {
         printf("0\n");
     } else {
         padding("+",level);
@@ -141,7 +141,7 @@ void travel(PtrInfo *p, int level)
 //for (unsigned long kk=0; kk<0x4ffffff; kk++) a++;
 //for (unsigned long kk=0; kk<0x0ffffff; kk++) a++;
 
-        if (p->prev!=NULL) {
+        if (p->prev!=nullptr) {
                 PtrInfo *tmp = (PtrInfo*)((ptr_val_t)p->prev-sizeof(PtrInfo));
                 if (tmp!=p) {
                 printf("L");
@@ -149,7 +149,7 @@ void travel(PtrInfo *p, int level)
                 }
         }
 
-        if (p->next!=NULL) {
+        if (p->next!=nullptr) {
                 PtrInfo *tmp = (PtrInfo*)((ptr_val_t)p->next-sizeof(PtrInfo));
                 if (tmp!=p) {
                 printf("R");
@@ -162,19 +162,19 @@ void travel(PtrInfo *p, int level)
 
 void MM::treeAdd(PtrInfo *cur)
 {
-    if (cur == NULL) return;
+    if (cur == nullptr) return;
 
     ptr_t p = (ptr_t)((ptr_val_t)cur + sizeof(PtrInfo));
 
-    if (__mm_last_free == NULL) {
+    if (__mm_last_free == nullptr) {
         __mm_last_free = (ptr_t)p;
     } else {
         PtrInfo *tmp = (PtrInfo*)((ptr_val_t)__mm_last_free - sizeof(PtrInfo));
 
         /* Setup a binary tree */
-        while (tmp != NULL) {
+        while (tmp != nullptr) {
             if (cur->size < tmp->size) {
-                if (tmp->prev == NULL) {
+                if (tmp->prev == nullptr) {
                     tmp->prev = (ptr_t)p;
                     return;
                 } else {
@@ -188,7 +188,7 @@ void MM::treeAdd(PtrInfo *cur)
                     tmp = tmp2;
                 }
             } else if (cur->size >= tmp->size) {
-                if (tmp->next == NULL) {
+                if (tmp->next == nullptr) {
                     tmp->next = (ptr_t)p;
                     return;
                 } else {
@@ -208,34 +208,34 @@ void MM::treeAdd(PtrInfo *cur)
 
 void *MM::releaseFree(PtrInfo *p, PtrInfo *parent)
 {
-    if (p == NULL) {
-        return NULL;
+    if (p == nullptr) {
+        return nullptr;
     }
     ptr_t ptr = (ptr_t)((ptr_val_t)p + sizeof(PtrInfo));
 
 #if 0
     printf("relfreepre %lu %p %p\n",p->size,p->prev,p->next);
-    if (__mm_last_free!=NULL) {
+    if (__mm_last_free!=nullptr) {
             PtrInfo *tmpr = (PtrInfo*)((ptr_val_t)__mm_last_free-sizeof(PtrInfo));
             travel(tmpr, 0);
     }
             printf("-\n");
 #endif
-    if (parent == NULL) {
-        if (p->prev == NULL && p->next != NULL) {
+    if (parent == nullptr) {
+        if (p->prev == nullptr && p->next != nullptr) {
             __mm_last_free = p->next;
-        } else if (p->prev != NULL && p->next == NULL) {
+        } else if (p->prev != nullptr && p->next == nullptr) {
             __mm_last_free = p->prev;
-        } else if (p->prev != NULL && p->next != NULL) {
+        } else if (p->prev != nullptr && p->next != nullptr) {
             __mm_last_free = p->next;
             PtrInfo *tmp = (PtrInfo*)((ptr_val_t)p->prev-sizeof(PtrInfo));
             treeAdd(tmp);
-        } else if (p->prev == NULL && p->next == NULL) {
-            parent = NULL;
+        } else if (p->prev == nullptr && p->next == nullptr) {
+            parent = nullptr;
         } else {
             printf("===0 ERROR\n");
         }
-    } else if (p->prev == NULL && p->next != NULL) {
+    } else if (p->prev == nullptr && p->next != nullptr) {
         if (parent->prev == ptr) {
             parent->prev = p->next;
         } else if (parent->next == ptr) {
@@ -243,7 +243,7 @@ void *MM::releaseFree(PtrInfo *p, PtrInfo *parent)
         } else {
             printf("===1 ERROR\n");
         }
-    } else if (p->prev != NULL && p->next == NULL) {
+    } else if (p->prev != nullptr && p->next == nullptr) {
         if (parent->prev==ptr) {
             parent->prev = p->prev;
         } else if (parent->next==ptr) {
@@ -251,7 +251,7 @@ void *MM::releaseFree(PtrInfo *p, PtrInfo *parent)
         } else {
             printf("===2 ERROR\n");
         }
-    } else if (p->prev!=NULL && p->next!=NULL) {
+    } else if (p->prev!=nullptr && p->next!=nullptr) {
         if (parent->prev==ptr) {
             PtrInfo *tmp = (PtrInfo*)((ptr_val_t)p->next-sizeof(PtrInfo));
             parent->prev = p->prev;
@@ -263,11 +263,11 @@ void *MM::releaseFree(PtrInfo *p, PtrInfo *parent)
         } else {
             printf("===3 ERROR\n");
         }
-    } else if (p->prev==NULL && p->next==NULL) {
+    } else if (p->prev==nullptr && p->next==nullptr) {
         if (parent->prev==ptr) {
-            parent->prev = NULL;
+            parent->prev = nullptr;
         } else if (parent->next==ptr) {
-            parent->next = NULL;
+            parent->next = nullptr;
         } else {
             printf("===5 ERROR\n");
         }
@@ -276,53 +276,53 @@ void *MM::releaseFree(PtrInfo *p, PtrInfo *parent)
     }
 #if 0
     printf("relfree\n");
-    if (__mm_last_free!=NULL) {
+    if (__mm_last_free!=nullptr) {
         PtrInfo *tmpr = (PtrInfo*)((ptr_val_t)__mm_last_free-sizeof(PtrInfo));
         travel(tmpr, 0);
     }
         printf("-\n");
 #endif
-    p->next = NULL;
-    p->prev = NULL;
+    p->next = nullptr;
+    p->prev = nullptr;
     return (void*)p;
 }
 
 void *MM::findAvail(size_t size)
 {
-    if (__mm_last_free == NULL) return NULL;
+    if (__mm_last_free == nullptr) return nullptr;
 
     PtrInfo *tmp = (PtrInfo*)((ptr_val_t )__mm_last_free - sizeof(PtrInfo));
-    PtrInfo *tmp2 = NULL;
+    PtrInfo *tmp2 = nullptr;
 
-    while (tmp != NULL) {
+    while (tmp != nullptr) {
         if (tmp->size == size) {
             return releaseFree(tmp, tmp2);
         } else if (size < tmp->size) {
-            if (tmp->prev != NULL) {
+            if (tmp->prev != nullptr) {
                 tmp2 = tmp;
                 tmp = (PtrInfo*)((ptr_val_t)tmp->prev - sizeof(PtrInfo));
-            } else if (tmp->next != NULL
+            } else if (tmp->next != nullptr
                 && size <= ((PtrInfo*)((ptr_val_t)tmp->next-sizeof(PtrInfo)))->size) {
                 tmp2 = tmp;
                 tmp = (PtrInfo*)((ptr_val_t)tmp->next - sizeof(PtrInfo));
             } else {
-                return NULL;
+                return nullptr;
             }
         } else if (size > tmp->size) {
-            if (tmp->next != NULL) {
+            if (tmp->next != nullptr) {
                 tmp2 = tmp;
                 tmp = (PtrInfo*)((ptr_val_t)tmp->next - sizeof(PtrInfo));
-            } else if (tmp->prev != NULL
+            } else if (tmp->prev != nullptr
                 && size >= ((PtrInfo*)((ptr_val_t)tmp->prev-sizeof(PtrInfo)))->size) {
                 tmp2 = tmp;
                 tmp = (PtrInfo*)((ptr_val_t)tmp->prev - sizeof(PtrInfo));
             } else {
-                return NULL;
+                return nullptr;
             }
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 void *MM::allocMem(size_t size, AllocType t)
@@ -353,11 +353,11 @@ void *MM::allocMem(size_t size, AllocType t)
     ptr_val_t cnt = size2/PAGE_SIZE+m;
 
 
-    ptr_t ptr = NULL;
+    ptr_t ptr = nullptr;
 #if 1
     if (t == AllocNormal) {
         void *avail = findAvail(size);
-        if (avail != NULL) {
+        if (avail != nullptr) {
             ptr = (ptr_t)avail;
         }
     }
@@ -365,21 +365,21 @@ void *MM::allocMem(size_t size, AllocType t)
     (void)t;
 #endif
 
-    if (ptr == NULL) {
-        if (m_lastPage == NULL
-            || m_freeTop == NULL
-            || m_freeMax == NULL
+    if (ptr == nullptr) {
+        if (m_lastPage == nullptr
+            || m_freeTop == nullptr
+            || m_freeMax == nullptr
             || ((ptr_val_t)m_freeTop+size2 >= (ptr_val_t)m_freeMax)) {
 #if 1
-            if (m_lastPage != NULL
-                && m_freeTop != NULL
-                && m_freeMax != NULL
+            if (m_lastPage != nullptr
+                && m_freeTop != nullptr
+                && m_freeMax != nullptr
                 && (((ptr_val_t)m_freeTop+sizeof(PtrInfo)+sizeof(ptr_val_t)) < (ptr_val_t)m_freeMax)) {
 
                 ptr_val_t diff = (ptr_val_t)m_freeMax-(ptr_val_t)m_freeTop;
                 PtrInfo *nb = (PtrInfo*)m_freeTop;
-                nb->prev = NULL;
-                nb->next = NULL;
+                nb->prev = nullptr;
+                nb->next = nullptr;
                 nb->size = (unsigned int)(diff-sizeof(PtrInfo))&SIZEMASK;
                 nb->ressize = (unsigned int)(diff&SIZEMASK);
                 nb->state = PtrStateUsed;
@@ -389,9 +389,9 @@ void *MM::allocMem(size_t size, AllocType t)
             }
 #endif
             ptr = (ptr_t)allocPage(cnt);
-            if (ptr == NULL) {
+            if (ptr == nullptr) {
                 printf("=== ptr is null\n");
-                return NULL;
+                return nullptr;
             }
             m_lastPage = ptr;
             m_freeTop = ptr;
@@ -399,19 +399,19 @@ void *MM::allocMem(size_t size, AllocType t)
         } else {
             ptr = (ptr_t)m_freeTop;
         }
-        if (m_freeTop != NULL) {
+        if (m_freeTop != nullptr) {
             m_freeTop = (void*)((ptr_val_t)m_freeTop + size2);
         }
     }
 
-    if (ptr == NULL) {
+    if (ptr == nullptr) {
         printf("=== ERROR: null chunk\n");
-        return NULL;
+        return nullptr;
     }
 
     PtrInfo *tmp = (PtrInfo*)ptr;
-    tmp->prev = NULL;
-    tmp->next = NULL;
+    tmp->prev = nullptr;
+    tmp->next = nullptr;
     tmp->size = (unsigned int)(size & SIZEMASK);
     tmp->ressize = (unsigned int)(size2 & SIZEMASK);
     tmp->state = PtrStateUsed;
@@ -427,8 +427,8 @@ void *MM::allocMemClear(size_t size)
     unsigned char *ptr = (unsigned char*)allocMem(size, AllocNormal);
     unsigned char *tmp = ptr;
 
-    if (ptr == NULL) {
-        return NULL;
+    if (ptr == nullptr) {
+        return nullptr;
     }
 
     // This always ensures that the memory is cleared
@@ -441,13 +441,13 @@ void *MM::allocMemClear(size_t size)
 
 void *MM::alloc(size_t size, AllocType t)
 {
-    //if (size == 0) return NULL;
+    //if (size == 0) return nullptr;
     if (size > SIZEMASK - sizeof(PtrInfo)) {
-        return NULL;
+        return nullptr;
     }
 
     m.lock();
-    void *res = NULL;
+    void *res = nullptr;
 
     switch (t) {
         case AllocNormal:
@@ -467,7 +467,7 @@ void *MM::alloc(size_t size, AllocType t)
     }
 #if 0
     //Travel
-    if (__mm_last_free!=NULL) {
+    if (__mm_last_free!=nullptr) {
         PtrInfo *tmpr = (PtrInfo*)((ptr_val_t)__mm_last_free-sizeof(PtrInfo));
         travel(tmpr, 0);
     }
@@ -479,7 +479,7 @@ void *MM::alloc(size_t size, AllocType t)
 
 bool MM::free(void *p, AllocLock l)
 {
-    if (p == NULL) return false;
+    if (p == nullptr) return false;
 
     if (l == AllocDoLock) m.lock();
 
@@ -498,15 +498,15 @@ bool MM::free(void *p, AllocLock l)
         return false;
     }
 
-    cur->prev = NULL;
-    cur->next = NULL;
+    cur->prev = nullptr;
+    cur->next = nullptr;
     cur->state = PtrStateFreed;
     cur->used = 0;
 
     treeAdd(cur);
 #if 0
     //Travel
-    if (__mm_last_free!=NULL) {
+    if (__mm_last_free!=nullptr) {
         PtrInfo *tmpr = (PtrInfo*)((ptr_val_t)__mm_last_free-sizeof(PtrInfo));
         travel(tmpr, 0);
     }
@@ -520,27 +520,27 @@ bool MM::free(void *p, AllocLock l)
 
 void *MM::realloc(void *ptr, size_t size)
 {
-    if (size == 0 && ptr != NULL) {
+    if (size == 0 && ptr != nullptr) {
         free(ptr);
-        return NULL;
+        return nullptr;
     }
 
-    PtrInfo *old = NULL;
-    if (ptr != NULL) {
+    PtrInfo *old = nullptr;
+    if (ptr != nullptr) {
         old = (PtrInfo*)((ptr_val_t)ptr - sizeof(PtrInfo));
         if (old->size == size) {
             return ptr;
         }
         if (old->state == PtrStateFreed) {
             //printf("===FE WARNING, REALLOCING FREED\n");
-            ptr = NULL;
+            ptr = nullptr;
         }
     }
 
     void *tmp = alloc(size);
     // FIXME: This does not handle error properly
-    if (tmp == NULL) return ptr;
-    if (ptr == NULL) return tmp;
+    if (tmp == nullptr) return ptr;
+    if (ptr == nullptr) return tmp;
 
     m.lock();
 

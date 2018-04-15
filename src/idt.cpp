@@ -2,11 +2,11 @@
 #include "types.h"
 #include "arch/platform.h"
 
-static IDT *__global_idt = NULL;
+static IDT *__global_idt = nullptr;
 
 IDT *IDT::get()
 {
-    if (__global_idt == NULL) {
+    if (__global_idt == nullptr) {
         __global_idt = Platform::idt();
     }
     return __global_idt;
@@ -14,6 +14,6 @@ IDT *IDT::get()
 
 idt_routine_t IDT::routine(unsigned int i)
 {
-    if (get() == NULL) return NULL;
+    if (get() == nullptr) return nullptr;
     return get()->getRoutine(i);
 }

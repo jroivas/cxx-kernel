@@ -17,18 +17,18 @@ public:
     public:
         Handler()
             : num(0),
-            high_half(NULL),
-            bottom_half(NULL),
-            data(NULL),
-            next(NULL)
+            high_half(nullptr),
+            bottom_half(nullptr),
+            data(nullptr),
+            next(nullptr)
         {
         }
         Handler(unsigned int i)
             : num(i),
-            high_half(NULL),
-            bottom_half(NULL),
-            data(NULL),
-            next(NULL)
+            high_half(nullptr),
+            bottom_half(nullptr),
+            data(nullptr),
+            next(nullptr)
         {
         }
 

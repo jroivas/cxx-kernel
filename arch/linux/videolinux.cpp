@@ -3,7 +3,7 @@
 
 VideoLinux::VideoLinux() : Video()
 {
-    m_videomem = NULL;
+    m_videomem = nullptr;
 }
 
 void VideoLinux::setCursor()

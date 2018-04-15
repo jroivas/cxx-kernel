@@ -195,6 +195,7 @@ void gdt_init()
     //G
     gdt_set_gate(GDT_GS, 0, 0xFFFFFFFF, 0x92, 0xCF);
 
+#ifndef ARCH_LINUX
     // Thread local storage
     // Externs defined by linker script
     extern char tcb0[];
@@ -203,6 +204,7 @@ void gdt_init()
     extern ptr_val_t tdata_data;
     extern ptr_val_t tdata_data_end;
     tls_setup(tcb0, (const char*)tbss_data, tbss_data_end, tbss_data_end + tdata_data_end - tdata_data);
+#endif
 
     gdt_flush();
     tss_flush();

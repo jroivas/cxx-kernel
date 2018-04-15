@@ -7,6 +7,10 @@
 #define NULL 0
 #endif
 
+#ifdef ARCH_LINUX
+#include <stdint.h>
+#endif
+
 #if 0
 #if __i386__
 typedef unsigned int size_t;

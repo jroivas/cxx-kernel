@@ -35,5 +35,5 @@ void IDTLinux::installHandler(unsigned int i, idt_handler_t high, idt_handler_t 
 idt_routine_t IDTLinux::getRoutine(unsigned int i)
 {
     (void)i;
-    return NULL;
+    return nullptr;
 }

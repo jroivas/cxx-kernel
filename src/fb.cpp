@@ -9,10 +9,10 @@ static volatile ptr_val_t __fb_mutex = 0;
 
 FB::FB()
     :
-    m_buffer(NULL),
-    m_backbuffer(NULL),
-    m_double_buffer(NULL),
-    m_current(NULL),
+    m_buffer(nullptr),
+    m_backbuffer(nullptr),
+    m_double_buffer(nullptr),
+    m_current(nullptr),
     m_direct(false),
     m_configured(false)
 {
@@ -29,10 +29,10 @@ void FB::setSingleBuffer()
     m.lock();
 
     m_double_buffer = false;
-    if (m_buffer != NULL) {
+    if (m_buffer != nullptr) {
         MM::instance()->free(m_buffer);
     }
-    m_buffer = NULL;
+    m_buffer = nullptr;
 
     m.unlock();
 }
@@ -42,10 +42,10 @@ void FB::setDirect()
     m.lock();
 
     m_direct = true;
-    if (m_backbuffer != NULL) {
+    if (m_backbuffer != nullptr) {
         MM::instance()->free(m_backbuffer);
     }
-    if (m_buffer!=NULL) {
+    if (m_buffer!=nullptr) {
         MM::instance()->free(m_buffer);
     }
     m_backbuffer = m_current->base;
@@ -61,11 +61,11 @@ void FB::allocBuffers()
 
     m_size = m_current->bytes_per_line*(m_current->height);
     m_backbuffer = (unsigned char*)MM::instance()->alloc(m_size, MM::AllocClear);
-    if (m_backbuffer!=NULL) {
+    if (m_backbuffer!=nullptr) {
         m_backbuffer[0] = 0xfe;
         m_backbuffer[m_size/2] = 0xed;
         m_backbuffer[m_size-1] = 0xdc;
-        if (m_backbuffer==NULL
+        if (m_backbuffer==nullptr
             || m_backbuffer[0] != 0xfe
             || m_backbuffer[m_size/2] != 0xed
             || m_backbuffer[m_size-1] != 0xdc) {
@@ -81,10 +81,10 @@ void FB::allocBuffers()
             m_buffer[0] = 0xef;
             m_buffer[m_size/2] = 0xde;
             m_buffer[m_size-1] = 0xec;
-            if (m_buffer==NULL || m_buffer[0] != 0xef || m_buffer[m_size/2] != 0xde || m_buffer[m_size-1] != 0xec) {
+            if (m_buffer==nullptr || m_buffer[0] != 0xef || m_buffer[m_size/2] != 0xde || m_buffer[m_size-1] != 0xec) {
                 m_double_buffer = false;
                 MM::instance()->free(m_buffer);
-                m_buffer = NULL;
+                m_buffer = nullptr;
                 //m_buffer = m_backbuffer;
                 //Platform::video()->printf("singlebuffer\n");
             } else {
@@ -96,8 +96,8 @@ void FB::allocBuffers()
     }
 #if 0
     for (uint32_t i=0; i<m_size; i++) {
-        if (buffer!=NULL) buffer[i] = 0;
-        if (backbuffer!=NULL) backbuffer[i] = 0;
+        if (buffer!=nullptr) buffer[i] = 0;
+        if (backbuffer!=nullptr) backbuffer[i] = 0;
     }
 #endif
     //Platform::video()->printf("Allocbuffers: %x %x %x sizes: %d\n",m_current->base,m_buffer,m_backbuffer,m_current->bytes_per_line*(m_current->height));
@@ -107,20 +107,20 @@ void FB::allocBuffers()
 void FB::freeBuffers()
 {
     m.lock();
-    if (m_buffer!=NULL) {
+    if (m_buffer!=nullptr) {
         MM::instance()->free(m_buffer);
-        m_buffer = NULL;
+        m_buffer = nullptr;
     }
-    if (m_backbuffer!=NULL) {
+    if (m_backbuffer!=nullptr) {
         MM::instance()->free(m_backbuffer);
-        m_backbuffer = NULL;
+        m_backbuffer = nullptr;
     }
     m.unlock();
 }
 
 bool FB::configure(ModeConfig *mode)
 {
-    if (mode==NULL) return false;
+    if (mode==nullptr) return false;
 
     m_current = mode;
 
@@ -132,14 +132,14 @@ bool FB::configure(ModeConfig *mode)
 
 unsigned char *FB::data()
 {
-    if (m_buffer == NULL) return NULL;
+    if (m_buffer == nullptr) return nullptr;
     return m_buffer;
 }
 
 void FB::swap()
 {
-    if (m_buffer == NULL) return;
-    if (m_backbuffer == NULL) return;
+    if (m_buffer == nullptr) return;
+    if (m_backbuffer == nullptr) return;
     if (m_direct) return;
     if (!m_double_buffer) {
         m_buffer = m_backbuffer;
@@ -147,7 +147,7 @@ void FB::swap()
     }
 
     m.lock();
-    if (m_buffer!=NULL && !m_direct) {
+    if (m_buffer!=nullptr && !m_direct) {
         memcpy_opt(m_buffer, m_backbuffer, m_size);
         //Mem::copy(m_buffer, m_backbuffer, m_size);
     }
@@ -171,8 +171,8 @@ void printD(uint32_t d)
 
 void FB::putPixel(int x, int y, unsigned char r, unsigned char g, unsigned char b, unsigned char a)
 {
-    if (m_backbuffer==NULL) return;
-    if (m_current==NULL) return;
+    if (m_backbuffer==nullptr) return;
+    if (m_current==nullptr) return;
 
     if (x>m_current->width) x = m_current->width;
     if (y>m_current->height) y = m_current->height;
@@ -212,7 +212,7 @@ void FB::putPixel(int x, int y, unsigned char r, unsigned char g, unsigned char 
 
 void FB::putPixel(int x, int y, unsigned int color)
 {
-    if (m_backbuffer!=NULL && m_current!=NULL && m_current->depth==32) {
+    if (m_backbuffer!=nullptr && m_current!=nullptr && m_current->depth==32) {
         x %= m_current->width;
         y %= m_current->height;
         uint32_t *pos = (uint32_t*)(m_backbuffer+(y*m_current->bytes_per_line + x*4));
@@ -229,8 +229,8 @@ void FB::putPixel(int x, int y, unsigned int color)
 void FB::clear()
 {
     m.lock();
-    if (m_backbuffer!=NULL) Mem::set(m_backbuffer, 0, m_size);
-    if (m_buffer!=NULL) Mem::set(m_buffer, 0, m_size);
+    if (m_backbuffer != nullptr) Mem::set(m_backbuffer, 0, m_size);
+    if (m_buffer != nullptr) Mem::set(m_buffer, 0, m_size);
     m.unlock();
     //swap();
 #if 0

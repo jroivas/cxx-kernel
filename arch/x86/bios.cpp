@@ -44,7 +44,7 @@ static void bios_x86emu_pio_outl(struct x86emu *, uint16_t port, uint32_t data)
 
 static uint8_t bios_x86emu_mem_rdb(struct x86emu *emu, uint32_t addr)
 {
-    if (emu == NULL) return 0;
+    if (emu == nullptr) return 0;
     if (addr > emu->mem_size - 1) {
         x86emu_halt_sys(emu);
     }
@@ -53,7 +53,7 @@ static uint8_t bios_x86emu_mem_rdb(struct x86emu *emu, uint32_t addr)
 
 static void bios_x86emu_mem_wrb(struct x86emu *emu, uint32_t addr, uint8_t val)
 {
-    if (emu == NULL) return;
+    if (emu == nullptr) return;
     if (addr > emu->mem_size - 1) {
         x86emu_halt_sys(emu);
     }
@@ -62,7 +62,7 @@ static void bios_x86emu_mem_wrb(struct x86emu *emu, uint32_t addr, uint8_t val)
 
 static uint16_t bios_x86emu_mem_rdw(struct x86emu *emu, uint32_t addr)
 {
-    if (emu == NULL) return 0;
+    if (emu == nullptr) return 0;
     if (addr > emu->mem_size - 2) {
         x86emu_halt_sys(emu);
     }
@@ -71,7 +71,7 @@ static uint16_t bios_x86emu_mem_rdw(struct x86emu *emu, uint32_t addr)
 
 static void bios_x86emu_mem_wrw(struct x86emu *emu, uint32_t addr, uint16_t val)
 {
-    if (emu == NULL) return;
+    if (emu == nullptr) return;
     if (addr > emu->mem_size - 2) {
         x86emu_halt_sys(emu);
     }
@@ -80,7 +80,7 @@ static void bios_x86emu_mem_wrw(struct x86emu *emu, uint32_t addr, uint16_t val)
 
 static uint32_t bios_x86emu_mem_rdl(struct x86emu *emu, uint32_t addr)
 {
-    if (emu==NULL) return 0;
+    if (emu==nullptr) return 0;
     if (addr > emu->mem_size - 4) {
         x86emu_halt_sys(emu);
     }
@@ -89,17 +89,17 @@ static uint32_t bios_x86emu_mem_rdl(struct x86emu *emu, uint32_t addr)
 
 static void bios_x86emu_mem_wrl(struct x86emu *emu, uint32_t addr, uint32_t val)
 {
-    if (emu==NULL) return;
+    if (emu==nullptr) return;
     *((uint32_t *)(emu->mem_base + addr)) = val;
 }
 
 
-static BIOS *__static_bios = NULL;
+static BIOS *__static_bios = nullptr;
 static ptr_val_t __bios_mutex = 0;
 
 BIOS *BIOS::get()
 {
-    if (__static_bios==NULL) {
+    if (__static_bios==nullptr) {
         __static_bios = new BIOS();
     }
     return __static_bios;
@@ -113,7 +113,7 @@ BIOS::BIOS()
 
     bios_stack = (void*)alloc(BIOS_STACK_SIZE);
     bios_halt = (void*)alloc(1);
-    if (bios_stack != NULL && bios_halt != NULL) {
+    if (bios_stack != nullptr && bios_halt != nullptr) {
         *(uint8_t*)bios_halt = 0xF4;
     }
 }
@@ -174,13 +174,13 @@ void *BIOS::alloc(uint32_t size)
 
         return tmp;
     }
-    return NULL;
+    return nullptr;
 }
 
 void BIOS::runInt(uint32_t interrupt, Regs *regs)
 {
     if (interrupt == 0) return;
-    if (bios_stack == NULL || bios_halt == NULL) {
+    if (bios_stack == nullptr || bios_halt == nullptr) {
         return;
     }
 
@@ -190,7 +190,7 @@ void BIOS::runInt(uint32_t interrupt, Regs *regs)
     Mem::set(&mach, 0, sizeof(struct x86emu));
     setupX86EMU(&mach);
 
-    if (regs != NULL) {
+    if (regs != nullptr) {
         mach.x86.R_EAX = regs->eax;
         mach.x86.R_EBX = regs->ebx;
         mach.x86.R_ECX = regs->ecx;
@@ -208,7 +208,7 @@ void BIOS::runInt(uint32_t interrupt, Regs *regs)
 
     x86emu_exec_intr(&mach, (uint8_t)interrupt);
 
-    if (regs != NULL) {
+    if (regs != nullptr) {
         regs->eax = mach.x86.R_EAX;
         regs->ebx = mach.x86.R_EBX;
         regs->ecx = mach.x86.R_ECX;

@@ -27,7 +27,7 @@ void TimerX86::run(Regs *r)
     (void)r;
     ++m_ticks;
 
-    if (pm != NULL && pm->isRunning()) {
+    if (pm != nullptr && pm->isRunning()) {
         if (pm->hasSlice()) {
             pm->decSlice();
         } else {

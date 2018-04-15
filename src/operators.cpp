@@ -9,7 +9,7 @@ void *operator new(size_t size)
     if (__operator_paging.isOk()) {
         return MM::instance()->alloc(size);
     } else {
-        return __operator_paging.allocStatic(size, NULL);
+        return __operator_paging.allocStatic(size, nullptr);
     }
 }
 
@@ -18,7 +18,7 @@ void *operator new[](size_t size)
     if (__operator_paging.isOk()) {
         return MM::instance()->alloc(size);
     } else {
-        return __operator_paging.allocStatic(size, NULL);
+        return __operator_paging.allocStatic(size, nullptr);
     }
 }
 

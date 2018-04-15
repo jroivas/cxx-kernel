@@ -10,34 +10,34 @@ bool VFS::register_filesystem(Filesystem *type)
 Filesystem *VFS::find_filesystem(String type)
 {
     const List::ListObject *iter = m_filesystems.begin();
-    if (iter == NULL) {
-        return NULL;
+    if (iter == nullptr) {
+        return nullptr;
     }
 
     Filesystem *res = (Filesystem*)m_filesystems.item(iter);
-    while (res != NULL) {
+    while (res != nullptr) {
         if (res->type() == type) {
             return res;
         }
 
         iter = m_filesystems.next(iter);
-        if (iter == NULL) {
+        if (iter == nullptr) {
             break;
         }
         res = (Filesystem*)m_filesystems.item(iter);
     }
 
-    return NULL;
+    return nullptr;
 }
 
 bool VFS::mount(String mountpoint, String type, String options)
 {
     Filesystem *fs = find_filesystem(type);
-    if (fs == NULL) {
+    if (fs == nullptr) {
         return false;
     }
     Filesystem *mount = fs->mount(mountpoint, options);
-    if (mount == NULL) {
+    if (mount == nullptr) {
         return false;
     }
 
@@ -49,23 +49,23 @@ bool VFS::mount(String mountpoint, String type, String options)
 Filesystem *VFS::accessHandle(int fd)
 {
     const List::ListObject *iter = m_mounts.begin();
-    while (iter != NULL) {
+    while (iter != nullptr) {
         Filesystem *tmp = (Filesystem*)m_mounts.item(iter);
-        if (tmp == NULL) {
+        if (tmp == nullptr) {
             iter = m_mounts.next(iter);
             continue;
         }
         return tmp->getFilesystem(fd);
     }
-    return NULL;
+    return nullptr;
 }
 
 Filesystem *VFS::access(String file)
 {
     const List::ListObject *iter = m_mounts.begin();
-    while (iter != NULL) {
+    while (iter != nullptr) {
         Filesystem *tmp = (Filesystem*)m_mounts.item(iter);
-        if (tmp != NULL) {
+        if (tmp != nullptr) {
             if (file.startsWith(tmp->mountpoint())) {
                 return tmp;
             }
@@ -73,12 +73,12 @@ Filesystem *VFS::access(String file)
         iter = m_mounts.next(iter);
     }
 
-    return NULL;
+    return nullptr;
 }
 
 String VFS::basedir(String file, Filesystem *fs)
 {
-    if (fs == NULL) {
+    if (fs == nullptr) {
         return file;
     }
     return file.right(fs->mountpoint().length() + 1);

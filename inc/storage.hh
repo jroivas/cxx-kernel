@@ -25,7 +25,7 @@ public:
     public:
         Device()
             : m_class(CLASS_NONE),
-            next(NULL)
+            next(nullptr)
         {
         }
         uint8_t m_class;
@@ -34,7 +34,7 @@ public:
 
     Storage()
     {
-        m_devices = NULL;
+        m_devices = nullptr;
     }
     virtual ~Storage() {}
 

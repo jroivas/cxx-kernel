@@ -57,9 +57,9 @@ public:
             m_pos(0),
             m_data_block(0),
             m_data_index(0),
-            m_fs(NULL),
-            m_parent(NULL),
-            m_data(NULL)
+            m_fs(nullptr),
+            m_parent(nullptr),
+            m_data(nullptr)
         {
         }
         Iterator(uint32_t blk, uint32_t index)
@@ -69,34 +69,34 @@ public:
             m_pos(0),
             m_data_block(0),
             m_data_index(0),
-            m_fs(NULL),
-            m_parent(NULL),
-            m_data(NULL)
+            m_fs(nullptr),
+            m_parent(nullptr),
+            m_data(nullptr)
         {
         }
         ~Iterator() {
             m_ok = false;
-            if (m_parent != NULL) {
+            if (m_parent != nullptr) {
                 delete[] m_parent;
             }
-            if (m_data != NULL) {
+            if (m_data != nullptr) {
                 delete[] m_data;
             }
-            if (m_content != NULL) {
+            if (m_content != nullptr) {
                 delete[] m_content;
             }
-            m_parent = NULL;
-            m_data = NULL;
-            m_content = NULL;
+            m_parent = nullptr;
+            m_data = nullptr;
+            m_content = nullptr;
         }
         Iterator(const Iterator &another)
             : m_ok(false),
             m_pos(0),
             m_data_block(0),
             m_data_index(0),
-            m_fs(NULL),
-            m_parent(NULL),
-            m_data(NULL)
+            m_fs(nullptr),
+            m_parent(nullptr),
+            m_data(nullptr)
         {
             assign(another);
         }
@@ -116,18 +116,18 @@ public:
             m_data_index = another.m_data_index;
             m_ok = another.m_ok;
 
-            if (m_fs != NULL) {
+            if (m_fs != nullptr) {
                 m_parent = new uint8_t[m_fs->m_blocksize];
                 m_data = new uint8_t[m_fs->m_blocksize];
                 m_content = new uint8_t[m_fs->m_blocksize];
 
-                if (another.m_parent != NULL) {
+                if (another.m_parent != nullptr) {
                     Mem::move(m_parent, another.m_parent, m_fs->m_blocksize);
                 }
-                if (another.m_data != NULL) {
+                if (another.m_data != nullptr) {
                     Mem::move(m_data, another.m_data, m_fs->m_blocksize);
                 }
-                if (another.m_content != NULL) {
+                if (another.m_content != nullptr) {
                     Mem::move(m_content, another.m_content, m_fs->m_blocksize);
                 }
             }

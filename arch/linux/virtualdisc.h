@@ -1,7 +1,7 @@
 #ifndef VIRTUALDISK_H
 #define VIRTUALDISK_H
 
-#include "storage.h"
+#include "storage.hh"
 
 class VirtualDisc : public Storage
 {

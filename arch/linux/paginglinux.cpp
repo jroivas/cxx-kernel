@@ -3,19 +3,19 @@
 
 ptr32_val_t __page_mapping_mutex          = 0;
 ptr32_val_t __page_mapping_static_mutex   = 0;
-uint8_t *__free_page_address = NULL;
-uint8_t *__free_page_chunk = NULL;
+uint8_t *__free_page_address = nullptr;
+uint8_t *__free_page_chunk = nullptr;
 uint32_t __free_page_chunk_size = 0;
 
 PagingPrivate::PagingPrivate()
 {
     m.assign(&__page_mapping_mutex);
     m_static.assign(&__page_mapping_static_mutex);
-    data = NULL;
+    data = nullptr;
     pageCnt = 0;
     is_ok = false;
     __free_page_chunk_size = 1000;
-    __free_page_chunk = (uint8_t*)mmap(NULL, __free_page_chunk_size*4096, PROT_EXEC | PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    __free_page_chunk = (uint8_t*)mmap(nullptr, __free_page_chunk_size*4096, PROT_EXEC | PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     __free_page_address = __free_page_chunk;
 }
 
@@ -68,7 +68,7 @@ bool PagingPrivate::mapFrame(Page *p, MapType type, MapPermissions perms)
 
 void *PagingPrivate::getPage()
 {
-    return (void*)mmap(NULL, PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    return (void*)mmap(nullptr, PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 }
 
 void PagingPrivate::freePage(void *ptr)
@@ -85,9 +85,9 @@ bool PagingPrivate::mapPhys(void *phys, ptr_t virt, unsigned int flags)
 bool PagingPrivate::map(ptr_t virt, unsigned int flags, unsigned int cnt)
 {
     (void)flags;
-    ptr_t block = (ptr_t)mmap(NULL, PAGE_SIZE*cnt, PROT_EXEC | PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-    if (block==NULL) return false;
-    if (virt!=NULL) {
+    ptr_t block = (ptr_t)mmap(nullptr, PAGE_SIZE*cnt, PROT_EXEC | PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    if (block==nullptr) return false;
+    if (virt!=nullptr) {
             *virt = (ptr_val_t)block;
     }
     return true;
@@ -96,7 +96,7 @@ bool PagingPrivate::map(ptr_t virt, unsigned int flags, unsigned int cnt)
 void *PagingPrivate::unmap(void *ptr)
 {
     munmap(ptr, 4096);
-    return NULL;
+    return nullptr;
 }
 
 ptr8_t PagingPrivate::freePageAddress()

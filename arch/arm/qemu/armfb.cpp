@@ -69,14 +69,14 @@ FB::ModeConfig *ARMFB::query(FB::ModeConfig *prefer)
 
 bool ARMFB::configure(ModeConfig *mode)
 {
-	if (mode==NULL) return false;
+	if (mode==nullptr) return false;
 
 	m_current = mode;
 	setDirect();
 	bool r = FB::configure(mode);
 	setDirect();
 #if 0
-	if (m_buffer!=NULL) {
+	if (m_buffer!=nullptr) {
 		uint32_t *s = (uint32_t*)m_buffer;
 		uint32_t volatile *dest;
 		dest = (uint32_t *)PL110_UPBASE;

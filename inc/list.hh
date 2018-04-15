@@ -11,13 +11,13 @@ public:
     public:
         ListObject()
         {
-            next = NULL;
-            ptr = NULL;
+            next = nullptr;
+            ptr = nullptr;
         }
         ListObject(void *val)
         {
             ptr = val;
-            next = NULL;
+            next = nullptr;
         }
 
     protected:

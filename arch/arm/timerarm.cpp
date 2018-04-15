@@ -32,13 +32,13 @@ void TimerARM::run(Regs *r)
 
 	//if (m_ticks%10==0) Platform::video()->printf("T");
 
-	if (pm!=NULL && pm->isRunning()) {
+	if (pm!=nullptr && pm->isRunning()) {
 		if (pm->hasSlice()) pm->decSlice();
 		else {
 			pm->schedule();
 			Port::out(0x20, 0x20);
 			Task *t = pm->schedule();
-			if (t!=NULL) {
+			if (t!=nullptr) {
 				//t->switchTo();
 			}
 		}

@@ -26,12 +26,12 @@ do {\
 #endif
 
 ClothesFS::ClothesFS()
-    : m_phys(NULL),
+    : m_phys(nullptr),
     m_blocksize(512)
 {
 #ifndef USE_CUSTOM_STRING
     struct timeval tv;
-    gettimeofday(&tv, NULL);
+    gettimeofday(&tv, nullptr);
 
     srand(tv.tv_sec + tv.tv_usec);
 #endif
@@ -63,7 +63,7 @@ void ClothesFS::numToData(uint64_t num, uint8_t *buf, int start, int cnt)
 
 bool ClothesFS::detect()
 {
-    if (m_phys == NULL) {
+    if (m_phys == nullptr) {
         returnError(false);
     }
 
@@ -194,7 +194,7 @@ bool ClothesFS::format(
     m_block_in_sectors = m_blocksize / m_phys->sectorSize();
 
     // vol name
-    if (volid != NULL) {
+    if (volid != nullptr) {
         for (uint32_t i = 0; i < 32; ++i) {
             if (*volid == 0) break;
             buf[pos + i] = *volid;
@@ -473,7 +473,7 @@ bool ClothesFS::updateMeta(
     numToData(size, data, 4, 8);
     uint32_t len = 0;
     uint32_t pos = 16;
-    while (name != NULL
+    while (name != nullptr
         && *name != 0) {
         data[pos] = *name;
         ++pos;
@@ -688,14 +688,14 @@ bool ClothesFS::Iterator::next()
 
 uint32_t ClothesFS::Iterator::nameLen()
 {
-    if (m_data == NULL) return 0;
+    if (m_data == nullptr) return 0;
 
     return dataToNum(m_data, 12, 4);
 }
 
 STD_STRING_TYPE ClothesFS::Iterator::name()
 {
-    if (m_data == NULL) return "";
+    if (m_data == nullptr) return "";
 
     STD_STRING_TYPE res;
     uint32_t namelen = nameLen();
@@ -707,21 +707,21 @@ STD_STRING_TYPE ClothesFS::Iterator::name()
 
 uint64_t ClothesFS::Iterator::size()
 {
-    if (m_data == NULL) return 0;
+    if (m_data == nullptr) return 0;
 
     return dataToNum(m_data, 4, 8);
 }
 
 uint8_t ClothesFS::Iterator::type() const
 {
-    if (m_data == NULL) return 0;
+    if (m_data == nullptr) return 0;
 
     return m_fs->baseType(dataToNum(m_data, 2, 1));
 }
 
 bool ClothesFS::Iterator::remove()
 {
-    if (m_data == NULL) return false;
+    if (m_data == nullptr) return false;
     m_pos = 0;
     m_data_block = 0;
     m_data_index = 0;
@@ -886,7 +886,7 @@ int ClothesFilesystem::open(String path, int flags)
 int ClothesFilesystem::close(int fh)
 {
     ClothesFS::Iterator *data = (ClothesFS::Iterator *)getCustom(fh);
-    if (data != NULL) {
+    if (data != nullptr) {
         delete data;
     }
     if (!closefile(fh)) {
@@ -919,7 +919,7 @@ ssize_t ClothesFilesystem::read(int fh, char *buf, size_t count)
     String name = getName(fh);
 
     ClothesFS::Iterator *data = (ClothesFS::Iterator *)getCustom(fh);
-    if (data == NULL) {
+    if (data == nullptr) {
         errno = ENOENT;
         return -1;
     }
@@ -990,13 +990,13 @@ int ClothesFilesystem::flush(int fd)
 Dir *ClothesFilesystem::opendir(String name)
 {
     (void)name;
-    return NULL;
+    return nullptr;
 }
 
 Dirent *ClothesFilesystem::readdir(Dir *dir)
 {
     (void)dir;
-    return NULL;
+    return nullptr;
 }
 
 void ClothesFilesystem::rewinddir(Dir *dir)

@@ -4,7 +4,7 @@ volatile unsigned int * const UART0DR = (unsigned int *)0x101f1000;
 
 VideoARM::VideoARM() : Video()
 {
-	m_videomem = NULL;
+	m_videomem = nullptr;
 }
 
 void VideoARM::setCursor()

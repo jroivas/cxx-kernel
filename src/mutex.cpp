@@ -4,7 +4,7 @@
 
 Mutex::Mutex()
 {
-    m_ptr = NULL;
+    m_ptr = nullptr;
 }
 
 Mutex::Mutex(ptr_val_t volatile *ptr)
@@ -14,7 +14,7 @@ Mutex::Mutex(ptr_val_t volatile *ptr)
 
 Mutex::~Mutex()
 {
-    m_ptr = NULL;
+    m_ptr = nullptr;
 }
 
 void Mutex::assign(ptr_val_t volatile *ptr)
@@ -24,14 +24,14 @@ void Mutex::assign(ptr_val_t volatile *ptr)
 
 bool Mutex::isLocked()
 {
-    if (m_ptr == NULL) return false;
+    if (m_ptr == nullptr) return false;
 
     return (*m_ptr == 1);
 }
 
 bool Mutex::wait()
 {
-    if (m_ptr == NULL) return false;
+    if (m_ptr == nullptr) return false;
 
     while (*m_ptr == 1) {
         //Sleep

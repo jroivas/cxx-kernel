@@ -39,7 +39,7 @@ ssize_t syscall_readv(int fd, const struct iovec *iov, int iovcnt)
 #ifdef FEATURE_STORAGE
     VFS *vfs = Platform::vfs();
     Filesystem *fs = vfs->accessHandle(fd);
-    if (fs == NULL) {
+    if (fs == nullptr) {
         errno = EPERM;
         return -1;
     }
@@ -114,7 +114,7 @@ int syscall_ioctl(int fd, long cmd, long arg)
 int syscall_open(const char *name, int flags, int mode)
 {
     (void)mode;
-    if (name == NULL) {
+    if (name == nullptr) {
         errno = ENOENT;
         return -1;
     }
@@ -123,7 +123,7 @@ int syscall_open(const char *name, int flags, int mode)
     VFS *vfs = Platform::vfs();
     Filesystem *fs = vfs->access(name);
 
-    if (fs == NULL) {
+    if (fs == nullptr) {
         errno = ENOENT;
         return -1;
     }
@@ -144,7 +144,7 @@ int syscall_read(int fd, void *buf, size_t cnt)
 #ifdef FEATURE_STORAGE
     VFS *vfs = Platform::vfs();
     Filesystem *fs = vfs->accessHandle(fd);
-    if (fs == NULL) {
+    if (fs == nullptr) {
         errno = EPERM;
         return -1;
     }
@@ -164,7 +164,7 @@ int syscall_close(int fd)
 #ifdef FEATURE_STORAGE
     VFS *vfs = Platform::vfs();
     Filesystem *fs = vfs->accessHandle(fd);
-    if (fs == NULL) {
+    if (fs == nullptr) {
         errno = EPERM;
         return -1;
     }
@@ -182,7 +182,7 @@ int syscall_fcntl(int fd, int cmd, int arg)
 #ifdef FEATURE_STORAGE
     VFS *vfs = Platform::vfs();
     Filesystem *fs = vfs->accessHandle(fd);
-    if (fs == NULL) {
+    if (fs == nullptr) {
         errno = EPERM;
         return -1;
     }

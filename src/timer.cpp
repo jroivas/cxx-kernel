@@ -3,11 +3,11 @@
 #include "types.h"
 #include "arch/platform.h"
 
-static Timer *__global_timer = NULL;
+static Timer *__global_timer = nullptr;
 
 Timer *Timer::get()
 {
-    if (__global_timer == NULL) {
+    if (__global_timer == nullptr) {
         __global_timer = Platform::timer();
     }
     return __global_timer;
@@ -35,7 +35,7 @@ void Timer::nop() const
 
 int Timer::handler(Regs *r)
 {
-    if (__global_timer == NULL) return -1;
+    if (__global_timer == nullptr) return -1;
 
     __global_timer->run(r);
     return 0;

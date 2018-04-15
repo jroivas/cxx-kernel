@@ -72,7 +72,7 @@ uint32_t Bits::findUnset(bool *ok)
         if (~bits[i] != 0) {
             for (uint32_t j = 0; j < 32; j++) {
                 if ((bits[i] & (1 << j)) == 0) {
-                    if (ok != NULL) {
+                    if (ok != nullptr) {
                         *ok = true;
                     }
                     m_last = i;
@@ -89,7 +89,7 @@ uint32_t Bits::findUnset(bool *ok)
         }
 #endif
     }
-    if (ok != NULL) {
+    if (ok != nullptr) {
         *ok = false;
     }
     return 0;
