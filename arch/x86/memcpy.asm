@@ -4,9 +4,10 @@ cpuid_has_feature:
     push ecx
     push edx
     mov eax, 1
+    xor ecx, ecx
     cpuid
-    mov eax, edx
-    mov ecx, [esp+4]
+    mov eax, ecx
+    mov ecx, [esp + 16]
     shr eax, cl
     and eax, 1
     pop edx
@@ -17,14 +18,6 @@ cpuid_has_feature:
 [global mmx_has]
 mmx_has:
     mov eax, 23
-    push eax
-    call cpuid_has_feature
-    add esp, 4
-    ret
-
-[global hasHwRandom]
-hasHwRandom:
-    mov eax, 30
     push eax
     call cpuid_has_feature
     add esp, 4
