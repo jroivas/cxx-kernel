@@ -13,7 +13,7 @@ uint64_t my__udivmoddi4(uint64_t num, uint64_t den, uint64_t *rem_p)
     }
 
     /* Left-justify denominator and count shift */
-    while ( (int64_t)den >= 0 ) {
+    while ((int64_t)den >= 0) {
         den <<= 1;
         qbit <<= 1;
     }

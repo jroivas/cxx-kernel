@@ -76,7 +76,7 @@ int Filesystem::getfile(const String &fs, const String &name) const
     LockMutex mtx(&m_mutex);
 
     for (uint32_t i = 0; i < m_files.size(); ++i) {
-        FileData *tmp = (FileData*)m_files.at(i);
+        FileData *tmp = reinterpret_cast<FileData*>(m_files.at(i));
         if (tmp->m_fs == fs && tmp->m_name == name) {
             return tmp->m_id;
         }
@@ -90,7 +90,7 @@ const String Filesystem::getFS(int fh) const
     LockMutex mtx(&m_mutex);
 
     for (uint32_t i = 0; i < m_files.size(); ++i) {
-        FileData *tmp = (FileData*)m_files.at(i);
+        FileData *tmp = reinterpret_cast<FileData*>(m_files.at(i));
         if (tmp->m_id == fh) {
             return tmp->m_fs;
         }
@@ -104,7 +104,7 @@ void *Filesystem::getCustom(int fh)
     LockMutex mtx(&m_mutex);
 
     for (uint32_t i = 0; i < m_files.size(); ++i) {
-        FileData *tmp = (FileData*)m_files.at(i);
+        FileData *tmp = reinterpret_cast<FileData*>(m_files.at(i));
         if (tmp->m_id == fh) {
             return tmp->m_custom;
         }
@@ -118,7 +118,7 @@ Filesystem *Filesystem::getFilesystem(int fh)
     LockMutex mtx(&m_mutex);
 
     for (uint32_t i = 0; i < m_files.size(); ++i) {
-        FileData *tmp = (FileData*)m_files.at(i);
+        FileData *tmp = reinterpret_cast<FileData*>(m_files.at(i));
         if (tmp->m_id == fh) {
             return tmp->m_owner;
         }
@@ -132,7 +132,7 @@ const String Filesystem::getName(int fh) const
     LockMutex mtx(&m_mutex);
 
     for (uint32_t i = 0; i < m_files.size(); ++i) {
-        FileData *tmp = (FileData*)m_files.at(i);
+        FileData *tmp = reinterpret_cast<FileData*>(m_files.at(i));
         if (tmp->m_id == fh) {
             return tmp->m_name;
         }
@@ -146,7 +146,7 @@ bool Filesystem::closefile(int fh)
     LockMutex mtx(&m_mutex);
 
     for (uint32_t i = 0; i < m_files.size(); ++i) {
-        FileData *tmp = (FileData*)m_files.at(i);
+        FileData *tmp = reinterpret_cast<FileData*>(m_files.at(i));
         if (tmp->m_id == fh) {
             m_files.deleteAt(i);
             return true;
@@ -161,7 +161,7 @@ int Filesystem::getFcntl(int fh)
     LockMutex mtx(&m_mutex);
 
     for (uint32_t i = 0; i < m_files.size(); ++i) {
-        FileData *tmp = (FileData*)m_files.at(i);
+        FileData *tmp = reinterpret_cast<FileData*>(m_files.at(i));
         if (tmp->m_id == fh) {
             return tmp->m_fcntl;
         }
@@ -176,7 +176,7 @@ int Filesystem::setFcntl(int fh, int mode)
     LockMutex mtx(&m_mutex);
 
     for (uint32_t i = 0; i < m_files.size(); ++i) {
-        FileData *tmp = (FileData*)m_files.at(i);
+        FileData *tmp = reinterpret_cast<FileData*>(m_files.at(i));
         if (tmp->m_id == fh) {
             tmp->m_fcntl = mode;
             return 0;

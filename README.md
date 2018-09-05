@@ -16,6 +16,15 @@ Major design decisions to keep it simple and efficient:
 ## Building
 
 You need C and C++ compiler, nasm and CMake.
+
+For example:
+
+    sudo apt-get install build-essential nasm cmake
+
+To build for specific target, you need cross compiler.
+For example i686-elf-gcc from here: https://github.com/lordmilko/i686-elf-tools
+Download and install it to your path.
+
 First clone this git repository, and update musl libc source code:
 
     ./3rdparty/musl/update_musl.sh

@@ -7,11 +7,11 @@ int main(int argc, char **argv)
     (void)argc;
     (void)argv;
 
-    char buf[50];
     FILE *fd = fopen("/cfs/test", "r");
 
     printf("fopen fd: %d\n", fd);
     if (fd != NULL) {
+        char buf[50];
         int cnt = 36;
         int res = fread(buf, 1, cnt, fd);
         printf("res: %d\n", res);

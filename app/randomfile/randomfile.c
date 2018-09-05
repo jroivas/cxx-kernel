@@ -38,9 +38,9 @@ int main(int argc, char **argv)
             printf("%u ", (unsigned char)buf[i]);
         }
         printf("\n");
+        fclose(fd3);
     }
 
-    fclose(fd3);
     close(fd);
     close(fd2);
 

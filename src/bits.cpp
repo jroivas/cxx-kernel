@@ -70,8 +70,8 @@ uint32_t Bits::findUnset(bool *ok)
     for (uint32_t i = m_last; i < m_len; i++) {
         // Check if we have unset bits
         if (~bits[i] != 0) {
-            for (uint32_t j = 0; j < 32; j++) {
-                if ((bits[i] & (1 << j)) == 0) {
+            for (uint32_t j = 0; j < 31; j++) {
+                if ((bits[i] & (1L << j)) == 0) {
                     if (ok != nullptr) {
                         *ok = true;
                     }

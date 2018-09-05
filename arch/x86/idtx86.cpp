@@ -215,41 +215,42 @@ void IDTX86::initIRQ()
     IRQ_GATE(121);
 }
 
-extern "C" int irq_handler(Regs * r)
+extern "C" int irq_handler(Regs *regs)
 {
-    if (r == nullptr) {
+    if (regs == nullptr) {
         VideoX86 tmp;
         tmp.printf("ERROR! IRQ, regs. \n");
 
         Platform p;
         p.state()->seizeInterrupts();
         p.state()->halt();
+        return -1;
     }
 
     int (*routine)(Regs *r);
     routine = nullptr;
 
-    if (r->int_no < 32) {
+    if (regs->int_no < 32) {
         Port::out(0x20, 0x20);
         return -1;
     }
 
-    routine = IDTX86::get()->routine(r->int_no);
+    routine = IDTX86::get()->routine(regs->int_no);
     int res = 0;
     if (routine != nullptr) {
-        res = routine(r);
+        res = routine(regs);
     }
 
-    IDTX86::Handler *handler = IDTX86::handler(r->int_no);
+    IDTX86::Handler *handler = IDTX86::handler(regs->int_no);
     while (handler != nullptr) {
         if (handler->high_half != nullptr) {
-            handler->high_half(r->int_no, handler->data);
+            handler->high_half(regs->int_no, handler->data);
         }
         //handler->bottom_half(r->int_no, handler->data); //FIXME
         handler = handler->next;
     }
 
-    if (r->int_no >= 40) {
+    if (regs->int_no >= 40) {
         Port::out(0xA0, 0x20);
     }
 
@@ -259,9 +260,9 @@ extern "C" int irq_handler(Regs * r)
 
 extern uint32_t debug_ptr;
 extern uint32_t debug_ptr_cr2;
-extern "C" int isr_handler(Regs * r)
+extern "C" int isr_handler(Regs * regs)
 {
-    if (r == nullptr) {
+    if (regs == nullptr) {
         VideoX86 tmp;
         tmp.clear();
         tmp.printf("ERROR! ISR, regs. \n");
@@ -269,35 +270,39 @@ extern "C" int isr_handler(Regs * r)
         Platform p;
         p.state()->seizeInterrupts();
         p.state()->halt();
+        return -1;
     }
-    if (r->int_no == 0xE) {
+    if (regs->int_no == 0xE) {
         VideoX86 tmp;
-        tmp.printf("\nERROR! Page fault! error: cr2: %x EIP: %x  \n", debug_ptr_cr2, r->eip);
+        tmp.printf("\nERROR! Page fault! error: cr2: %x EIP: %x  \n", debug_ptr_cr2, regs->eip);
         Platform p;
         p.state()->seizeInterrupts();
         p.state()->halt();
+        return -1;
     }
-    if (r->int_no == 6) {
+    if (regs->int_no == 6) {
         VideoX86 tmp;
-        tmp.printf("\nERROR! Invalid instruction: %x: EIP: %x\n", debug_ptr, r->eip);
+        tmp.printf("\nERROR! Invalid instruction: %x: EIP: %x\n", debug_ptr, regs->eip);
         Platform p;
         p.state()->seizeInterrupts();
         p.state()->halt();
+        return -1;
     }
-    if (r->int_no < 32) {
+    if (regs->int_no < 32) {
         // Got it
         VideoX86 tmp;
         //tmp.clear();
-        tmp.printf("ERROR! Exception %d EIP: %x\n",r->int_no, r->eip);
+        tmp.printf("ERROR! Exception %d EIP: %x\n",regs->int_no, regs->eip);
 
         Platform p;
         p.state()->seizeInterrupts();
         p.state()->halt();
+        return -1;
     }
 
-    IDTX86::Handler *handler = IDTX86::handler(r->int_no);
+    IDTX86::Handler *handler = IDTX86::handler(regs->int_no);
     while (handler != nullptr) {
-        handler->high_half(r->int_no, handler->data);
+        handler->high_half(regs->int_no, handler->data);
         //handler->bottom_half(r->int_no, handler->data); //FIXME
         handler = handler->next;
     }

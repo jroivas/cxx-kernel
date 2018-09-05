@@ -4,6 +4,8 @@
 #include "platform.h"
 
 X11::X11()
+    : m_disp(nullptr),
+    m_visual(nullptr)
 {
 }
 

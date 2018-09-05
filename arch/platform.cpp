@@ -46,6 +46,9 @@ static Random *__platform_random = nullptr;
 
 Platform::Platform()
 {
+    current = PlatformNone;
+    m_state = nullptr;
+
     #ifdef ARCH_ARM
     current = PlatformARM;
     m_state = new StateARM();

@@ -187,7 +187,7 @@ void MM::treeAdd(PtrInfo *cur)
 #endif
                     tmp = tmp2;
                 }
-            } else if (cur->size >= tmp->size) {
+            } else {
                 if (tmp->next == nullptr) {
                     tmp->next = (ptr_t)p;
                     return;
@@ -377,7 +377,7 @@ void *MM::allocMem(size_t size, AllocType t)
                 && (((ptr_val_t)m_freeTop+sizeof(PtrInfo)+sizeof(ptr_val_t)) < (ptr_val_t)m_freeMax)) {
 
                 ptr_val_t diff = (ptr_val_t)m_freeMax-(ptr_val_t)m_freeTop;
-                PtrInfo *nb = (PtrInfo*)m_freeTop;
+                PtrInfo *nb = reinterpret_cast<PtrInfo*>(m_freeTop);
                 nb->prev = nullptr;
                 nb->next = nullptr;
                 nb->size = (unsigned int)(diff-sizeof(PtrInfo))&SIZEMASK;
@@ -409,7 +409,7 @@ void *MM::allocMem(size_t size, AllocType t)
         return nullptr;
     }
 
-    PtrInfo *tmp = (PtrInfo*)ptr;
+    PtrInfo *tmp = reinterpret_cast<PtrInfo*>(ptr);
     tmp->prev = nullptr;
     tmp->next = nullptr;
     tmp->size = (unsigned int)(size & SIZEMASK);

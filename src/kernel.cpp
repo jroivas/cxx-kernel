@@ -173,8 +173,8 @@ void Kernel::initVirtualDisc()
     VirtualDisc *vd = new VirtualDisc();
     vd->append("test.img");
     ATA::Device *dev = vd->getDevice();
-    uint8_t buffer[512];
     if (dev != nullptr) {
+        uint8_t buffer[512];
         video->printf("Reading...\n");
         for (uint32_t sec=0; sec<6; sec++) {
             if (vd->read(dev, buffer, 1,  sec)) {

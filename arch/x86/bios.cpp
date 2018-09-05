@@ -148,11 +148,6 @@ void BIOS::setupX86EMU(void *ptr)
     //mach->x86.R_EFLG = (1<<9) | (1<<1);
     mach->x86.R_EFLG = F_IF;
 
-#if 0
-    for (size_t i=0; i<BIOS_STACK_SIZE; i++) {
-        ((unsigned char*)bios_stack)[i]=0;
-    }
-#endif
     mach->x86.R_ESP = ((uint32_t)bios_stack) + BIOS_STACK_SIZE;
     *(uint8_t*)bios_halt = 0xF4;
     mach->x86.R_EIP = (uint32_t)bios_halt;

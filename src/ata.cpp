@@ -61,16 +61,26 @@ class ATA::DevicePrivate : public Storage::Device
 public:
     enum DeviceType { ATAMaster=0, ATASlave=1 };
 
-    DevicePrivate(ATA *a)
+    explicit DevicePrivate(ATA *a)
         : Device(),
+        m_basePort(0),
+        m_basePort2(0),
+        m_size(0),
+        m_irq(false),
         m_avail(false),
         m_lba(false), m_lba48(false),
         m_dma(false),
-        m_ata(a)
+        m_type(ATAMaster),
+        m_ata(a),
+        m_mode(0),
+        m_cyl(0),
+        m_sect(0),
+        m_head(0)
     {
         next = nullptr;
         m_class = CLASS_ATA;
     }
+
     void setup(uint32_t pri, uint32_t sec, DeviceType type)
     {
         m_basePort = pri;
@@ -78,16 +88,20 @@ public:
         m_type = type;
         detect();
     }
+
     bool readSector(uint8_t *buffer, uint16_t sectors, uint32_t addr, uint32_t addr_hi=0);
     bool writeSector(uint8_t *buffer, uint16_t sectors, uint32_t addr, uint32_t addr_hi=0);
+
     uint32_t size() const
     {
         return m_size;
     }
+
     DeviceModel model() const
     {
         return m_model;
     }
+
     void select(uint8_t head=0);
 
 protected:
