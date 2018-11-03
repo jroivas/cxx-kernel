@@ -498,6 +498,8 @@ set(MUSL_LOCALE
     ${MUSL_PREFIX}/locale/uselocale.c
     ${MUSL_PREFIX}/locale/wcscoll.c
     ${MUSL_PREFIX}/locale/wcsxfrm.c
+    ${MUSL_PREFIX}/locale/locale_map.c
+    ${MUSL_PREFIX}/locale/c_locale.c
     )
 
 set(MUSL_THREAD
@@ -746,6 +748,7 @@ set(MUSL_FENV
     ${MUSL_PREFIX}/fenv/fesetexceptflag.c
     ${MUSL_PREFIX}/fenv/fesetround.c
     ${MUSL_PREFIX}/fenv/feupdateenv.c
+    ${MUSL_PREFIX}/fenv/__flt_rounds.c
     )
 
 set(MUSL_MMAN
@@ -983,6 +986,7 @@ set(MUSL_PASSWD
     ${MUSL_PREFIX}/passwd/getpwent_a.c
     ${MUSL_PREFIX}/passwd/getpwent.c
     ${MUSL_PREFIX}/passwd/getpw_r.c
+    ${MUSL_PREFIX}/passwd/getpw_a.c
     ${MUSL_PREFIX}/passwd/getspent.c
     ${MUSL_PREFIX}/passwd/getspnam.c
     ${MUSL_PREFIX}/passwd/getspnam_r.c
@@ -990,6 +994,7 @@ set(MUSL_PASSWD
     ${MUSL_PREFIX}/passwd/putgrent.c
     ${MUSL_PREFIX}/passwd/putpwent.c
     ${MUSL_PREFIX}/passwd/putspent.c
+    ${MUSL_PREFIX}/passwd/nscd_query.c
     )
 
 set(MUSL_DIRENT
@@ -1141,11 +1146,18 @@ set(MUSL_SCHED
 set(MUSL_DLSO
     ${MUSL_PREFIX}/ldso/dladdr.c
     ${MUSL_PREFIX}/ldso/dlinfo.c
+    ${MUSL_PREFIX}/ldso/dlerror.c
     ${MUSL_PREFIX}/ldso/dl_iterate_phdr.c
     ${MUSL_PREFIX}/ldso/dlsym.c
     ${MUSL_TOP_PREFIX}/ldso/dynlink.c
     ${MUSL_TOP_PREFIX}/ldso/dlstart.c
     ${MUSL_PREFIX}/ldso/tlsdesc.c
+    )
+
+set(MUSL_NETWORK
+    ${MUSL_PREFIX}/network/sendmsg.c
+    ${MUSL_PREFIX}/network/socket.c
+    ${MUSL_PREFIX}/network/connect.c
     )
 
 #set(MUSL_DUMMY
@@ -1179,6 +1191,8 @@ add_library(musl
     ${MUSL_DIRENT}
     ${MUSL_PROCESS}
     ${MUSL_LINUX}
+    ${MUSL_NETWORK}
+    ${MUSL_PTHREAD}
     ${MUSL_CONF}
     ${MUSL_LEGACY}
     ${MUSL_SCHED}

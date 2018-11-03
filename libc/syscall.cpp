@@ -92,8 +92,9 @@ long syscall_va(long num, va_list al)
             break;
     }
 
-    Platform::video()->printf("syscall ERR %d\n", num);
     errno = EINVAL;
+    Platform::video()->printf("*** ERROR: Unimplemented syscall: %ld\n", num);
+    while(1) {}
     return -EINVAL;
 }
 
