@@ -13,6 +13,7 @@
 #include "x86/atax86.h"
 #include "x86/taskx86.h"
 #include "x86/randomx86.h"
+#include "x86/cpux86.h"
 #endif
 
 #ifdef ARCH_ARM
@@ -21,6 +22,7 @@
 #include "arm/videoarm.h"
 #include "arm/timerarm.h"
 #include "arm/armfb.h"
+#include "arm/cpuarm.h"
 #endif
 
 #ifdef ARCH_LINUX
@@ -30,6 +32,7 @@
 #include "linux/videolinux.h"
 #include "linux/tasklinux.h"
 #include "linux/x11.h"
+#include "linux/cpulinux.h"
 #endif
 
 static Timer *__platform_timer = nullptr;
@@ -43,6 +46,7 @@ static Task  *__platform_task  = nullptr;
 static ProcessManager *__platform_pm = nullptr;
 static VFS   *__platform_vfs   = nullptr;
 static Random *__platform_random = nullptr;
+static CPU *__platform_cpu     = nullptr;
 
 Platform::Platform()
 {
@@ -81,6 +85,23 @@ Platform::~Platform()
 State *Platform::state()
 {
     return m_state;
+}
+
+CPU *Platform::cpu()
+{
+    if (__platform_cpu == nullptr) {
+        #ifdef ARCH_ARM
+        __platform_cpu = new CPUARM();
+        #endif
+        #ifdef ARCH_x86
+        __platform_cpu = new CPUX86();
+        #endif
+        #ifdef ARCH_LINUX
+        __platform_cpu = new CPULinux();
+        #endif
+    }
+
+    return __platform_cpu;
 }
 
 Timer *Platform::timer()
