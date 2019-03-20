@@ -20,7 +20,7 @@ static const int KERNEL_FREQUENCY = 100;
 class Kernel
 {
 public:
-    Kernel();
+    Kernel(Platform *platform);
     ~Kernel();
     int run();
 private:

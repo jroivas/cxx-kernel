@@ -3,6 +3,7 @@
 #include "gdt.h"
 #include "types.h"
 #include "kernel.h"
+#include "platform.h"
 
 #if 0
 #include "arch/arm/gpio.h"
@@ -59,12 +60,15 @@ extern "C" void _main(unsigned long multiboot, unsigned long magic)
         }
     }
 
+    Platform *platform = new Platform();
+    platform->cpu()->initSMP(platform);
+
     // Initialize paging
     paging_init((MultibootInfo *)multiboot);
 
     /* Run the kernel */
 
-    Kernel *k = new Kernel();
+    Kernel *k = new Kernel(platform);
     k->run();
 
     delete k;

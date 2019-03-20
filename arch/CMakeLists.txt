@@ -9,6 +9,7 @@ if (PLATFORM STREQUAL "x86")
         )
     set(ARCH_FILES
         ${ARCH_FILES}
+        x86/cpux86.cpp
         x86/bios.cpp
         x86/idtx86.cpp
         x86/kbx86.cpp

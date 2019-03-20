@@ -61,9 +61,9 @@ void kernel_loop()
     }
 }
 
-Kernel::Kernel()
+Kernel::Kernel(Platform *_platform)
 {
-    platform = new Platform();
+    platform = _platform;
     video = Video::get();
 
     if (IDT::get() == nullptr) {

@@ -9,7 +9,7 @@ public:
     CPUX86() : CPU() { }
     ~CPUX86(){ }
 
-    void initSMP();
+    void initSMP(Platform *p);
 };
 #endif
 

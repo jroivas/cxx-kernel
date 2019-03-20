@@ -1,13 +1,15 @@
 #ifndef CPU_H
 #define CPU_H
 
+class Platform;
+
 class CPU
 {
 public:
     CPU() {}
     virtual ~CPU() { }
 
-    void initSMP();
+    virtual void initSMP(Platform *p) = 0;
 };
 
 #endif
