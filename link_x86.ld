@@ -49,6 +49,10 @@ SECTIONS
 		code = .;
 		*(.text*)
 		*(.gnu.linkonce.t*)
+		smp_init = .;
+		INCLUDE "arch/smp_init.ld";
+		smp_init_end = .;
+
 
 		. = ALIGN(4096);
 /*
