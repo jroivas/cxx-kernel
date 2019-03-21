@@ -2,20 +2,24 @@ lock_address    equ 0x2000
 base_address    equ 0x8000
 STACKSIZE       equ 0x4000
 
-;[org base_address]
+[org base_address]
 [bits 16]
 
 smp_init:
+    cli
+    cld
     xor ax, ax
     mov ds, ax
     mov es, ax
     mov ss, ax
     mov fs, ax
     mov gs, ax
+    mov esp, __initial_stack + STACKSIZE
 
     in al, 0x92
     or al, 0x02
     out 0x92, al
+    jmp smp_prepare_32
 
 tempgdt:
     dq 0x0
@@ -28,26 +32,23 @@ tempgdt:
     dd tempgdt
 
 smp_prepare_32:
-    ;lgdt [__gdt_ptr]
     lgdt [tempgdt.desc]
 
     mov eax, cr0
     or al, 0x01
     mov cr0, eax
 
-    mov ax, tempgdt.data
+    mov ax, 0x10
     mov ds, ax
     mov es, ax
     mov ss, ax
     mov fs, ax
     mov gs, ax
 
-    ; 0x8 == cs
     jmp tempgdt.code:entry_32
 
 [bits 32]
 entry_32:
-    ; FIXME: Have to match GDT
     mov ax, tempgdt.data
     mov ds, ax
     mov es, ax
@@ -60,6 +61,7 @@ entry_32:
     mov word [lock_address], 1
 
     mov edx, 0xBA420042
+    sti
 
     jmp 0x100000
 

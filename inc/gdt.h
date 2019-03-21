@@ -3,6 +3,9 @@
 
 #include "types.h"
 
+ptr_t gdt_ptr();
+uint32_t gdt_size();
+
 void gdt_init();
 void gdt_load();
 void gdt_set_gate(int num, unsigned long base, unsigned long limit, unsigned char access, unsigned char gran);

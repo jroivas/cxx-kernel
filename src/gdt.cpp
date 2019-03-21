@@ -25,6 +25,16 @@ struct gdt_ptr_t __gdt_ptr;
 extern "C" void gdt_flush();
 extern "C" void tss_flush();
 
+ptr_t gdt_ptr()
+{
+    return (ptr_t)&__gdt_ptr;
+}
+
+uint32_t gdt_size()
+{
+    return sizeof(struct gdt_ptr_t);
+}
+
 typedef struct tss
 {
     unsigned short link;

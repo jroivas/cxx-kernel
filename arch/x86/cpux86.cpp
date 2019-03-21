@@ -2,6 +2,7 @@
 #include "types.h"
 #include "platform.h"
 #include "string.hh"
+#include "gdt.h"
 
 static uint32_t acpi_addr = 0;
 static uint32_t local_apic_id = 0x0020;
@@ -98,7 +99,7 @@ static inline void acpi_write(uint32_t id, uint32_t data)
     return mmio_write_32((void*)(acpi_addr + id), data);
 }
 
-static inline uint32_t localId()
+uint32_t localId()
 {
     return acpi_read(local_apic_id) >> ACPI_ID_SHIFT;
 }
@@ -206,7 +207,6 @@ static void init_CPU_ID(uint32_t id)
             ICR_EDGE | ICR_NO_SHORTHAND);
 
     while (acpi_read(INTERRUPT_COMMAND_LOW) & ICR_SEND_PENDING);
-    Platform::video()->printf("Init: %u\n", id);
 }
 
 static void start_CPU_ID(uint32_t id, uint32_t vector)
@@ -216,7 +216,6 @@ static void start_CPU_ID(uint32_t id, uint32_t vector)
             ICR_ASSERT | ICR_EDGE | ICR_NO_SHORTHAND);
 
     while (acpi_read(INTERRUPT_COMMAND_LOW) & ICR_SEND_PENDING);
-    Platform::video()->printf("Start: %u\n", id);
 }
 
 #define SMP_INIT_ADDR 0x2000
@@ -240,7 +239,7 @@ void initSMP_CPUS(Platform *platform)
     Platform::timer()->msleep(10);
 
     // Copy SMP CPU init code into place
-    Mem::copy((void*)0x8000, &smp_init, &smp_init_end - &smp_init + 1);
+    Mem::copy((void*)BASE_ADDR, &smp_init, &smp_init_end - &smp_init + 1);
     active_cpu_count = 1;
 
     // Start CPUs
@@ -268,9 +267,11 @@ void initSMP_CPUS(Platform *platform)
             Platform::video()->printf("Failed to boot cpu: %u\n",
                     cpu_ids[i]);
         }
+        Platform::timer()->msleep(10);
 	}
 
     Platform::timer()->msleep(100);
+    //Platform::timer()->sleep(1);
 
     Platform::video()->printf("Total CPUs active: %u\n", active_cpu_count);
     Platform::video()->printf("Inited\n");

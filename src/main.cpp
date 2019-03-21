@@ -30,12 +30,15 @@ typedef struct _PL110MMIO
 } PL110MMIO;
 #endif
 
+extern uint32_t localId();
+
 extern "C" void _smp_main()
 {
     gdt_load();
 
     //Platform *platform = new Platform();
-    Platform::video()->printf("CPU XXX\n");
+    uint32_t id = localId();
+    Platform::video()->printf("CPU initted: %u\n", id);
     while(true) ;
 }
 

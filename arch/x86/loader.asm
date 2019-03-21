@@ -46,7 +46,7 @@ my_kernel_end:
 
 loaderstart:
     cmp edx, 0xBA420042
-    je smp_init
+    je loader_smp_init
     mov [multiboot_magic_data], eax
     mov [multiboot_info_data], ebx
 
@@ -67,7 +67,7 @@ __call_kernel:
     cli
     hlt
 
-smp_init:
+loader_smp_init:
     call _smp_main
     cli
     hlt
