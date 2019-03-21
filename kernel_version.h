@@ -1,1 +1,1 @@
-static const char *kernel_version = "0.05";
+static const char *kernel_version = "0.07";
