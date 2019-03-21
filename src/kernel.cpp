@@ -61,7 +61,7 @@ void kernel_loop()
     }
 }
 
-Kernel::Kernel(Platform *_platform)
+Kernel::Kernel(Platform *_platform, MultibootInfo *multiboot)
 {
     platform = _platform;
     video = Video::get();
@@ -87,6 +87,11 @@ Kernel::Kernel(Platform *_platform)
     pcidev = nullptr;
 
     Timer::get()->setFrequency(KERNEL_FREQUENCY);
+    platform->state()->startInterrupts();
+    platform->cpu()->initSMP(platform);
+
+    paging_init(multiboot);
+
     KB::get();
 }
 
@@ -268,7 +273,7 @@ int Kernel::run()
     if (platform->state() == nullptr) {
         return 1;
     }
-    platform->state()->startInterrupts();
+    //platform->state()->startInterrupts();
 
     initVideo();
 

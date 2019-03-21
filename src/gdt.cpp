@@ -215,3 +215,8 @@ void gdt_init()
 #endif
 */
 }
+
+void gdt_load()
+{
+    gdt_flush();
+}

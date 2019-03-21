@@ -228,7 +228,7 @@ extern uint8_t smp_init_end;
 void initSMP_CPUS(Platform *platform)
 {
     uint32_t id = localId();
-    uint32_t *active_cpu_lock = (uint32_t *)SMP_INIT_ADDR;
+    ptr_t *active_cpu_lock = (ptr_t *)SMP_INIT_ADDR;
     *active_cpu_lock = 0;
     (void)platform;
 
@@ -252,20 +252,25 @@ void initSMP_CPUS(Platform *platform)
         Platform::timer()->msleep(10);
         int cnt = 0;
         while (*active_cpu_lock == 0 && cnt < 1000) {
-            Platform::timer()->msleep(1000);
+            Platform::timer()->msleep(2);
             ++cnt;
         }
         if (cnt >= 1000) {
             start_CPU_ID(cpu_ids[i], 0x8);
             cnt = 0;
             while (*active_cpu_lock == 0 && cnt < 1000) {
-                Platform::timer()->msleep(1000);
+                Platform::timer()->msleep(2);
                 ++cnt;
             }
         }
         if (cnt < 1000) active_cpu_count++;
+        else {
+            Platform::video()->printf("Failed to boot cpu: %u\n",
+                    cpu_ids[i]);
+        }
 	}
 
+    Platform::timer()->msleep(100);
 
     Platform::video()->printf("Total CPUs active: %u\n", active_cpu_count);
     Platform::video()->printf("Inited\n");

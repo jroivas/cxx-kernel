@@ -30,6 +30,15 @@ typedef struct _PL110MMIO
 } PL110MMIO;
 #endif
 
+extern "C" void _smp_main()
+{
+    gdt_load();
+
+    //Platform *platform = new Platform();
+    Platform::video()->printf("CPU XXX\n");
+    while(true) ;
+}
+
 extern "C" void _main(unsigned long multiboot, unsigned long magic)
 {
     if (magic == 0x1BADB002) {
@@ -61,14 +70,13 @@ extern "C" void _main(unsigned long multiboot, unsigned long magic)
     }
 
     Platform *platform = new Platform();
-    platform->cpu()->initSMP(platform);
 
     // Initialize paging
-    paging_init((MultibootInfo *)multiboot);
+    //paging_init((MultibootInfo *)multiboot);
 
     /* Run the kernel */
 
-    Kernel *k = new Kernel(platform);
+    Kernel *k = new Kernel(platform, (MultibootInfo *)multiboot);
     k->run();
 
     delete k;

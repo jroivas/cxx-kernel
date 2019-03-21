@@ -13,14 +13,14 @@
    On server loads lower is better,
    on desktop higher.
  */
-static const int KERNEL_FREQUENCY = 100;
+static const int KERNEL_FREQUENCY = 1000;
 //static const int KERNEL_FREQUENCY = 300;
 //static const int KERNEL_FREQUENCY = 1000;
 
 class Kernel
 {
 public:
-    Kernel(Platform *platform);
+    Kernel(Platform *platform, MultibootInfo *info);
     ~Kernel();
     int run();
 private:
