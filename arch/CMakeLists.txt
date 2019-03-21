@@ -7,6 +7,7 @@ if (PLATFORM STREQUAL "x86")
     add_custom_command(OUTPUT smp_init.ld
         COMMAND nasm "${CMAKE_CURRENT_SOURCE_DIR}/x86/smp_init.asm" -o "${CMAKE_CURRENT_BINARY_DIR}/smp_init.bin"
         COMMAND hexdump -v -e '\"BYTE(0x\" 1/1 \"%02X\" \")\\n\"' "${CMAKE_CURRENT_BINARY_DIR}/smp_init.bin" > "${CMAKE_CURRENT_BINARY_DIR}/smp_init.ld"
+        DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/x86/smp_init.asm"
         )
     add_custom_target(smpsupport ALL
         DEPENDS smp_init.ld

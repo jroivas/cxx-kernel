@@ -8,7 +8,7 @@ smp_init:
     xor ax, ax
     mov ds, ax
 
-    mov word [lock_address], 1
+    add word [lock_address], 1
 
     ; TODO 32bit and start
     hlt

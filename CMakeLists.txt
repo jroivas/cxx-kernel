@@ -217,7 +217,7 @@ add_custom_target(kernel ALL
 
 if (PLATFORM STREQUAL "x86")
     add_custom_target(run
-        COMMAND kvm -smp 2 -serial mon:stdio -kernel ${CMAKE_CURRENT_BINARY_DIR}/kernel.bin
+        COMMAND kvm -smp 3 -serial mon:stdio -kernel ${CMAKE_CURRENT_BINARY_DIR}/kernel.bin
         DEPENDS kernel.bin
         )
 endif()
