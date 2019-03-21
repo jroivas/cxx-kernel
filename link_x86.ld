@@ -49,9 +49,6 @@ SECTIONS
 		code = .;
 		*(.text*)
 		*(.gnu.linkonce.t*)
-		smp_init = .;
-		INCLUDE "arch/smp_init.ld";
-		smp_init_end = .;
 
 
 		. = ALIGN(4096);
@@ -83,6 +80,10 @@ SECTIONS
 		init_array_start = .;
 		KEEP (*(.init_array*))
 		init_array_end = .;
+
+		smp_init = .;
+		INCLUDE "arch/smp_init.ld";
+		smp_init_end = .;
 
 		*(.rodata*)
 /*
