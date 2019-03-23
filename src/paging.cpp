@@ -87,6 +87,8 @@ void *Paging::allocStatic(size_t size, ptr_t phys)
     _d->lockStatic();
 
     _d->pageAlign(PAGE_SIZE);
+    // Align for boundary
+    //_d->pageAlign(sizeof(long long int));
 
     ptr_val_t tmp = (ptr_val_t)_d->freePageAddress();
 

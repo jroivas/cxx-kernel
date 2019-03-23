@@ -64,6 +64,7 @@ void kernel_loop()
 Kernel::Kernel(Platform *_platform, MultibootInfo *multiboot)
 {
     platform = _platform;
+    //paging_init(multiboot);
     video = Video::get();
 
     if (IDT::get() == nullptr) {

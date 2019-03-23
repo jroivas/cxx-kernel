@@ -8,12 +8,6 @@ STACKSIZE       equ 0x4000
 smp_init:
     cli
     cld
-    xor ax, ax
-    mov ds, ax
-    mov es, ax
-    mov ss, ax
-    mov fs, ax
-    mov gs, ax
     mov esp, __initial_stack + STACKSIZE
 
     in al, 0x92
@@ -38,13 +32,6 @@ smp_prepare_32:
     or al, 0x01
     mov cr0, eax
 
-    mov ax, 0x10
-    mov ds, ax
-    mov es, ax
-    mov ss, ax
-    mov fs, ax
-    mov gs, ax
-
     jmp tempgdt.code:entry_32
 
 [bits 32]
@@ -61,7 +48,6 @@ entry_32:
     mov word [lock_address], 1
 
     mov edx, 0xBA420042
-    sti
 
     jmp 0x100000
 

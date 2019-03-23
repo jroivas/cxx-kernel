@@ -267,7 +267,7 @@ void initSMP_CPUS(Platform *platform)
             Platform::video()->printf("Failed to boot cpu: %u\n",
                     cpu_ids[i]);
         }
-        Platform::timer()->msleep(10);
+        Platform::timer()->msleep(100);
 	}
 
     Platform::timer()->msleep(100);

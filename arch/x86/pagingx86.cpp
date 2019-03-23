@@ -562,12 +562,16 @@ ptr8_t PagingPrivate::freePageAddress()
 void PagingPrivate::incFreePageAddress(ptr_val_t size)
 {
     ptr_val_t i = (ptr_val_t)__free_page_address/PAGE_SIZE;
-    if (!BITS(data)->isSet(i)) {
+    ptr_val_t target = (ptr_val_t)(__free_page_address + size)/PAGE_SIZE;
+    while (i <= target) {
+        if (!BITS(data)->isSet(i)) {
 #if 0
-        identityMapFrame(PDIR(directory)->getPage(i, PageDir::PageDoReserve), i, MapPageKernel, MapPageRW);
+            identityMapFrame(PDIR(directory)->getPage(i, PageDir::PageDoReserve), i, MapPageKernel, MapPageRW);
 #else
-        BITS(data)->set(i);
+            BITS(data)->set(i);
 #endif
+        }
+        ++i;
     }
     __free_page_address += size;
 }
