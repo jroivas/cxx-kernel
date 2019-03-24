@@ -31,10 +31,12 @@ typedef struct _PL110MMIO
 #endif
 
 extern uint32_t localId();
+extern "C" void pagingEnable();
 
 extern "C" void _smp_main()
 {
     gdt_load();
+    pagingEnable();
 
     //Platform *platform = new Platform();
     uint32_t id = localId();

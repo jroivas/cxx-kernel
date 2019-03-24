@@ -53,9 +53,9 @@ typedef struct AcpiHeader {
     uint8_t checksum;
     char oem_id[6];
     char oem_table_id[8];
-	uint32_t oem_revision;
-	uint32_t creator_id;
-	uint32_t creator_revision;
+    uint32_t oem_revision;
+    uint32_t creator_id;
+    uint32_t creator_revision;
 } __attribute__((__packed__)) AcpiHeader;
 
 typedef struct AcpiMadt
@@ -112,25 +112,25 @@ static int parseAcpiApic(uint32_t addr)
     uint8_t *end = (uint8_t*)((uint8_t*)madt + madt->header.length);
 
     acpi_addr = madt->localApicAddr;
-	Platform::video()->printf("laaa %u\n", madt->localApicAddr);
-	while (ptr < end) {
-		ApicHeader *header = (ApicHeader *)ptr;
-		if (header->type == 0) {
-			ApicLocalApic *local = (ApicLocalApic *)ptr;
-			if (cpu_count < max_cpu_count) {
-				cpu_ids[cpu_count++] = local->apicId;
-			}
-		}
-		else if (header->type == 1) {
-	        //Platform::video()->printf("HT 1 unimp\n");
-		}
-		else if (header->type == 2) {
-	        //Platform::video()->printf("HT 2 unimp\n");
-		}
-		ptr += header->length;
-	}
+    Platform::video()->printf("laaa %u\n", madt->localApicAddr);
+    while (ptr < end) {
+        ApicHeader *header = (ApicHeader *)ptr;
+        if (header->type == 0) {
+            ApicLocalApic *local = (ApicLocalApic *)ptr;
+            if (cpu_count < max_cpu_count) {
+                cpu_ids[cpu_count++] = local->apicId;
+            }
+        }
+        else if (header->type == 1) {
+            //Platform::video()->printf("HT 1 unimp\n");
+        }
+        else if (header->type == 2) {
+            //Platform::video()->printf("HT 2 unimp\n");
+        }
+        ptr += header->length;
+    }
 
-	return 0;
+    return 0;
 }
 
 static int parseAcpiDT(uint32_t addr)
@@ -140,8 +140,7 @@ static int parseAcpiDT(uint32_t addr)
     if (header->signature == 0x50434146) {
         Platform::video()->printf("ACPI FADT unimplemented!\n");
     } else if (header->signature == 0x43495041) {
-		return parseAcpiApic(addr);
-        Platform::video()->printf("ACPI acp unimplemented!\n");
+        return parseAcpiApic(addr);
     } else {
         Platform::video()->printf("Invalid HDR: %u\n", header->signature);
     }
@@ -154,6 +153,7 @@ static int parseRSDT(uint32_t addr)
     AcpiHeader *header = (AcpiHeader *)addr;
     uint32_t *ptr = (uint32_t*)(header + 1);
     uint32_t *end = (uint32_t*)((uint8_t*)header + header->length);
+    // FIXME map pages
 
     while (ptr < end) {
         uint32_t hdr = *(ptr++);
@@ -232,9 +232,9 @@ void initSMP_CPUS(Platform *platform)
     (void)platform;
 
     Platform::video()->printf("My local id: %u\n", id);
-	for (uint32_t i = 0; i < cpu_count; ++i) {
+    for (uint32_t i = 0; i < cpu_count; ++i) {
         if (cpu_ids[i] != id) init_CPU_ID(cpu_ids[i]);
-	}
+    }
 
     Platform::timer()->msleep(10);
 
@@ -243,7 +243,7 @@ void initSMP_CPUS(Platform *platform)
     active_cpu_count = 1;
 
     // Start CPUs
-	for (uint32_t i = 0; i < cpu_count; ++i) {
+    for (uint32_t i = 0; i < cpu_count; ++i) {
         if (cpu_ids[i] == id) continue;
         *active_cpu_lock = 0;
 
@@ -268,7 +268,7 @@ void initSMP_CPUS(Platform *platform)
                     cpu_ids[i]);
         }
         Platform::timer()->msleep(100);
-	}
+    }
 
     Platform::timer()->msleep(100);
     //Platform::timer()->sleep(1);
@@ -282,5 +282,5 @@ void CPUX86::initSMP(Platform *platform)
     searchACPI();
 
     Platform::video()->printf("Cpu count: %u\n", cpu_count);
-	initSMP_CPUS(platform);
+    initSMP_CPUS(platform);
 }
