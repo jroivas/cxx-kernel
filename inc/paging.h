@@ -49,6 +49,7 @@ public:
 
     bool mapFrame(Page *p, MapType type, MapPermissions perms);
     bool identityMapFrame(Page *p, ptr_val_t addr, MapType type, MapPermissions perms);
+    bool identityMap(ptr_val_t addr, MapType type, MapPermissions perms);
     bool map(ptr_t virt, unsigned int flags, unsigned int cnt=1);
     bool mapPhys(void *phys, ptr_t virt, unsigned int flags);
 
@@ -90,6 +91,7 @@ public:
     void lock();
     void unlock();
     void *allocStatic(size_t size, ptr_t phys);
+    bool identityMap(ptr_val_t addr);
 #if 0
     void *mapPhys(void* phys, unsigned int length);
     void unmapPhys(void* phys, unsigned int length);
@@ -104,6 +106,7 @@ private:
 
 
 void paging_init(MultibootInfo *map);
+void paging_add_kernel(ptr_val_t addr);
 
 
 #endif

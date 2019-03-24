@@ -366,6 +366,11 @@ bool PagingPrivate::identityMapFrame(Page *p, ptr_val_t addr, MapType type, MapP
     return res;
 }
 
+bool PagingPrivate::identityMap(ptr_val_t addr, MapType type, MapPermissions perms)
+{
+    return identityMapFrame(PDIR(directory)->getPage(addr, PageDir::PageDoReserve), addr, type, perms);
+}
+
 bool PagingPrivate::mapFrame(Page *p, MapType type, MapPermissions perms)
 {
     if (p==nullptr) return false;

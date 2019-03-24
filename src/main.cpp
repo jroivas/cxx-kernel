@@ -36,7 +36,7 @@ extern "C" void pagingEnable();
 extern "C" void _smp_main()
 {
     gdt_load();
-    pagingEnable();
+    //pagingEnable();
 
     //Platform *platform = new Platform();
     uint32_t id = localId();

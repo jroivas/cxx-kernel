@@ -87,11 +87,11 @@ Kernel::Kernel(Platform *_platform, MultibootInfo *multiboot)
     vfs = nullptr;
     pcidev = nullptr;
 
+    paging_init(multiboot);
+
     Timer::get()->setFrequency(KERNEL_FREQUENCY);
     platform->state()->startInterrupts();
     platform->cpu()->initSMP(platform);
-
-    paging_init(multiboot);
 
     KB::get();
 }

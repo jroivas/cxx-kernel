@@ -6,7 +6,7 @@
 ptr32_val_t __page_mapping_alloc_mutex = 0;
 
 /* Oh, we have a singleton of paging private! */
-PagingPrivate __paging_private;
+static PagingPrivate __paging_private;
 
 Paging::Paging()
 {
@@ -134,7 +134,21 @@ void *Paging::getPage()
     return p;
 }
 
+bool Paging::identityMap(ptr_val_t addr)
+{
+    _d->lock();
+    bool res = _d->identityMap(addr, PagingPrivate::MapPageKernel, PagingPrivate::MapPageRW);
+    _d->unlock();
+    return res;
+}
+
 void paging_init(MultibootInfo *info)
 {
     paging_mmap_init(info);
+}
+
+void paging_add_kernel(ptr_val_t addr)
+{
+    Paging p;
+    p.identityMap(addr);
 }
