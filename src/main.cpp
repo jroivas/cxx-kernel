@@ -4,6 +4,7 @@
 #include "types.h"
 #include "kernel.h"
 #include "platform.h"
+#include "acpi.h"
 
 #if 0
 #include "arch/arm/gpio.h"
@@ -38,7 +39,7 @@ extern "C" void _smp_main()
     pagingEnableSmp();
 
     //Platform *platform = new Platform();
-    uint32_t id = localId();
+    uint32_t id = acpiCpuLocalId();
     Platform::video()->printf("CPU initted: %u\n", id);
     while(true) ;
 }
