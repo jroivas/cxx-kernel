@@ -313,6 +313,13 @@ bool PagingPrivate::init(void *platformData)
     return true;
 }
 
+void PagingPrivate::enablePagingSmp()
+{
+    pagingDirectoryChange(PDIR(directory)->getPhys());
+
+    pagingEnable();
+}
+
 void PagingPrivate::lock()
 {
     // Doing it hard way...

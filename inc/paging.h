@@ -65,6 +65,7 @@ public:
     ptr_val_t memSize();
     void pageAlign(ptr_val_t align);
     bool isOk() { return is_ok; }
+    void enablePagingSmp();
 
 private:
     Mutex m;
@@ -99,6 +100,7 @@ public:
     void map(void *phys, void *virt, unsigned int flags);
     void *getPage();
     bool isOk();
+    void enablePagingSmp();
 private:
     PagingPrivate *_d;
     Mutex m;
@@ -106,7 +108,8 @@ private:
 
 
 void paging_init(MultibootInfo *map);
-void paging_add_kernel(ptr_val_t addr);
+void pagingMapKernel(ptr_val_t addr);
+void pagingEnableSmp();
 
 
 #endif

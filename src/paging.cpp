@@ -142,13 +142,26 @@ bool Paging::identityMap(ptr_val_t addr)
     return res;
 }
 
+void Paging::enablePagingSmp()
+{
+    _d->lock();
+    _d->enablePagingSmp();
+    _d->unlock();
+}
+
 void paging_init(MultibootInfo *info)
 {
     paging_mmap_init(info);
 }
 
-void paging_add_kernel(ptr_val_t addr)
+void pagingMapKernel(ptr_val_t addr)
 {
     Paging p;
     p.identityMap(addr);
+}
+
+void pagingEnableSmp()
+{
+    Paging p;
+    p.enablePagingSmp();
 }

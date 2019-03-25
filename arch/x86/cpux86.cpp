@@ -113,8 +113,7 @@ static int parseAcpiApic(uint32_t addr)
     uint8_t *end = (uint8_t*)((uint8_t*)madt + madt->header.length);
 
     acpi_addr = madt->localApicAddr;
-    paging_add_kernel(acpi_addr);
-    paging_add_kernel(acpi_addr + PAGE_SIZE);
+    pagingMapKernel(acpi_addr);
     Platform::video()->printf("laaa %u\n", madt->localApicAddr);
     while (ptr < end) {
         ApicHeader *header = (ApicHeader *)ptr;
@@ -153,7 +152,7 @@ static int parseAcpiDT(uint32_t addr)
 
 static int parseRSDT(uint32_t addr)
 {
-    paging_add_kernel(addr);
+    pagingMapKernel(addr);
     AcpiHeader *header = (AcpiHeader *)addr;
     uint32_t *ptr = (uint32_t*)(header + 1);
     uint32_t *end = (uint32_t*)((uint8_t*)header + header->length);
