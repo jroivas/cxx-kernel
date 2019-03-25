@@ -114,7 +114,6 @@ static int parseAcpiApic(uint32_t addr)
 
     acpi_addr = madt->localApicAddr;
     pagingMapKernel(acpi_addr);
-    Platform::video()->printf("laaa %u\n", madt->localApicAddr);
     while (ptr < end) {
         ApicHeader *header = (ApicHeader *)ptr;
         if (header->type == 0) {
@@ -140,11 +139,11 @@ static int parseAcpiDT(uint32_t addr)
     struct AcpiHeader *header = (AcpiHeader *)addr;
 
     if (header->signature == 0x50434146) {
-        Platform::video()->printf("ACPI FADT unimplemented!\n");
+        //Platform::video()->printf("ACPI FADT unimplemented!\n");
     } else if (header->signature == 0x43495041) {
         return parseAcpiApic(addr);
     } else {
-        Platform::video()->printf("Invalid HDR: %u\n", header->signature);
+        //Platform::video()->printf("Invalid HDR: 0x%x\n", header->signature);
     }
 
     return 0;
@@ -175,10 +174,10 @@ static int parseACPI(uint8_t *ptr)
     char oem[7];
     Mem::copy(oem, ptr + 9, 6);
     oem[6] = 0;
-    Platform::video()->printf("OEM: %s\n", oem);
+    //Platform::video()->printf("OEM: %s\n", oem);
 
     uint8_t rev = ptr[15];
-    Platform::video()->printf("REV: %u\n", rev);
+    //Platform::video()->printf("REV: %u\n", rev);
     if (rev == 0) {
         uint32_t addr = *(uint32_t *)(ptr + 16);
         parseRSDT(addr);
@@ -234,7 +233,7 @@ void initSMP_CPUS(Platform *platform)
     *active_cpu_lock = 0;
     (void)platform;
 
-    Platform::video()->printf("My local id: %u\n", id);
+    Platform::video()->printf("Initial CPU id: %u\n", id);
     for (uint32_t i = 0; i < cpu_count; ++i) {
         if (cpu_ids[i] != id) init_CPU_ID(cpu_ids[i]);
     }
