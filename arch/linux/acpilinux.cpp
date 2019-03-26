@@ -1,5 +1,4 @@
 #include "acpi.h"
-#include "types.h"
 
 uint32_t acpiCpuCount()
 {

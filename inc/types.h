@@ -11,6 +11,12 @@
 #include <stdint.h>
 #endif
 
+#if defined(ARCH_ARM)
+typedef unsigned int operator_size_t;
+#else
+typedef size_t operator_size_t;
+#endif
+
 #if 0
 #if __i386__
 typedef unsigned int size_t;

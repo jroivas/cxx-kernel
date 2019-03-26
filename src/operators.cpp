@@ -4,7 +4,7 @@
 
 static Paging __operator_paging;
 
-void *operator new(size_t size)
+void *operator new(operator_size_t size)
 {
     if (__operator_paging.isOk()) {
         return MM::instance()->alloc(size);
@@ -13,7 +13,7 @@ void *operator new(size_t size)
     }
 }
 
-void *operator new[](size_t size)
+void *operator new[](operator_size_t size)
 {
     if (__operator_paging.isOk()) {
         return MM::instance()->alloc(size);
@@ -29,7 +29,7 @@ void operator delete(void *ptr)
     }
 }
 
-void operator delete(void *ptr, long unsigned int)
+void operator delete(void *ptr, operator_size_t)
 {
     // FIXME
     if (__operator_paging.isOk()) {
@@ -44,7 +44,7 @@ void operator delete[](void *ptr)
     }
 }
 
-void operator delete[](void *ptr, long unsigned int)
+void operator delete[](void *ptr, operator_size_t)
 {
     // FIXME
     if (__operator_paging.isOk()) {
@@ -52,7 +52,7 @@ void operator delete[](void *ptr, long unsigned int)
     }
 }
 
-void *operator new(size_t size, ptr_t addr)
+void *operator new(operator_size_t size, ptr_t addr)
 {
     return __operator_paging.allocStatic(size, addr);
 }

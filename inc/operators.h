@@ -5,8 +5,7 @@
 #include <sys/types.h>
 
 #ifdef __cplusplus
-void *operator new(size_t size, ptr_t addr);
-
+void *operator new(operator_size_t size, ptr_t addr);
 #endif
 
 #endif

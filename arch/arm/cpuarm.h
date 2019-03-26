@@ -2,6 +2,7 @@
 #define CPUARM_H
 
 #include "cpu.h"
+#include "platform.h"
 
 class CPUARM : public CPU
 {
@@ -9,6 +10,6 @@ public:
     CPUARM() : CPU() { }
     ~CPUARM(){ }
 
-    void initSMP() {}
+    void initSMP(Platform *) {}
 };
 #endif
