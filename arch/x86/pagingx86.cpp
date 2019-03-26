@@ -3,7 +3,6 @@
 #include "x86.h"
 #include "bits.h"
 
-//#define PAGE_SIZE PAGING_SIZE
 #define PDIR(x) ((PageDir*)x)
 #define BITS(x) ((Bits*)x)
 
@@ -67,11 +66,6 @@ void Page::alloc(PageType type)
 
 PageTable::PageTable()
 {
-#if 0
-    for (unsigned int i=0; i<PAGES_PER_TABLE; i++) {
-        pages[i] = Page();
-    }
-#endif
 }
 
 Page *PageTable::get(uint32_t i)
@@ -157,103 +151,20 @@ bool PagingPrivate::init(void *platformData)
     ptr_val_t mem_end_page = (ptr_val_t)__mem_size;
     pageCnt = mem_end_page / PAGE_SIZE;
 
-#if 0
-    {
-        //ptr_val_t pc = pageCnt;
-        ptr_val_t pc = __mem_size;
-        unsigned short *tmp =(unsigned short *)(0xB8000+80*2);
-        if (pc==0) {
-            *tmp = 0x1730;
-        }
-        while (pc>0) {
-            *tmp++ = 0x1730+(pc%10);
-            pc/=10;
-        }
-        //while(1);
-    }
-#endif
     data = (void*)new Bits(pageCnt);
-#if 0
-    if (data==nullptr) {
-        unsigned short *tmp = (unsigned short *)(0xB8050);
-        *tmp++ = 0x1745; //E
-        *tmp++ = 0x1753; //R
-        *tmp++ = 0x1753; //R
-        *tmp++ = 0x174d; //M
-        while(1);
-        return false;
-    }
-    //BITS(data)->clearAll();
-#endif
-
-#if 0
-    if (platformData!=nullptr) {
-        MultibootInfo *info = (MultibootInfo*)platformData;
-        MemoryMap *mmap = (MemoryMap*)(info->mmap_addr);
-        ptr32_val_t  info_end = info->mmap_addr + info->mmap_length;
-        while ((ptr32_val_t )(mmap) + mmap->size < info_end) {
-            if ((mmap->base_addr_low + mmap->length_low) > __mem_size) {
-                __mem_size = mmap->base_addr_low + mmap->length_low;
-            }
-
-            unsigned long addr = mmap->base_addr_low / 0x1000;
-            unsigned long limit = mmap->length_low / 0x1000;
-
-            while (addr<0x120 && limit>0) {
-                addr++;
-                limit--;
-            }
-
-            if (mmap->type == 1) {
-                while (limit>0) {
-                    //BITS(data)->set(addr/PAGE_SIZE);
-                    //BITS(data)->set(addr);
-                    addr++;
-                    limit--;
-                }
-            }
-            else if (mmap->type == 2 || mmap->type == 3) {
-                //Skip
-            }
-            else {
-                break;
-            }
-            mmap = (MemoryMap *)(((ptr32_val_t)mmap) + mmap->size + sizeof(ptr32_val_t));
-        }
-    }
-#endif
-
     directory = (void*)new PageDir();
     while (directory == nullptr) ;
 
 #if 1
-    //for (uint32_t i=HEAP_START; i<HEAP_END; i+=PAGE_SIZE) {
     for (uint32_t i=HEAP_START; i<HEAP_START + KERNEL_INIT_SIZE; i += PAGE_SIZE) {
         PDIR(directory)->getPage(i, PageDir::PageDoReserve);
     }
 
-    //for (uint32_t i=USER_HEAP_START; i<USER_HEAP_END; i+=PAGE_SIZE) {
     for (uint32_t i = USER_HEAP_START; i < USER_HEAP_START+KERNEL_INIT_SIZE; i += PAGE_SIZE) {
         PDIR(directory)->getPage(i, PageDir::PageDoReserve);
     }
 #endif
 
-#if 0
-    {
-            //ptr_val_t pc = pageCnt;
-            //ptr_val_t pc = (ptr_val_t)__free_page_address;
-            ptr_val_t pc = (ptr_val_t)get_esp();
-            unsigned short *tmp =(unsigned short *)(0xB8000+80*2);
-            if (pc==0) {
-                    *tmp = 0x1730;
-            }
-            while (pc>0) {
-                    *tmp++ = 0x1730+(pc%10);
-                    pc/=10;
-            }
-            while(1);
-    }
-#endif
     // Identify mapping, skip first page to detect nullptr
     uint32_t i = 1;
     while (i<(ptr_val_t)0x10000) {
@@ -291,17 +202,6 @@ bool PagingPrivate::init(void *platformData)
     while (i<(ptr_val_t)start+KERNEL_INIT_SIZE) {
         identityMapFrame(PDIR(directory)->getPage(i, PageDir::PageDoReserve), i, MapPageKernel, MapPageRW);
         i += PAGE_SIZE;
-    }
-#endif
-
-#if 0
-    for (uint32_t i=HEAP_START; i<HEAP_START+KERNEL_INIT_SIZE; i+=PAGE_SIZE) {
-            //mapFrame(PDIR(directory)->getPage(i, PageDir::PageDoReserve), MapPageUser, MapPageReadOnly);
-            mapFrame(PDIR(directory)->getPage(i, PageDir::PageDoReserve), MapPageKernel, MapPageRW);
-    }
-
-    for (uint32_t i=USER_HEAP_START; i<USER_HEAP_START+KERNEL_INIT_SIZE; i+=PAGE_SIZE) {
-            mapFrame(PDIR(directory)->getPage(i, PageDir::PageDoReserve), MapPageUser, MapPageRW);
     }
 #endif
 
@@ -349,7 +249,6 @@ bool PagingPrivate::identityMapFrame(Page *p, ptr_val_t addr, MapType type, MapP
     bool res = true;
 
     uint32_t i = addr/PAGE_SIZE;
-    //if (BITS(data)->isSet(i)) return false;
     if (BITS(data)->isSet(i)) res = false;
 
     BITS(data)->set(i);
@@ -426,7 +325,6 @@ bool PagingPrivate::mapFrame(Page *p, MapType type, MapPermissions perms)
 /* Get a free physical page */
 void *PagingPrivate::getPage()
 {
-    //mapFrame(PDIR(directory)->getPage(i, PageDir::PageDoReserve), MapPageUser, MapPageRW);
     bool ok = false;
     uint32_t i = BITS(data)->findUnset(&ok);
     if (!ok) {
@@ -438,7 +336,7 @@ void *PagingPrivate::getPage()
     return (void*)(i*PAGE_SIZE);
 }
 
-/* Free physical page corresponding to given virtuall address */
+/* Free physical page corresponding to given virtual address */
 void PagingPrivate::freePage(void *ptr)
 {
 #if 1
@@ -451,7 +349,6 @@ void PagingPrivate::freePage(void *ptr)
 bool PagingPrivate::mapPhys(void *phys, ptr_t virt, unsigned int flags)
 {
     ptr_val_t i = 0;
-#if 1
     if (flags&PAGING_MAP_USER) {
         while ((ptr_val_t)__user_heap_address%PAGE_SIZE!=0) __user_heap_address++;
         i = (ptr_val_t)__user_heap_address;
@@ -461,13 +358,9 @@ bool PagingPrivate::mapPhys(void *phys, ptr_t virt, unsigned int flags)
         i = (ptr_val_t)__heap_address;
         __heap_address+=PAGE_SIZE;
     }
-#else
-    i = (ptr_val_t)phys;
-#endif
 
     Page *p = PDIR(directory)->getPage(i, PageDir::PageDoReserve);
     if (p == nullptr) {
-        //while(1);
         return false;
     }
     if (!p->isAvail()) {
@@ -640,11 +533,6 @@ Page *PageDir::getPage(ptr_val_t addr, PageReserve reserve)
         ptr_val_t physPtr = 0;
         tables[index] = new ((ptr_t)&physPtr) PageTable();
         if (physPtr == 0) {
-/*
-            unsigned short *vid = (unsigned short *)(0xB8000);
-            *vid = 0x1745; //E
-            while (1);
-*/
             return nullptr;
         }
         tablesPhys[index] = physPtr | PAGING_MAP_R2;
