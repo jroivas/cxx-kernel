@@ -6,10 +6,10 @@
 class CPULinux : public CPU
 {
 public:
-    CPULinux() : CPU() { }
+    CPULinux() : CPU() {}
     ~CPULinux(){ }
 
-    void initSMP() {}
+    void initSMP(Platform *) {}
 };
 #endif
 

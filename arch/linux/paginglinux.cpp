@@ -58,6 +58,11 @@ bool PagingPrivate::identityMapFrame(Page *p, ptr_val_t addr, MapType type, MapP
     return false;
 }
 
+bool PagingPrivate::identityMap(ptr_val_t addr, MapType type, MapPermissions perms)
+{
+    return identityMapFrame(nullptr, addr, type, perms);
+}
+
 bool PagingPrivate::mapFrame(Page *p, MapType type, MapPermissions perms)
 {
     (void)p;
@@ -112,6 +117,10 @@ void PagingPrivate::incFreePageAddress(ptr_val_t size)
 void PagingPrivate::pageAlign(ptr_val_t align)
 {
     (void)align;
+}
+
+void PagingPrivate::enablePagingSmp()
+{
 }
 
 ptr_val_t PagingPrivate::memSize()

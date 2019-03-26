@@ -83,6 +83,7 @@ if (PLATFORM STREQUAL "LINUX")
         )
     set(ARCH_FILES
         ${ARCH_FILES}
+        linux/acpilinux.cpp
         linux/paginglinux.cpp
         linux/idtlinux.cpp
         linux/timerlinux.cpp
