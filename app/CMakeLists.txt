@@ -196,5 +196,5 @@ add_library(app
     )
 
 add_custom_command(TARGET app POST_BUILD
-    COMMAND objcopy --redefine-sym main=app_main ${CMAKE_CURRENT_BINARY_DIR}/libapp.a
+    COMMAND "${CROSS_COMPILE}objcopy" --redefine-sym main=app_main ${CMAKE_CURRENT_BINARY_DIR}/libapp.a
     )

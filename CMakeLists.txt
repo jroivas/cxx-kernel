@@ -109,7 +109,7 @@ elseif(PLATFORM STREQUAL "ARM")
         set(extra_deps arch_asm_late)
     endif()
     #FIXME HACK: For some reason linking lib does not work with arm
-    set(extra_loader ${CMAKE_BINARY_DIR}/arch/CMakeFiles/loader.dir/arm/loader.s.o)
+    #set(extra_loader ${CMAKE_BINARY_DIR}/arch/CMakeFiles/loader.dir/arm/loader.s.o)
 endif()
 
 if (GRAPHICS)
