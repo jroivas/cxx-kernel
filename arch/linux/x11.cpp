@@ -67,6 +67,7 @@ void X11::clear()
 
 void X11::blit()
 {
+    if (!m_disp) return;
     XImage *img = XGetImage(
             m_disp, m_pix,
             0, 0,

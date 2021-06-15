@@ -16,7 +16,7 @@ struct gdt_ptr_t
 {
     unsigned short limit;
     unsigned int base;
-} __attribute__((packed));
+} __attribute__((packed)) __attribute__ ((aligned (8)));
 
 #define GDT_TABLE_SIZE 9
 struct gdt_entry_t __gdt[GDT_TABLE_SIZE];
