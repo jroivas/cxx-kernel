@@ -172,18 +172,37 @@ FB *Platform::fb()
         __platform_fb = new ARMFB();
         #endif
         #ifdef ARCH_x86
+        __platform_fb = new BochsFB(pci());
+#if 0
         //__platform_fb = new Vesa();
-        __platform_fb = new BochsFB(__platform_pci);
+        __platform_fb->initialize()
         if (!__platform_fb->isValid()) {
             delete __platform_fb;
             __platform_fb = new Vesa();
         }
+#endif
         #endif
         #ifdef ARCH_LINUX
         __platform_fb = new X11();
         #endif
     }
     #endif
+    return __platform_fb;
+}
+
+FB *Platform::fbAlternative(int idx)
+{
+    if (idx == 0)
+        return fb();
+
+    #ifdef ARCH_x86
+    if (idx == 1) {
+        if (__platform_fb)
+            delete __platform_fb;
+        __platform_fb = new Vesa();
+    }
+    #endif
+
     return __platform_fb;
 }
 

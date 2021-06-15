@@ -11,16 +11,21 @@ public:
         //Common
         uint16_t vendor;
         uint16_t device;
+
         uint16_t command;
         uint16_t status;
+
         uint8_t revID;
         uint8_t progIF;
         uint8_t subclass;
         uint8_t classCode;
+
         uint8_t cacheLineSize;
         uint8_t latency;
         uint8_t headerType;
         uint8_t bist;
+
+        uint32_t unknown[12];
 
         // Refer to bus, dev and fucn
         uint32_t bus;

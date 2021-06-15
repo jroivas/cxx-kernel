@@ -228,6 +228,21 @@ int Kernel::initFrameBuffer()
 
     if (platform->fb() == nullptr) return 1;
 
+    platform->fb()->initialize();
+    if (!platform->fb()->isValid()) {
+        int idx = 1;
+        FB *f;
+
+        /* Try alternative framebuffers */
+        do {
+            f = platform->fbAlternative(idx);
+            if (f == nullptr)
+                return 1;
+            idx++;
+            f->initialize();
+        } while (!f->isValid());
+    }
+
     FB::ModeConfig *vconf = platform->fb()->query(&conf);
     if (vconf != nullptr) {
         video->printf("FB3\n");

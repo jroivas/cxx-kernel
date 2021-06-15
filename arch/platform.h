@@ -39,6 +39,7 @@ public:
     static IDT *idt();
     static KB *kb();
     static FB *fb();
+    static FB *fbAlternative(int idx);
     static PCI *pci();
     static ATA *ata();
     static Task *task();

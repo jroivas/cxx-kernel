@@ -25,6 +25,7 @@ public:
     virtual ModeConfig *query(ModeConfig *prefer) = 0;
     virtual bool configure(ModeConfig *mode);
     virtual void blit() = 0;
+    virtual void initialize() {}
     void swap();
     virtual void clear();
     unsigned char *data();

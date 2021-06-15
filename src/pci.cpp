@@ -64,6 +64,7 @@ uint32_t PCI::readValue32(HeaderGeneric *hdr, uint32_t addr)
     if (!hdr)
         return 0;
     HeaderCommon *h = (HeaderCommon*)hdr;
+    Platform::video()->printf("Read %x %x %x\n", h->bus, h->dev, h->func);
     return getConfig(h->bus, h->dev, h->func, addr);
 }
 
@@ -94,9 +95,15 @@ PCI::HeaderGeneric *PCI::getHeader(uint32_t bus, uint32_t device, uint32_t func)
     for (int i = 0; i < 16; i++) {
         tmp->reg[i] = getConfig(bus, device, func, i * 4);
     }
+#if 1
     tmp->reg[16] = bus;
     tmp->reg[17] = device;
     tmp->reg[18] = func;
+#else
+    tmp->reg[16] = 0xdeadbeef;
+    tmp->reg[17] = 0xcafebabe;
+    tmp->reg[18] = 0x1337c0de;
+#endif
     return tmp;
 }
 
@@ -138,6 +145,7 @@ void PCI::scanDevices()
                     uint32_t d = PCI_CONFIG_GET_DEVICE(res);
                     HeaderGeneric *hdr = getHeader(bus, dev, func);
                     //Platform::video()->printf("Found device: %4x:%4x  class: %2x, %2x   %x %d\n",v,d,((HeaderCommon*)hdr)->classCode, ((HeaderCommon*)hdr)->subclass, ((HeaderCommon*)hdr)->headerType, PCI_CONFIG_IS_MULTI(((HeaderCommon*)hdr)->headerType));
+
                     if (m_verbose) Platform::video()->printf("PCI %2x:%2x.%d: %4x:%4x  class: %2x, %2x   headerType: %2x\n",bus,dev,func,v,d,
                         ((HeaderCommon*)hdr)->classCode, ((HeaderCommon*)hdr)->subclass,
                         ((HeaderCommon*)hdr)->headerType
