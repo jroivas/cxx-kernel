@@ -21,9 +21,14 @@ public:
         uint8_t latency;
         uint8_t headerType;
         uint8_t bist;
+
+        // Refer to bus, dev and fucn
+        uint32_t bus;
+        uint32_t dev;
+        uint32_t func;
     };
     struct HeaderGeneric {
-        uint32_t reg[16];
+        uint32_t reg[19];
     };
     struct Header00 {
         struct HeaderCommon common;
@@ -93,9 +98,12 @@ public:
 
     DeviceIterator *startIter();
     HeaderGeneric *findNextDevice(DeviceIterator *iter, uint8_t classcode, uint8_t subclass);
+    HeaderGeneric *findNextDeviceByVendor(DeviceIterator *iter, uint16_t vendor, uint16_t deviceid);
     HeaderGeneric *getCurrent(DeviceIterator *iter);
     void endIter(DeviceIterator *iter);
     void set(DeviceIterator *iter, uint32_t reg, uint8_t val);
+
+    uint32_t readValue32(HeaderGeneric *hc, uint32_t addr);
 
 protected:
     uint32_t getVendor(uint32_t bus, uint32_t device, uint32_t func);

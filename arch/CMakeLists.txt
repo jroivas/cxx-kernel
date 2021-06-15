@@ -40,6 +40,7 @@ if (PLATFORM STREQUAL "x86")
     if (GRAPHICS)
         set(ARCH_FILES
             ${ARCH_FILES}
+            x86/bochs.cpp
             x86/vesa.cpp
             )
     endif()

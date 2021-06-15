@@ -7,6 +7,7 @@
 #include "x86/videox86.h"
 #include "x86/idtx86.h"
 #include "x86/kbx86.h"
+#include "x86/bochs.h"
 #include "x86/vesa.h"
 #include "x86/x86.h"
 #include "x86/pcix86.h"
@@ -171,7 +172,12 @@ FB *Platform::fb()
         __platform_fb = new ARMFB();
         #endif
         #ifdef ARCH_x86
-        __platform_fb = new Vesa();
+        //__platform_fb = new Vesa();
+        __platform_fb = new BochsFB(__platform_pci);
+        if (!__platform_fb->isValid()) {
+            delete __platform_fb;
+            __platform_fb = new Vesa();
+        }
         #endif
         #ifdef ARCH_LINUX
         __platform_fb = new X11();

@@ -72,7 +72,7 @@ bool Vesa::getVESA(void *ptr)
     //Platform::video()->printf("=== VBE2 ptr %x %x %x\n",r.es,r.edi,(ptr_val_t)info);
     bios->runInt(0x10, &r);
 
-    if ((r.eax & 0xFF) == 0x4f && (r.eax & 0xFF00)==0) {
+    if ((r.eax & 0xFF) == 0x4f && (r.eax & 0xFF00) == 0) {
         Platform::video()->printf("=== VBE2 Init ok\n");
 #if 0
         Platform::video()->printf("    sig: %c%c%c%c\n",info->vbe_signature[0],info->vbe_signature[1],info->vbe_signature[2],info->vbe_signature[3]); 
@@ -81,8 +81,10 @@ bool Vesa::getVESA(void *ptr)
         Platform::video()->printf("    mem: %d\n",info->total_memory*64);
         Platform::video()->printf("    mod: %x\n",info->video_mode_ptr);
 #endif
-        if (info->vbe_version==0) {
+        if (info->vbe_version == 0) {
             Platform::video()->printf("=== VBE2 invalid version: %x\n",info->vbe_version);
+        } else {
+            Platform::video()->printf("=== VBE2 version: %x\n",info->vbe_version);
         }
     } else {
         Platform::video()->printf("=== VBE2 init FAILED\n");
@@ -128,13 +130,22 @@ FB::ModeConfig *Vesa::query(FB::ModeConfig *prefer)
         r.es = VBE_realSeg(modeinfo);
         r.edi = VBE_realOff(modeinfo);
 
-        bios->runInt(0x10, &r);
-        if ((r.eax&0xFF) != 0x4f) {
-            Platform::video()->printf("=== VBE2 mode info not supported\n");
+        if (!bios->runInt(0x10, &r)) {
+            Platform::video()->printf("=== BIOS run failed\n");
             m.unlock();
             return nullptr;
         }
-        if ((r.eax&0xFF00) != 0) {
+        if ((r.eax & 0xFF) != 0x4f) {
+            Platform::video()->printf("=== VBE2 mode info not supported: 0x%x\n", r.eax & 0xFF);
+            Platform::video()->printf("=== mode: %u\n", loc[i]);
+#if 1
+            m.unlock();
+            return nullptr;
+#else
+            continue;
+#endif
+        }
+        if ((r.eax & 0xFF00) != 0) {
             Platform::video()->printf("=== VBE2 mode info failed %d %d\n", i, loc[i]);
             m.unlock();
             return nullptr;

@@ -9,7 +9,7 @@ class BIOS
 {
 public:
     static BIOS *get();
-    void runInt(uint32_t interrupt, Regs *regs);
+    bool runInt(uint32_t interrupt, Regs *regs);
     void *alloc(uint32_t size);
 
 private:

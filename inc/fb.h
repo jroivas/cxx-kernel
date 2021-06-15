@@ -34,6 +34,9 @@ public:
     void putPixel(int x, int y, unsigned char r, unsigned char g, unsigned char b, unsigned char a=0);
     void putPixel(int x, int y, unsigned int color);
     bool isConfigured() { return m_configured; }
+    virtual bool isValid() {
+        return true;
+    }
 
 protected:
     void allocBuffers();

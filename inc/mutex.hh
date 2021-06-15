@@ -43,7 +43,12 @@ public:
 inline void Mutex::lock() {
     if (m_ptr == nullptr) return;
 
-    Platform_CAS(m_ptr, 0, 1);
+    //Platform_CAS(m_ptr, 0, 1);
+#ifdef ARCH_x86
+    while (!__sync_bool_compare_and_swap(m_ptr, 0, 1));
+#else
+    while ((Platform_CAS(m_ptr, 0, 1))==0) ;
+#endif
 }
 
 inline void Mutex::unlock() {
@@ -52,7 +57,13 @@ inline void Mutex::unlock() {
     // If already unlocked return
     if (*m_ptr == 0) return;
 
-    while ((Platform_CAS(m_ptr, 1, 0))==0) ;
+    //while ((Platform_CAS(m_ptr, 1, 0))==0) ;
+    //while ((Platform_CAS(m_ptr, 1, 0))==0) ;
+#ifdef ARCH_x86
+    *m_ptr = 0;
+#else
+    Platform_CAS(m_ptr, 1, 0);
+#endif
 }
 
 #endif

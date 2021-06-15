@@ -172,11 +172,11 @@ void *BIOS::alloc(uint32_t size)
     return nullptr;
 }
 
-void BIOS::runInt(uint32_t interrupt, Regs *regs)
+bool BIOS::runInt(uint32_t interrupt, Regs *regs)
 {
-    if (interrupt == 0) return;
+    if (interrupt == 0) return false;
     if (bios_stack == nullptr || bios_halt == nullptr) {
-        return;
+        return false;
     }
 
     m_bios.lock();
@@ -220,4 +220,6 @@ void BIOS::runInt(uint32_t interrupt, Regs *regs)
     }
 
     m_bios.unlock();
+
+    return true;
 }
