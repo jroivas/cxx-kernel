@@ -58,37 +58,28 @@ void BochsFB::initialize()
         return;
     }
 
-#if 1
     PCI::DeviceIterator *di = m_pci->startIter();
     if (!di)
         return;
+    /* FIXME Bochs graphics can have other vendor / deviceid as well */
     m_hg = m_pci->findNextDeviceByVendor(di, 0x1234, 0x1111);
     if (!m_hg)
         return;
-#endif
-
-#if 1
-    m_mmio_reg = m_pci->readValue32(m_hg, PCI_BAR2) & 0xfffffff0;
 
     m_video = m_pci->readValue32(m_hg, PCI_BAR0) & 0xfffffff0;
+
+    // TODO Fix support for memory mapped control
+#if 0
+    m_mmio_reg = m_pci->readValue32(m_hg, PCI_BAR2) & 0xfffffff0;
 
     Paging p;
     bool ok;
     p.lock();
 
     ok = p.identityMap(m_mmio_reg);
-    if (ok) {
+    if (ok)
         ok = p.identityMap(m_mmio_reg + PAGE_SIZE);
-    }
-#if 0
-    if (ok) {
-        //m_video = 0xA0000;
-        Platform::video()->printf("map3\n");
-        ok = p.identityMap(m_video);
-        for (int i = 0; i < 100; i++)
-            ok = p.identityMap(m_video + PAGE_SIZE * i);
-    }
-#endif
+
     p.unlock();
 
     if (!ok) {
@@ -97,7 +88,6 @@ void BochsFB::initialize()
     }
     m_initialized = true;
 #endif
-    //setMode(1024, 768);
 }
 
 #define VBE_DISPI_IOPORT_INDEX 0x01CE
@@ -132,7 +122,7 @@ void BochsFB::setMode(uint32_t width, uint32_t height, uint8_t bpp)
 {
     Platform::video()->printf("=== Bochs set mode %ux%u %u\n",
         width, height, bpp);
-    // FIXME Rsolve proper PCI address
+    // FIXME Resolve proper PCI address
 #if 0
     Bochs::MMIORegisters *regs = (Bochs::MMIORegisters *)m_mmio_reg;
     return;
@@ -147,7 +137,7 @@ void BochsFB::setMode(uint32_t width, uint32_t height, uint8_t bpp)
     regs->regs.bpp = bpp;
     memory_barrier();
 
-    //VBE_DISPI_ENABLED | VBE_DISPI_LFB_ENABLED
+    // VBE_DISPI_ENABLED | VBE_DISPI_LFB_ENABLED
     regs->regs.enable = 1 | 0x40;
     memory_barrier();
 
@@ -157,7 +147,6 @@ void BochsFB::setMode(uint32_t width, uint32_t height, uint8_t bpp)
     setIORegister(VBE_DISPI_INDEX_XRES, (uint16_t)width);
     setIORegister(VBE_DISPI_INDEX_YRES, (uint16_t)height);
     setIORegister(VBE_DISPI_INDEX_VWIDTH, width);
-    //setIORegister(VBE_DISPI_INDEX_VHEIGHT, height * 2);
     setIORegister(VBE_DISPI_INDEX_VHEIGHT, height * 2);
     setIORegister(VBE_DISPI_INDEX_BPP, (uint16_t)bpp);
 
@@ -173,12 +162,9 @@ bool BochsFB::validateMode(uint32_t width, uint32_t height, uint8_t bpp)
         return false;
     if (height != getIORegister(VBE_DISPI_INDEX_YRES))
         return false;
-#if 1
     if (bpp != getIORegister(VBE_DISPI_INDEX_BPP))
         return false;
-#else
-    (void)bpp;
-#endif
+
     return true;
 }
 
@@ -188,28 +174,21 @@ FB::ModeConfig *BochsFB::query(FB::ModeConfig *prefer)
 
     FB::ModeConfig *res = (FB::ModeConfig *)MM::instance()->alloc(sizeof(FB::ModeConfig));
 
-#if 1
     if (prefer)  {
         res->width = prefer->width;
         res->height = prefer->height;
         switch (prefer->depth) {
-#if 1
         case 8:
         case 16:
         case 24:
         case 32:
             res->depth = prefer->depth;
             break;
-#endif
         default:
             res->depth = 32;
             break;
         }
-    } else
-#else
-    (void)prefer;
-#endif
-    {
+    } else {
         res->width = 1024;
         res->height = 768;
         res->depth = 32;
@@ -217,11 +196,11 @@ FB::ModeConfig *BochsFB::query(FB::ModeConfig *prefer)
 
     res->bytes_per_line = res->width * res->depth / 8;
     res->id = 1;
-    //res->base = (unsigned char*)m_video;
 
     Paging p;
     p.lock();
 
+    // Map memory from phys addr m_video to new res->base
     uint32_t s = res->bytes_per_line * (res->height);
     ptr_val_t newbase;
     res->base = (unsigned char*)m_video;
@@ -275,52 +254,7 @@ void BochsFB::blit()
     if (m_direct) return;
 
     m.lock();
-
-#if 0
-#if 0
-    uint32_t sz = 0x10000;
-    uint16_t bank;
-    uint16_t banks = m_size / sz;
-#endif
-    unsigned char *tmp;
-
-    tmp = m_current->base;
-    for (int j = 0; j < 600; j++) {
-        for (int i = 0; i < 800 * 4; i++) {
-            uint32_t p = j * 600 * 4 + i;
-            tmp[p] = p % 0xff;
-            //tmp[j * 600 + i] = i % 0xFF;
-        }
-    }
-
-#if 0
-    Platform::video()->printf("blit\n");
-    tmp = (uint8_t*)m_video;
-    *tmp++ = 0xFF;
-    *tmp++ = 0xFF;
-    *tmp++ = 0xFF;
-    *tmp++ = 0xFF;
-    *tmp++ = 0xFF;
-    *tmp++ = 0xFF;
-#endif
-#if 0
-    for (bank = 0; bank < banks; bank++) {
-        setBank(bank);
-        //memcpy_opt((char*)m_video, m_buffer + bank * sz, sz);
-    }
-#endif
-#else
-    //Platform::video()->printf("blit: 0x%x\n", m_current->base);
-#if 0
-    uint8_t *tmp;
-    tmp = (uint8_t*)m_video + 800*10 * 3;
-    for (int i = 0; i < 3 * 100; i++)
-        *tmp++ = 0xFF;
-#else
-    //memcpy_opt((char*)m_video, m_buffer, m_size);
     memcpy_opt(m_current->base, m_buffer, m_size);
-#endif
-#endif
     m.unlock();
 }
 
