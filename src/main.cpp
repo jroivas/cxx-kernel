@@ -41,6 +41,8 @@ extern "C" void _smp_main()
     //Platform *platform = new Platform();
     uint32_t id = acpiCpuLocalId();
     Platform::video()->printf("CPU initted: %u\n", id);
+
+    // TODO Allow scheduling on sMP CPUs
     while(true) ;
 }
 

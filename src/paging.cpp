@@ -5,6 +5,19 @@
 //Mutex for locking
 ptr32_val_t __page_mapping_alloc_mutex = 0;
 
+class PagingPrivateLocker {
+public:
+    PagingPrivateLocker(PagingPrivate *p) : m_p(p) {
+        m_p->lock();
+    }
+    ~PagingPrivateLocker() {
+        m_p->unlock();
+    }
+private:
+    PagingPrivate *m_p;
+};
+
+
 /* Oh, we have a singleton of paging private! */
 static PagingPrivate __paging_private;
 
@@ -33,18 +46,19 @@ bool Paging::isOk()
 
 void Paging::init(void *platformData)
 {
-    _d->lock();
+    PagingPrivateLocker lock(_d);
+
     _d->init(platformData);
-    _d->unlock();
 }
 
 /* Allocate pages */
 void *Paging::alloc(size_t cnt, unsigned int align, Alloc do_map)
 {
+    PagingPrivateLocker lock(_d);
+
     /* We need proper locking because _d is a singleton.
      * This of course means only one alloc is allowed at time.
      */
-    _d->lock();
     (void)align;
     (void)do_map;
     void *res = nullptr;
@@ -77,8 +91,6 @@ void *Paging::alloc(size_t cnt, unsigned int align, Alloc do_map)
         res = nullptr;
     }
 
-    _d->unlock();
-
     return res;
 }
 
@@ -105,48 +117,45 @@ void *Paging::allocStatic(size_t size, ptr_t phys)
 /* Free allocated pages */
 void Paging::free(void *ptr, size_t cnt)
 {
-    _d->lock();
+    PagingPrivateLocker lock(_d);
+
     while (cnt > 0) {
         _d->freePage(_d->unmap(ptr));
         ptr = (void*)((ptr32_val_t)ptr + PAGE_SIZE);
         --cnt;
     }
-    _d->unlock();
 }
 
 void Paging::map(void *phys, void *virt, unsigned int flags)
 {
-    _d->lock();
+    PagingPrivateLocker lock(_d);
+
     if (!_d->mapPhys(phys, (ptr_t)virt, flags)) {
         if (virt != nullptr) {
             *(ptr_val_t*)virt = 0;
         }
     }
-    _d->unlock();
 }
 
 void *Paging::getPage()
 {
-    _d->lock();
-    void *p = _d->getPage();
-    _d->unlock();
+    PagingPrivateLocker lock(_d);
 
-    return p;
+    return _d->getPage();
 }
 
 bool Paging::identityMap(ptr_val_t addr)
 {
-    _d->lock();
-    bool res = _d->identityMap(addr, PagingPrivate::MapPageKernel, PagingPrivate::MapPageRW);
-    _d->unlock();
-    return res;
+    PagingPrivateLocker lock(_d);
+
+    return _d->identityMap(addr, PagingPrivate::MapPageKernel, PagingPrivate::MapPageRW);
 }
 
 void Paging::enablePagingSmp()
 {
-    _d->lock();
+    PagingPrivateLocker lock(_d);
+
     _d->enablePagingSmp();
-    _d->unlock();
 }
 
 void paging_init(MultibootInfo *info)
@@ -157,11 +166,13 @@ void paging_init(MultibootInfo *info)
 void pagingMapKernel(ptr_val_t addr)
 {
     Paging p;
+
     p.identityMap(addr);
 }
 
 void pagingEnableSmp()
 {
     Paging p;
+
     p.enablePagingSmp();
 }

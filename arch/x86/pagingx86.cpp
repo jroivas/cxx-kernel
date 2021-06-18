@@ -2,6 +2,7 @@
 #include "types.h"
 #include "x86.h"
 #include "bits.h"
+#include "multiboot.h"
 
 #define PDIR(x) ((PageDir*)x)
 #define BITS(x) ((Bits*)x)
@@ -135,10 +136,10 @@ bool PagingPrivate::init(void *platformData)
                 --limit;
             }
 
-            if (mmap->type == 1) {
+            if (mmap->type == MultibootMemoryAvailable) {
                 //Skip
             }
-            else if (mmap->type == 2 || mmap->type == 3) {
+            else if (mmap->type == MultibootMemoryReserved || mmap->type == MultibootMemoryAcpiReclaimable) {
                 //Skip
             }
             else {
@@ -156,11 +157,11 @@ bool PagingPrivate::init(void *platformData)
     while (directory == nullptr) ;
 
 #if 1
-    for (uint32_t i=HEAP_START; i<HEAP_START + KERNEL_INIT_SIZE; i += PAGE_SIZE) {
+    for (uint32_t i = HEAP_START; i < HEAP_START + KERNEL_INIT_SIZE; i += PAGE_SIZE) {
         PDIR(directory)->getPage(i, PageDir::PageDoReserve);
     }
 
-    for (uint32_t i = USER_HEAP_START; i < USER_HEAP_START+KERNEL_INIT_SIZE; i += PAGE_SIZE) {
+    for (uint32_t i = USER_HEAP_START; i < USER_HEAP_START + KERNEL_INIT_SIZE; i += PAGE_SIZE) {
         PDIR(directory)->getPage(i, PageDir::PageDoReserve);
     }
 #endif
@@ -245,23 +246,23 @@ void PagingPrivate::unlockStatic()
 
 bool PagingPrivate::identityMapFrame(Page *p, ptr_val_t addr, MapType type, MapPermissions perms)
 {
-    if (p==nullptr) return false;
+    if (p == nullptr) return false;
     bool res = true;
 
-    uint32_t i = addr/PAGE_SIZE;
+    uint32_t i = addr / PAGE_SIZE;
     if (BITS(data)->isSet(i)) res = false;
 
     BITS(data)->set(i);
 
     p->setPresent(true);
 
-    if (perms==MapPageRW) {
+    if (perms == MapPageRW) {
         p->setRw(true);
     } else {
         p->setRw(false);
     }
 
-    if (type==MapPageKernel) {
+    if (type == MapPageKernel) {
         p->setUserspace(false);
     } else {
         p->setUserspace(true);
@@ -279,7 +280,7 @@ bool PagingPrivate::identityMap(ptr_val_t addr, MapType type, MapPermissions per
 
 bool PagingPrivate::mapFrame(Page *p, MapType type, MapPermissions perms)
 {
-    if (p==nullptr) return false;
+    if (p == nullptr) return false;
 
     //Already mapped
     if (!p->isAvail()) {

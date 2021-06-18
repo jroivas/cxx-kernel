@@ -312,6 +312,8 @@ int Kernel::run()
 
     initSysCall();
 
+    /* Now everything should be set up, so we can safely start multitasking
+    */
     startProcessManager();
 
     //TODO: Setup initial task

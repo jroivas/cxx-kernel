@@ -47,8 +47,10 @@ entry_32:
 
     mov word [lock_address], 1
 
+    ; 0xBA420042 is magic to detect SMP CPUs
     mov edx, 0xBA420042
 
+    ; jump to loader
     jmp 0x100000
 
     hlt

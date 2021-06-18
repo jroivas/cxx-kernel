@@ -43,6 +43,7 @@ void initSMP_CPUS(Platform *platform)
             Platform::timer()->msleep(2);
             ++cnt;
         }
+        /* Timer hit, try again */
         if (cnt >= 1000) {
             acpiStartCpuById(acpiCpuId(i), BASE_ADDR/0x1000);
             cnt = 0;

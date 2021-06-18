@@ -31,7 +31,8 @@ struct MultibootInfo;
 
 class Page;
 
-/* The real paging class which does the dirty job, implement arch specific*/
+/* The real paging class which does the dirty job, implement arch specific,
+   dont' inherit, just implement */
 class PagingPrivate
 {
 public:

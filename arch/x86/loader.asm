@@ -45,6 +45,7 @@ my_kernel_end:
     dd loaderstart
 
 loaderstart:
+    ; 0xBA420042 is magic to detect SMP CPUs, see smp_init.asm
     cmp edx, 0xBA420042
     je loader_smp_init
     mov [multiboot_magic_data], eax
