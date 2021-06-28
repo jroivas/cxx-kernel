@@ -1,6 +1,6 @@
 lock_address    equ 0x2000
+done_address    equ 0x2020
 base_address    equ 0x8000
-STACKSIZE       equ 0x4000
 
 [org base_address]
 [bits 16]
@@ -8,7 +8,6 @@ STACKSIZE       equ 0x4000
 smp_init:
     cli
     cld
-    mov esp, __initial_stack + STACKSIZE
 
     in al, 0x92
     or al, 0x02
@@ -21,11 +20,16 @@ tempgdt:
     dq 0xcf9a000000ffff
 .data equ $ - tempgdt
     dq 0xcf92000000ffff
-.desc
+.tss equ $ - tempgdt
+    dq 0xcf890000000068
+.desc:
     dw $ - tempgdt - 1
     dd tempgdt
+    dd 0
 
 smp_prepare_32:
+    xor ax, ax
+    mov ds, ax
     lgdt [tempgdt.desc]
 
     mov eax, cr0
@@ -43,9 +47,11 @@ entry_32:
     mov fs, ax
     mov gs, ax
 
-    mov esp, __initial_stack + STACKSIZE
-
     mov word [lock_address], 1
+
+.1:  pause
+    cmp byte [done_address], 0
+    jz .1
 
     ; 0xBA420042 is magic to detect SMP CPUs
     mov edx, 0xBA420042
@@ -54,8 +60,3 @@ entry_32:
     jmp 0x100000
 
     hlt
-
-[section .bss]
-ALIGN 4
-__initial_stack:
-    resb STACKSIZE ; reserve 16k stack on a doubleword boundary

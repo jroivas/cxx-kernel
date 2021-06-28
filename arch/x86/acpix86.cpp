@@ -19,7 +19,8 @@ uint32_t acpiCpuId(uint32_t index)
     return cpu_ids[index];
 }
 
-#define INTERRUPT_COMMAND_LOW 0x0300
+#define ACPI_CLEAR_ERRORS      0x0280
+#define INTERRUPT_COMMAND_LOW  0x0300
 #define INTERRUPT_COMMAND_HIGH 0x0310
 #define ACPI_ID_SHIFT 24
 
@@ -87,24 +88,30 @@ typedef struct ApicLocalApic
 } __attribute__((__packed__)) ApicLocalApic;
 
 
-static inline uint32_t mmio_read_32(void *ptr)
+static inline uint32_t mmio_read_32(volatile void *ptr)
 {
     return *(volatile uint32_t *)(ptr);
 }
 
-static inline void mmio_write_32(void *ptr, uint32_t data)
+static inline void mmio_write_32(volatile void *ptr, uint32_t data)
 {
     *(volatile uint32_t *)(ptr) = data;
 }
 
 static inline uint32_t acpi_read(uint32_t id)
 {
-    return mmio_read_32((void*)(acpi_addr + id));
+    return mmio_read_32((volatile uint32_t*)(acpi_addr + id));
+}
+
+static inline void acpi_write_mask(uint32_t id, uint32_t data, uint32_t mask)
+{
+
+    *((volatile uint32_t*)(acpi_addr + id)) = (*((volatile uint32_t*)(acpi_addr + id)) & mask) | data; 
 }
 
 static inline void acpi_write(uint32_t id, uint32_t data)
 {
-    return mmio_write_32((void*)(acpi_addr + id), data);
+    return mmio_write_32((volatile uint32_t*)(acpi_addr + id), data);
 }
 
 
@@ -212,19 +219,40 @@ void acpiSearch()
 
 void acpiInitCpuById(uint32_t id)
 {
+    acpi_write(ACPI_CLEAR_ERRORS, 0);
+#if 0
     acpi_write(INTERRUPT_COMMAND_HIGH, id << ACPI_ID_SHIFT);
     acpi_write(INTERRUPT_COMMAND_LOW, ICR_INIT | ICR_PHYSICAL | ICR_ASSERT |
             ICR_EDGE | ICR_NO_SHORTHAND);
-
     while (acpi_read(INTERRUPT_COMMAND_LOW) & ICR_SEND_PENDING);
+#else
+    acpi_write_mask(INTERRUPT_COMMAND_HIGH, id << ACPI_ID_SHIFT, 0x00ffffff);
+    acpi_write_mask(INTERRUPT_COMMAND_LOW, ICR_LEVEL | ICR_INIT | ICR_PHYSICAL | ICR_ASSERT |
+            ICR_EDGE | ICR_NO_SHORTHAND, 0xfff00000);
+#endif
+
+    do { __asm__ __volatile__ ("pause" : : : "memory"); } while (acpi_read(INTERRUPT_COMMAND_LOW) & ICR_SEND_PENDING);
+
+    acpi_write_mask(INTERRUPT_COMMAND_HIGH, id << ACPI_ID_SHIFT, 0x00ffffff);
+    /* Deassert */
+    acpi_write_mask(INTERRUPT_COMMAND_LOW, ICR_LEVEL | ICR_INIT, 0xfff00000);
+
+    do { __asm__ __volatile__ ("pause" : : : "memory"); } while (acpi_read(INTERRUPT_COMMAND_LOW) & ICR_SEND_PENDING);
 }
 
 void acpiStartCpuById(uint32_t id, uint32_t startupCode)
 {
+#if 0
     acpi_write(INTERRUPT_COMMAND_HIGH, id << ACPI_ID_SHIFT);
     acpi_write(INTERRUPT_COMMAND_LOW, startupCode | ICR_STARTUP | ICR_PHYSICAL |
             ICR_ASSERT | ICR_EDGE | ICR_NO_SHORTHAND);
+#else
+    acpi_write(ACPI_CLEAR_ERRORS, 0);
+    acpi_write_mask(INTERRUPT_COMMAND_HIGH, id << ACPI_ID_SHIFT, 0x00ffffff);
+    acpi_write_mask(INTERRUPT_COMMAND_LOW, startupCode | ICR_STARTUP | ICR_PHYSICAL |
+            ICR_ASSERT | ICR_EDGE | ICR_NO_SHORTHAND, 0xfff00000);
+#endif
 
-    while (acpi_read(INTERRUPT_COMMAND_LOW) & ICR_SEND_PENDING);
+    do { __asm__ __volatile__ ("pause" : : : "memory"); } while (acpi_read(INTERRUPT_COMMAND_LOW) & ICR_SEND_PENDING);
 }
 

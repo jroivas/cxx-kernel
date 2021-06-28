@@ -190,6 +190,7 @@ add_custom_command(OUTPUT kernel.bin
         ${extra_libs}
         $<TARGET_FILE:app>
         ${libc_files}
+        ${extra_mid}
     DEPENDS kernel
     loader
     core

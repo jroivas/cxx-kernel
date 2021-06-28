@@ -192,6 +192,7 @@ FB *Platform::fb()
 
 FB *Platform::fbAlternative(int idx)
 {
+    #ifdef FEATURE_GRAPHICS
     if (idx == 0)
         return fb();
 
@@ -201,6 +202,9 @@ FB *Platform::fbAlternative(int idx)
             delete __platform_fb;
         __platform_fb = new Vesa();
     }
+    #endif
+    #else
+    (void)idx;
     #endif
 
     return __platform_fb;

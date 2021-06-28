@@ -3,6 +3,7 @@
 [extern _main]
 [extern _smp_main]
 [extern _atexit]
+[extern __stack_top]
 
 ; align loaded modules on page boundaries
 MULTIBOOT_ALIGN       equ  1<<0
@@ -14,9 +15,6 @@ MULTIBOOT_FLAGS       equ  MULTIBOOT_ALIGN | MULTIBOOT_MEMINFO
 MULTIBOOT_MAGIC       equ  0x1BADB002
 ; checksum required
 MULTIBOOT_CHECKSUM    equ -(MULTIBOOT_MAGIC + MULTIBOOT_FLAGS)
-
-STACKSIZE             equ 0x4000
-
 
 [section .data]
 ALIGN 4096
@@ -53,7 +51,7 @@ loaderstart:
 
 __call_kernel:
     ; set up the stack
-    mov esp, __initial_stack + STACKSIZE
+    mov esp, [__stack_top]
 
     ; pass Multiboot magic number
     mov eax, [multiboot_magic_data]
@@ -69,13 +67,22 @@ __call_kernel:
     hlt
 
 loader_smp_init:
+    mov eax, 1
+    cpuid
+    shr ebx, 24
+
+    mov edi, ebx
+    shl ebx, 14
+    mov esp, [__stack_top]
+    sub esp, ebx
+    push edi
+
     call _smp_main
     cli
     hlt
 
-[global __initial_stack]
 
 [section .bss]
 ALIGN 4
-__initial_stack:
-    resb STACKSIZE ; reserve 16k stack on a doubleword boundary
+     ; TODO Figure out why we need this?
+     resb 0x1000

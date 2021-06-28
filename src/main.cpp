@@ -33,6 +33,10 @@ typedef struct _PL110MMIO
 
 extern uint32_t localId();
 
+#define STACK_SIZE 0x4000 * 64
+uint8_t __stack_bottom[STACK_SIZE] = {};
+uint32_t __stack_top = (uint32_t)__stack_bottom + STACK_SIZE;
+
 extern "C" void _smp_main()
 {
     gdt_load();
@@ -41,6 +45,12 @@ extern "C" void _smp_main()
     //Platform *platform = new Platform();
     uint32_t id = acpiCpuLocalId();
     Platform::video()->printf("CPU initted: %u\n", id);
+
+#if 0
+    uint32_t esp;
+    asm volatile("mov %%esp, %[Var]" : [Var] "=r" (esp));
+    Platform::video()->printf("ESP: 0x%8x\n", esp);
+#endif
 
     // TODO Allow scheduling on sMP CPUs
     while(true) ;

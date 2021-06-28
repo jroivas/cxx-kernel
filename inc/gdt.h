@@ -3,7 +3,7 @@
 
 #include "types.h"
 
-ptr_t gdt_ptr();
+extern ptr_t gdt_ptr();
 uint32_t gdt_size();
 
 void gdt_init();

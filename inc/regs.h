@@ -16,6 +16,9 @@ public:
     unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax;
     unsigned int int_no, err_code;
     unsigned int eip, cs, eflags, useresp, ss;
+    void dump();
+#else
+    void dump() {}
 #endif
 };
 

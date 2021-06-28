@@ -109,6 +109,9 @@ PagingPrivate::~PagingPrivate()
 {
 }
 
+extern uint32_t __stack_bottom;
+extern uint32_t __stack_top;
+
 bool PagingPrivate::init(void *platformData)
 {
     if (data != nullptr) return false;
@@ -192,11 +195,20 @@ bool PagingPrivate::init(void *platformData)
         identityMapFrame(PDIR(directory)->getPage(i, PageDir::PageDoReserve), i, MapPageKernel, MapPageRW);
         i += PAGE_SIZE;
     }
+
     i = 0x100000;
     while (i<(ptr_val_t)__free_page_address) {
         identityMapFrame(PDIR(directory)->getPage(i, PageDir::PageDoReserve), i, MapPageKernel, MapPageRW);
         i += PAGE_SIZE;
     }
+#if 1
+    i = (uint32_t)&__stack_bottom;
+    while (i<(ptr_val_t)__stack_top) {
+        identityMapFrame(PDIR(directory)->getPage(i, PageDir::PageDoReserve), i, MapPageKernel, MapPageRW);
+        i += PAGE_SIZE;
+    }
+#endif
+
 #if 1
     i = (ptr_val_t)__free_page_address;
     ptr_val_t start = i;

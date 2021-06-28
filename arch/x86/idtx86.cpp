@@ -275,6 +275,7 @@ extern "C" int isr_handler(Regs * regs)
     if (regs->int_no == 0xE) {
         VideoX86 tmp;
         tmp.printf("\nERROR! Page fault! error: cr2: %x EIP: %x  \n", debug_ptr_cr2, regs->eip);
+        regs->dump();
         Platform p;
         p.state()->seizeInterrupts();
         p.state()->halt();

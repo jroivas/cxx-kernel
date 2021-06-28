@@ -374,7 +374,7 @@ void Video::putCh(char c)
         m_x++;
     } else {
         if (m_videomem == nullptr) return;
-        unsigned int offset = m_y*width() + m_x;
+        unsigned int offset = m_y * width() + m_x;
 
         m_videomem[offset] = c | VIDEO_COLOR_MASK;
 

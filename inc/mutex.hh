@@ -54,6 +54,7 @@ inline void Mutex::unlock() {
     if (*m_ptr == 0) return;
 
     *m_ptr = 0;
+    memory_barrier();
 }
 
 class MutexLocker

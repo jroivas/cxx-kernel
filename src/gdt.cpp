@@ -12,6 +12,7 @@ struct gdt_entry_t
     unsigned char base_high;
 } __attribute__((packed));
 
+
 struct gdt_ptr_t
 {
     unsigned short limit;
