@@ -38,3 +38,9 @@ void *syscall_mmap(void *addr, size_t length, int prot,
     void *res = calloc(1, length);
     return res;
 }
+
+long syscall_mmap_wrap(void *addr, size_t length, int prot,
+                    int flags, int fd, off_t pgoffset)
+{
+    return (long)syscall_mmap(addr, length, prot, flags, fd, pgoffset);
+}

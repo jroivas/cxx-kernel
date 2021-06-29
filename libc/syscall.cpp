@@ -6,11 +6,61 @@
 #include <sys/syscall.h>
 #include <errno.h>
 
+#define SYS_CALL0(X, Y) \
+    case X: return Y();
+#define SYS_CALL1(X, Y, at) \
+    case X: {\
+        at a = va_arg(al, at);\
+        return Y(a);\
+    }
+#define SYS_CALL2(X, Y, at, bt) \
+    case X: {\
+        at a = va_arg(al, at);\
+        bt b = va_arg(al, bt);\
+        return Y(a, b);\
+    }
+#define SYS_CALL3(X, Y, at, bt, ct) \
+    case X: {\
+        at a = va_arg(al, at);\
+        bt b = va_arg(al, bt);\
+        ct c = va_arg(al, ct);\
+        return Y(a, b, c);\
+    }
+#define SYS_CALL4(X, Y, at, bt, ct, dt) \
+    case X: {\
+        at a = va_arg(al, at);\
+        bt b = va_arg(al, bt);\
+        ct c = va_arg(al, ct);\
+        dt d = va_arg(al, dt);\
+        return Y(a, b, c, d);\
+    }
+#define SYS_CALL5(X, Y, at, bt, ct, dt, et) \
+    case X: {\
+        at a = va_arg(al, at);\
+        bt b = va_arg(al, bt);\
+        ct c = va_arg(al, ct);\
+        dt d = va_arg(al, dt);\
+        et e = va_arg(al, et);\
+        return Y(a, b, c, d, e);\
+    }
+#define SYS_CALL6(X, Y, at, bt, ct, dt, et, ft) \
+    case X: {\
+        at a = va_arg(al, at);\
+        bt b = va_arg(al, bt);\
+        ct c = va_arg(al, ct);\
+        dt d = va_arg(al, dt);\
+        et e = va_arg(al, et);\
+        ft f = va_arg(al, ft);\
+        return Y(a, b, c, d, e, f);\
+    }
+
 //FIXME Types to be configurable by architecture
 long syscall_va(long num, va_list al)
 {
     //Platform::video()->printf("syscall %d\n", num);
     switch (num) {
+        SYS_CALL3(SYS_writev, syscall_writev, unsigned long, struct iovec*, unsigned long);
+#if 0
         case SYS_writev:
         {
             unsigned long fd = va_arg(al, unsigned long);
@@ -18,6 +68,9 @@ long syscall_va(long num, va_list al)
             unsigned long vlen = va_arg(al, unsigned long);
             return syscall_writev(fd, vec, vlen);
         }
+#endif
+        SYS_CALL3(SYS_readv, syscall_readv, unsigned long, struct iovec*, unsigned long);
+#if 0
         case SYS_readv:
         {
             unsigned long fd = va_arg(al, unsigned long);
@@ -25,6 +78,9 @@ long syscall_va(long num, va_list al)
             unsigned long vlen = va_arg(al, unsigned long);
             return syscall_readv(fd, vec, vlen);
         }
+#endif
+        SYS_CALL5(SYS__llseek, syscall_llseek, unsigned long, unsigned long, unsigned long, loff_t *, unsigned int);
+#if 0
         case SYS__llseek:
         {
             unsigned long fd = va_arg(al, unsigned long);
@@ -34,6 +90,9 @@ long syscall_va(long num, va_list al)
             loff_t *res = va_arg(al, loff_t*);
             return syscall_llseek(fd, high, low, res, orig);
         }
+#endif
+        SYS_CALL3(SYS_open, syscall_open, const char*, int, int);
+#if 0
         case SYS_open:
         {
             const char *fname = va_arg(al, const char*);
@@ -41,6 +100,9 @@ long syscall_va(long num, va_list al)
             int mode = va_arg(al, int);
             return syscall_open(fname, flags, mode);
         }
+#endif
+        SYS_CALL3(SYS_ioctl, syscall_ioctl, int, long, long);
+#if 0
         case SYS_ioctl:
         {
             int fd = va_arg(al, int);
@@ -48,6 +110,9 @@ long syscall_va(long num, va_list al)
             long arg = va_arg(al, long);
             return syscall_ioctl(fd, cmd, arg);
         }
+#endif
+        SYS_CALL3(SYS_read, syscall_read, int, void *, size_t);
+#if 0
         case SYS_read:
         {
             int fd = va_arg(al, int);
@@ -55,11 +120,17 @@ long syscall_va(long num, va_list al)
             size_t cnt = va_arg(al, size_t);
             return syscall_read(fd, buf, cnt);
         }
+#endif
+        SYS_CALL1(SYS_close, syscall_close, int);
+#if 0
         case SYS_close:
         {
             int fd = va_arg(al, int);
             return syscall_close(fd);
         }
+#endif
+        SYS_CALL3(SYS_fcntl64, syscall_fcntl, int, int, int);
+#if 0
         case SYS_fcntl64:
         {
             int fd = va_arg(al, int);
@@ -76,6 +147,9 @@ long syscall_va(long num, va_list al)
             errno = EINVAL;
             return -1;
         }
+#endif
+        SYS_CALL6(SYS_mmap2, syscall_mmap_wrap, void *, size_t, int, int, int, off_t);
+#if 0
         case SYS_mmap2:
         {
             void *addr = va_arg(al, void*);
@@ -86,6 +160,7 @@ long syscall_va(long num, va_list al)
             off_t pgoffs = va_arg(al, off_t);
             return (long)syscall_mmap(addr, len, prot, flags, fd, pgoffs);
         }
+#endif
 
         default:
             Platform::video()->printf("Unsupported syscall %lld\n", num);

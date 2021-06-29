@@ -179,6 +179,7 @@ int syscall_close(int fd)
 
 int syscall_fcntl(int fd, int cmd, int arg)
 {
+    Platform::video()->printf("fcntl64 on %d %d %d\n", fd, cmd, arg);
 #ifdef FEATURE_STORAGE
     VFS *vfs = Platform::vfs();
     Filesystem *fs = vfs->accessHandle(fd);
