@@ -32,6 +32,7 @@ ssize_t syscall_writev(int fd, const struct iovec *iov, int iovcnt)
 
 ssize_t syscall_readv(int fd, const struct iovec *iov, int iovcnt)
 {
+    //Platform::video()->printf(">> readv %d\n", fd);
     if (fd == 1 || fd == 2) {
         errno = EPERM;
         return -1;
@@ -142,6 +143,7 @@ int syscall_open(const char *name, int flags, int mode)
 
 int syscall_read(int fd, void *buf, size_t cnt)
 {
+    Platform::video()->printf(">> read %d\n", fd);
 #ifdef FEATURE_STORAGE
     VFS *vfs = Platform::vfs();
     Filesystem *fs = vfs->accessHandle(fd);
@@ -180,7 +182,7 @@ int syscall_close(int fd)
 
 int syscall_fcntl(int fd, int cmd, int arg)
 {
-    Platform::video()->printf("fcntl64 on %d %d %d\n", fd, cmd, arg);
+    //Platform::video()->printf("fcntl64 on %d %d %d\n", fd, cmd, arg);
 #ifdef FEATURE_STORAGE
     VFS *vfs = Platform::vfs();
     Filesystem *fs = vfs->accessHandle(fd);
@@ -200,6 +202,7 @@ int syscall_fcntl(int fd, int cmd, int arg)
     (void)cmd;
     (void)arg;
 #endif
+    Platform::video()->printf("fcntl64 err\n");
     errno = ENOENT;
     return -1;
 }

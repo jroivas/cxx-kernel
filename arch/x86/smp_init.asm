@@ -47,11 +47,11 @@ entry_32:
     mov fs, ax
     mov gs, ax
 
-    mov word [lock_address], 1
+;    mov word [lock_address], 1
 
-.1:  pause
-    cmp byte [done_address], 0
-    jz .1
+;.1:  pause
+;    cmp byte [done_address], 0
+;    jz .1
 
     ; 0xBA420042 is magic to detect SMP CPUs
     mov edx, 0xBA420042

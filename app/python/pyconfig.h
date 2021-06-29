@@ -1150,7 +1150,8 @@
 
 
 /* Define if a va_list is an array of some kind */
-#define VA_LIST_IS_ARRAY 1
+//#define VA_LIST_IS_ARRAY 1
+#define __va_copy va_copy
 
 /* Define if you want SIGFPE handled (see Include/pyfpe.h). */
 /* #undef WANT_SIGFPE_HANDLER */

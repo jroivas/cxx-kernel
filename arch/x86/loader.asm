@@ -16,6 +16,9 @@ MULTIBOOT_MAGIC       equ  0x1BADB002
 ; checksum required
 MULTIBOOT_CHECKSUM    equ -(MULTIBOOT_MAGIC + MULTIBOOT_FLAGS)
 
+lock_address    equ 0x2000
+done_address    equ 0x2020
+
 [section .data]
 ALIGN 4096
 
@@ -76,6 +79,11 @@ loader_smp_init:
     mov esp, [__stack_top]
     sub esp, ebx
     push edi
+
+    mov word [lock_address], 1
+.1:  pause
+    cmp byte [done_address], 0
+    jz .1
 
     call _smp_main
     cli

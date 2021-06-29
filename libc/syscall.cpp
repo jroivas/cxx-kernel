@@ -57,7 +57,7 @@
 //FIXME Types to be configurable by architecture
 long syscall_va(long num, va_list al)
 {
-    //Platform::video()->printf("syscall %d\n", num);
+    //Platform::video()->printf(">> syscall %d\n", num);
     switch (num) {
         SYS_CALL3(SYS_writev, syscall_writev, unsigned long, struct iovec*, unsigned long);
         SYS_CALL3(SYS_readv, syscall_readv, unsigned long, struct iovec*, unsigned long);

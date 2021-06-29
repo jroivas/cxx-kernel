@@ -15,6 +15,10 @@ void *syscall_mmap(void *addr, size_t length, int prot,
     (void)fd;
     (void)pgoffset;
 
+#ifdef SYS_mmap2
+    pgoffset *= SYSCALL_MMAP2_UNIT;
+#endif
+
     if (addr != nullptr) {
         printf("ERROR: mmap, non-NULL addr not supported!\n");
         return nullptr;
