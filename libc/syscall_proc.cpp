@@ -12,7 +12,7 @@ long syscall_rt_sigprocmask(int how, const sigset_t *set,
 
     Platform::video()->printf("rt_sigprocmask: %d, 0x%x, 0x%x, %d\n", how, set, oldset, sigsetsize);
 
-    errno = -EINVAL;
+    errno = EINVAL;
     return -1;
 }
 
@@ -28,6 +28,16 @@ long syscall_tkill(int tid, int sig)
 {
     Platform::video()->printf("tkill: %u %d\n", tid, sig);
 
-    errno = -EPERM;
+    errno = EPERM;
+    return -1;
+}
+
+int syscall_sigaltstack(const stack_t *ss, stack_t *old_ss)
+{
+    (void)ss;
+    (void)old_ss;
+    Platform::video()->printf("sigaltstack: 0x%lx, 0x%lx\n", ss, old_ss);
+
+    errno = EPERM;
     return -1;
 }

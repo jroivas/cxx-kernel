@@ -143,7 +143,6 @@ int syscall_open(const char *name, int flags, int mode)
 
 int syscall_read(int fd, void *buf, size_t cnt)
 {
-    Platform::video()->printf(">> read %d\n", fd);
 #ifdef FEATURE_STORAGE
     VFS *vfs = Platform::vfs();
     Filesystem *fs = vfs->accessHandle(fd);
@@ -153,6 +152,32 @@ int syscall_read(int fd, void *buf, size_t cnt)
     }
 
     return fs->read(fd, (char*)buf, cnt);
+#else
+    (void)fd;
+    (void)buf;
+    (void)cnt;
+    errno = ENOENT;
+    return -1;
+#endif
+}
+
+int syscall_write(int fd, void *buf, size_t cnt)
+{
+    if (fd == 1 || fd == 2) {
+
+        for (size_t i = 0; i < cnt; i++)
+            Platform::video()->handleChar(((char*)buf)[i]);
+        return cnt;
+    }
+#ifdef FEATURE_STORAGE
+    VFS *vfs = Platform::vfs();
+    Filesystem *fs = vfs->accessHandle(fd);
+    if (fs == nullptr) {
+        errno = EPERM;
+        return -1;
+    }
+
+    return fs->write(fd, (char*)buf, cnt);
 #else
     (void)fd;
     (void)buf;
@@ -235,4 +260,74 @@ int syscall_fstat(int fd, struct stat *sb)
     Platform::video()->printf("fstat failed\n");
     errno = ENOENT;
     return -1;
+}
+
+int syscall_stat(const char *pathname, struct stat *statbuf)
+{
+    (void)statbuf;
+    if (pathname == nullptr) {
+        errno = ENOENT;
+        return -1;
+    }
+
+#ifdef FEATURE_STORAGE
+    VFS *vfs = Platform::vfs();
+    Filesystem *fs = vfs->access(pathname);
+
+    if (fs == nullptr) {
+        errno = ENOENT;
+        return -1;
+    }
+
+    String base = vfs->stripslash(vfs->basedir(pathname, fs));
+    int fd = fs->open(base, O_RDONLY);
+    if (fd < 0) {
+        errno = ENOENT;
+        return -1;
+    }
+
+    int res = fs->stat(fd, statbuf);
+    if (res < 0)
+        errno = EBADF;
+    return res;
+#endif
+
+    errno = ENOENT;
+    return -1;
+}
+
+int syscall_readlink(const char *pathname, char *buf, size_t bufsize)
+{
+    (void)pathname;
+    (void)buf;
+    (void)bufsize;
+
+    if (pathname == nullptr || String::length(pathname) == 0) {
+        errno = ENOENT;
+        return -1;
+    }
+
+    Platform::video()->printf("Readlink: %s\n", pathname);
+
+    errno = EACCES;
+    return -1;
+}
+
+long syscall_getcwd(char *buf, size_t size)
+{
+    if (buf == nullptr || size == 0) {
+        errno = EINVAL;
+        return -1;
+    }
+    Platform::video()->printf("getcwd\n");
+
+    if (size < 2) {
+        errno = ENAMETOOLONG;
+        return -1;
+    }
+
+    buf[0] = '/';
+    buf[1] = 0;
+
+    return 0;
 }

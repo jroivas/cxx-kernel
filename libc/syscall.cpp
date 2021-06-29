@@ -67,13 +67,18 @@ long syscall_va(long num, va_list al)
         SYS_CALL3(SYS_open, syscall_open, const char*, int, int);
         SYS_CALL3(SYS_ioctl, syscall_ioctl, int, long, long);
         SYS_CALL3(SYS_read, syscall_read, int, void *, size_t);
+        SYS_CALL3(SYS_write, syscall_write, int, void *, size_t);
         SYS_CALL1(SYS_close, syscall_close, int);
         SYS_CALL3(SYS_fcntl64, syscall_fcntl, int, int, int);
         SYS_CALL6(SYS_mmap2, syscall_mmap_wrap, void *, size_t, int, int, int, off_t);
         SYS_CALL2(SYS_fstat64, syscall_fstat, int, struct stat*);
+        SYS_CALL2(SYS_stat64, syscall_stat, const char*, struct stat*);
         SYS_CALL4(SYS_rt_sigprocmask, syscall_rt_sigprocmask, int, const sigset_t *, sigset_t *, size_t);
         SYS_CALL0(SYS_gettid, syscall_gettid);
         SYS_CALL2(SYS_tkill, syscall_tkill, int, int);
+        SYS_CALL3(SYS_readlink, syscall_readlink, const char *, char *, size_t);
+        SYS_CALL2(SYS_getcwd, syscall_getcwd, char*, size_t);
+        SYS_CALL2(SYS_sigaltstack, syscall_sigaltstack, const stack_t*, stack_t*);
 
         default:
             Platform::video()->printf("Unsupported syscall %lld\n", num);

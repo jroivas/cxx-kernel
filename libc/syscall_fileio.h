@@ -18,10 +18,14 @@ ssize_t syscall_readv(int fd, const struct iovec *iov, int iovcnt);
 int syscall_open(const char *name, int flags, int mode);
 int syscall_ioctl(int fd, long cmd, long arg);
 int syscall_read(int fd, void *buf, size_t cnt);
+int syscall_write(int fd, void *buf, size_t cnt);
 int syscall_close(int fd);
 int syscall_llseek(int fd, long high, long low, loff_t* res, int orig);
 int syscall_fcntl(int fd, int cmd, int arg);
 int syscall_fstat(int fd, struct stat *statbuf);
+int syscall_stat(const char *pathname, struct stat *statbuf);
+int syscall_readlink(const char *pathname, char *buf, size_t bufsiz);
+long syscall_getcwd(char *buf, size_t size);
 
 #ifdef __cplusplus
 }
