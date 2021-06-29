@@ -3,6 +3,7 @@
 #include <string.hh>
 #include <mm.h>
 #include <stdio.h>
+#include <sys/mman.h>
 
 void *syscall_mmap(void *addr, size_t length, int prot,
                     int flags, int fd, off_t pgoffset)
@@ -22,14 +23,18 @@ void *syscall_mmap(void *addr, size_t length, int prot,
         printf("ERROR: mmap of files not supported!\n");
         return nullptr;
     }
+    if ((flags & MAP_ANONYMOUS)) {
+        /* Just perform alloc */
+        return calloc(1, length);
+    }
     if (pgoffset > 0) {
-        printf("ERROR: mmap offset not supported!\n");
+        printf("ERROR: mmap offset not supported! %lld\n", pgoffset);
         return nullptr;
     }
 
     printf("mmap: %x %d %d %d %d %d\n", addr, length, prot, flags, fd, pgoffset);
 
     // Simplest case
-    void *res = calloc(length, 1);
+    void *res = calloc(1, length);
     return res;
 }
