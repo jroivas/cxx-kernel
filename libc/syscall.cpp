@@ -1,10 +1,12 @@
 #include "syscall_arch.h"
 #include "syscall_fileio.h"
 #include "syscall_mem.h"
+#include "syscall_proc.h"
 #include <stdarg.h>
 #include <platform.h>
 #include <sys/syscall.h>
 #include <errno.h>
+#include <signal.h>
 
 #define SYS_CALL0(X, Y) \
     case X: return Y();
@@ -69,6 +71,10 @@ long syscall_va(long num, va_list al)
         SYS_CALL3(SYS_fcntl64, syscall_fcntl, int, int, int);
         SYS_CALL6(SYS_mmap2, syscall_mmap_wrap, void *, size_t, int, int, int, off_t);
         SYS_CALL2(SYS_fstat64, syscall_fstat, int, struct stat*);
+        SYS_CALL4(SYS_rt_sigprocmask, syscall_rt_sigprocmask, int, const sigset_t *, sigset_t *, size_t);
+        SYS_CALL0(SYS_gettid, syscall_gettid);
+        SYS_CALL2(SYS_tkill, syscall_tkill, int, int);
+
         default:
             Platform::video()->printf("Unsupported syscall %lld\n", num);
             break;

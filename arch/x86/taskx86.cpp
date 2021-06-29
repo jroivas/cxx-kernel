@@ -4,7 +4,8 @@
 #include "gdt.h"
 #include "../platform.h"
 
-#define DEFAULT_STACK_SIZE 0x1000
+/* This needs to be big enough */
+#define DEFAULT_STACK_SIZE 0x8000
 
 extern "C" int saveProcess(uint32_t *stack);
 extern "C" int restoreProcess(volatile uint32_t *lock, uint32_t *stack);

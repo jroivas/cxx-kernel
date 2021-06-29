@@ -1,5 +1,5 @@
-lock_address    equ 0x2000
-done_address    equ 0x2020
+;lock_address    equ 0x2000
+;done_address    equ 0x2020
 base_address    equ 0x8000
 
 [org base_address]

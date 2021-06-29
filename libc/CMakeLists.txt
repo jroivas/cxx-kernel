@@ -5,6 +5,7 @@ set(LIBC_FILES
     syscall.cpp
     syscall_fileio.cpp
     syscall_mem.cpp
+    syscall_proc.cpp
     thread.cpp
     pthread/pthread.cpp
     pthread/pthread_mutex.cpp
