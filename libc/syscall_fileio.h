@@ -21,6 +21,7 @@ int syscall_read(int fd, void *buf, size_t cnt);
 int syscall_close(int fd);
 int syscall_llseek(int fd, long high, long low, loff_t* res, int orig);
 int syscall_fcntl(int fd, int cmd, int arg);
+int syscall_fstat(int fd, struct stat *statbuf);
 
 #ifdef __cplusplus
 }

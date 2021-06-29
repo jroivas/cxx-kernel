@@ -5,6 +5,7 @@
 #include <sys/ioctl.h>
 #include <termios.h>
 #include <sys/uio.h>
+#include <sys/stat.h>
 
 ssize_t syscall_writev(int fd, const struct iovec *iov, int iovcnt)
 {
@@ -199,6 +200,36 @@ int syscall_fcntl(int fd, int cmd, int arg)
     (void)cmd;
     (void)arg;
 #endif
+    errno = ENOENT;
+    return -1;
+}
+
+int syscall_fstat(int fd, struct stat *sb)
+{
+    if (sb == nullptr) {
+        errno = -EINVAL;
+        return -1;
+    }
+
+    /* Pseudo stdin/stdout/stderr devices, fake the data */
+    if (fd >= 0 && fd <= 3) {
+        Mem::set(sb, 0, sizeof(struct stat));
+
+        sb->st_dev = 24;
+        sb->st_ino = 13;
+        sb->st_mode = 020620;
+        sb->st_nlink = 1;
+        sb->st_uid = 0;
+        sb->st_rdev = 34826;
+        sb->st_size = 0;
+        sb->st_blksize = 1024;
+        sb->st_blocks = 0;
+
+        return 0;
+    }
+#ifdef FEATURE_STORAGE
+#endif
+    Platform::video()->printf("fstat failed\n");
     errno = ENOENT;
     return -1;
 }

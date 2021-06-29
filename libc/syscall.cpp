@@ -68,6 +68,7 @@ long syscall_va(long num, va_list al)
         SYS_CALL1(SYS_close, syscall_close, int);
         SYS_CALL3(SYS_fcntl64, syscall_fcntl, int, int, int);
         SYS_CALL6(SYS_mmap2, syscall_mmap_wrap, void *, size_t, int, int, int, off_t);
+        SYS_CALL2(SYS_fstat64, syscall_fstat, int, struct stat*);
         default:
             Platform::video()->printf("Unsupported syscall %lld\n", num);
             break;
