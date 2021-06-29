@@ -181,7 +181,7 @@ int Video::print_l(long val, int radix, int fmtcnt)
     return print_cnt;
 }
 
-int Video::print_ul(unsigned long val, int radix, int fmtcnt)
+int Video::print_ull(unsigned long long val, int radix, int fmtcnt)
 {
     int print_cnt = 0;
     if (val == 0) {
@@ -191,7 +191,7 @@ int Video::print_ul(unsigned long val, int radix, int fmtcnt)
         return print_cnt;
     }
     int l = 0;
-    unsigned int long tmp = val;
+    unsigned long long tmp = val;
     while (tmp > 0) {
         tmp /= radix;
         l++;
@@ -248,7 +248,13 @@ int Video::vprintf(const char *fmt, va_list al)
                 l_cnt++;
             }
             else if (*ch == 'x') {
-                print_count += print_ul(va_arg(al, unsigned int), 16, fmtcnt);
+                if (l_cnt == 0) {
+                    print_count += print_ull(va_arg(al, unsigned int), 16, fmtcnt);
+                } else if (l_cnt == 1) {
+                    print_count += print_ull(va_arg(al, unsigned long), 16, fmtcnt);
+                } else if (l_cnt == 2) {
+                    print_count += print_ull(va_arg(al, unsigned long long), 16, fmtcnt);
+                }
                 format_char = false;
             }
             else if (*ch == 'c') {
@@ -258,25 +264,25 @@ int Video::vprintf(const char *fmt, va_list al)
             }
             else if (*ch == 'd') {
                 if (!s_signed) {
-                    print_count += print_ul(va_arg(al, unsigned int), 10, fmtcnt);
+                    print_count += print_ull(va_arg(al, unsigned int), 10, fmtcnt);
                 } else {
-                    print_count += print_l(va_arg(al, int), 10, fmtcnt);
+                    print_count += print_l(va_arg(al, long int), 10, fmtcnt);
                 }
                 format_char = false;
             } else if (*ch == 'u') {
                 if (l_cnt == 0) {
-                    print_count += print_ul(va_arg(al, unsigned int), 10, fmtcnt);
+                    print_count += print_ull(va_arg(al, unsigned int), 10, fmtcnt);
                 } else if (l_cnt == 1) {
-                    print_count += print_ul(va_arg(al, unsigned long), 10, fmtcnt);
+                    print_count += print_ull(va_arg(al, unsigned long), 10, fmtcnt);
                 } else if (l_cnt == 2) {
-                    print_count += print_ul(va_arg(al, unsigned long long), 10, fmtcnt);
+                    print_count += print_ull(va_arg(al, unsigned long long), 10, fmtcnt);
                 }
 #if 0
                 s_signed = false;
                 if (!s_signed) {
-                    print_ul(va_arg(al, unsigned long));
+                    print_ull(va_arg(al, unsigned long));
                 } else {
-                    print_ul(va_arg(al, long));
+                    print_ull(va_arg(al, long));
                 }
 #endif
                 format_char = false;
@@ -293,6 +299,7 @@ int Video::vprintf(const char *fmt, va_list al)
             fmtcnt = 0;
             format_char = true;
             s_signed = true;
+            l_cnt = 0;
         }
         else if (*ch == '\r') {
             m_x = 0;

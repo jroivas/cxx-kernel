@@ -26,7 +26,7 @@ public:
     unsigned int height() const;
 
 protected:
-    int print_ul(unsigned long val, int radix=10, int fmtcnt=0);
+    int print_ull(unsigned long long val, int radix=10, int fmtcnt=0);
     int print_l(long val, int radix=10, int fmtcnt=0);
     int print_prenull(int cnt, int fmtcnt);
 
