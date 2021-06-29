@@ -60,108 +60,14 @@ long syscall_va(long num, va_list al)
     //Platform::video()->printf("syscall %d\n", num);
     switch (num) {
         SYS_CALL3(SYS_writev, syscall_writev, unsigned long, struct iovec*, unsigned long);
-#if 0
-        case SYS_writev:
-        {
-            unsigned long fd = va_arg(al, unsigned long);
-            const struct iovec *vec = va_arg(al, const struct iovec*);
-            unsigned long vlen = va_arg(al, unsigned long);
-            return syscall_writev(fd, vec, vlen);
-        }
-#endif
         SYS_CALL3(SYS_readv, syscall_readv, unsigned long, struct iovec*, unsigned long);
-#if 0
-        case SYS_readv:
-        {
-            unsigned long fd = va_arg(al, unsigned long);
-            const struct iovec *vec = va_arg(al, const struct iovec*);
-            unsigned long vlen = va_arg(al, unsigned long);
-            return syscall_readv(fd, vec, vlen);
-        }
-#endif
         SYS_CALL5(SYS__llseek, syscall_llseek, unsigned long, unsigned long, unsigned long, loff_t *, unsigned int);
-#if 0
-        case SYS__llseek:
-        {
-            unsigned long fd = va_arg(al, unsigned long);
-            unsigned long high = va_arg(al, unsigned long);
-            unsigned long low = va_arg(al, unsigned long);
-            unsigned int orig = va_arg(al, unsigned int);
-            loff_t *res = va_arg(al, loff_t*);
-            return syscall_llseek(fd, high, low, res, orig);
-        }
-#endif
         SYS_CALL3(SYS_open, syscall_open, const char*, int, int);
-#if 0
-        case SYS_open:
-        {
-            const char *fname = va_arg(al, const char*);
-            int flags = va_arg(al, int);
-            int mode = va_arg(al, int);
-            return syscall_open(fname, flags, mode);
-        }
-#endif
         SYS_CALL3(SYS_ioctl, syscall_ioctl, int, long, long);
-#if 0
-        case SYS_ioctl:
-        {
-            int fd = va_arg(al, int);
-            long cmd = va_arg(al, long);
-            long arg = va_arg(al, long);
-            return syscall_ioctl(fd, cmd, arg);
-        }
-#endif
         SYS_CALL3(SYS_read, syscall_read, int, void *, size_t);
-#if 0
-        case SYS_read:
-        {
-            int fd = va_arg(al, int);
-            void *buf = va_arg(al, void*);
-            size_t cnt = va_arg(al, size_t);
-            return syscall_read(fd, buf, cnt);
-        }
-#endif
         SYS_CALL1(SYS_close, syscall_close, int);
-#if 0
-        case SYS_close:
-        {
-            int fd = va_arg(al, int);
-            return syscall_close(fd);
-        }
-#endif
         SYS_CALL3(SYS_fcntl64, syscall_fcntl, int, int, int);
-#if 0
-        case SYS_fcntl64:
-        {
-            int fd = va_arg(al, int);
-            int cmd = va_arg(al, int);
-            if (cmd == F_SETFD || cmd == F_GETFD) {
-                int args = va_arg(al, int);
-                Platform::video()->printf("fcntl64 on %d %d %d\n", fd, cmd, args);
-                int res = syscall_fcntl(fd, cmd, args);
-                Platform::video()->printf(" --> %d %d\n", res, errno);
-                return res;
-            } else {
-                Platform::video()->printf("fcntl64 on %d %d\n", fd, cmd);
-            }
-            errno = EINVAL;
-            return -1;
-        }
-#endif
         SYS_CALL6(SYS_mmap2, syscall_mmap_wrap, void *, size_t, int, int, int, off_t);
-#if 0
-        case SYS_mmap2:
-        {
-            void *addr = va_arg(al, void*);
-            size_t len = va_arg(al, size_t);
-            int prot = va_arg(al, int);
-            int flags = va_arg(al, int);
-            int fd = va_arg(al, int);
-            off_t pgoffs = va_arg(al, off_t);
-            return (long)syscall_mmap(addr, len, prot, flags, fd, pgoffs);
-        }
-#endif
-
         default:
             Platform::video()->printf("Unsupported syscall %lld\n", num);
             break;
