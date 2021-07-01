@@ -209,7 +209,7 @@ ssize_t Ustar::Iterator::read(
         if (bcnt > m_fs->blockSize())
             bcnt = m_fs->blockSize();
         /* FIXME access in the middle / random access */
-        Mem::copy(buf, m_content, bcnt);
+        Mem::copy(buf + readcnt, m_content, bcnt);
         cnt -= bcnt;
         m_data_index += bcnt;
         readcnt += bcnt;
