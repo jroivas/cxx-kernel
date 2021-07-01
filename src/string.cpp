@@ -52,6 +52,27 @@ void *Mem::setw(void *s, unsigned short c, size_t size)
     return s;
 }
 
+int Mem::cmp(const void *s1, const void *s2, size_t size)
+{
+    const char *a = (const char*)s1;
+    const char *b = (const char*)s2;
+
+    if ((!a && !b) || (!a && b))
+        return -1;
+    if (a && !b)
+        return 1;
+
+    while (size--) {
+        if (*a < *b)
+            return -1;
+        else if (*a > *b)
+            return 1;
+        a++;
+        b++;
+    }
+    return 0;
+}
+
 extern "C" void *memcpy(void *dest, const void *src, unsigned int n)
 {
     return Mem::copy(dest, (void*)src, n);

@@ -37,6 +37,11 @@ ssize_t syscall_readv(int fd, const struct iovec *iov, int iovcnt)
         errno = EPERM;
         return -1;
     }
+    if (fd == 0) {
+        /* TODO read from stdin */
+        errno = EBADF;
+        return -1;
+    }
 
 #ifdef FEATURE_STORAGE
     VFS *vfs = Platform::vfs();
@@ -319,7 +324,6 @@ long syscall_getcwd(char *buf, size_t size)
         errno = EINVAL;
         return -1;
     }
-    Platform::video()->printf("getcwd\n");
 
     if (size < 2) {
         errno = ENAMETOOLONG;

@@ -32,8 +32,9 @@ public:
         uint32_t dev;
         uint32_t func;
     };
+    // FIXME Original 19 was too small, fix with Header00 size
     struct HeaderGeneric {
-        uint32_t reg[19];
+        uint32_t reg[32];
     };
     struct Header00 {
         struct HeaderCommon common;

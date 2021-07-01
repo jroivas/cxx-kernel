@@ -63,6 +63,7 @@ set(FS_FILES
     fs/filesystem.cpp
     fs/devfs.cpp
     fs/clothesfs.cpp
+    fs/ustar.cpp
     )
 
 add_library(core STATIC ${CORE_FILES})

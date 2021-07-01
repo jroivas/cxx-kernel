@@ -13,6 +13,7 @@
 #include "fs/vfs.hh"
 #include "fs/devfs.hh"
 #include "fs/clothesfs.hh"
+#include "fs/ustar.hh"
 
 #ifdef ARCH_LINUX
 #include "arch/linux/virtualdisc.h"
@@ -150,7 +151,7 @@ void Kernel::initATA(Filesystem *cfs)
         ATA::Device *dev = ata->getDevice();
         bool mounted = false;
         while (dev != nullptr) {
-            video->printf("dev %x...\n", dev);
+            video->printf("dev %x... %lu\n", dev, ata->deviceSize(dev));
             if ((ata->deviceModel(dev) == ATA::STORAGE_SATA
                 || ata->deviceModel(dev) == ATA::STORAGE_PATA)
                 && ata->deviceSize(dev) > 0) {
@@ -159,7 +160,8 @@ void Kernel::initATA(Filesystem *cfs)
                     ATAPhys *ataphys = new ATAPhys(dev);
                     cfs->setPhysical(ataphys);
                     vfs->register_filesystem(cfs);
-                    vfs->mount("/cfs", "ClothesFS", "");
+                    //vfs->mount("/cfs", "ClothesFS", "");
+                    vfs->mount("/ustar", "Ustar", "");
                     mounted = true;
                     video->printf("Mounted\n");
                 }
@@ -298,7 +300,11 @@ int Kernel::run()
     initPCI();
 
 #if FEATURE_STORAGE
+#if 0
     ClothesFilesystem *cfs = new ClothesFilesystem;
+#else
+    UstarFilesystem *cfs = new UstarFilesystem;
+#endif
 
     initATA(cfs);
 #endif

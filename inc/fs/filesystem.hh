@@ -124,6 +124,7 @@ protected:
     String pathPart(String path, uint32_t index) const;
 
     static int m_filehandle;
+    /* FIXME whe have global list of open files */
     static List m_files;
     static ptr_val_t m_mutex;
 };

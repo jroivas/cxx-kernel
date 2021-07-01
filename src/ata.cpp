@@ -215,7 +215,7 @@ protected:
 
 uint8_t ATA::DevicePrivate::read(uint32_t port)
 {
-    if (m_ata==nullptr) return 0;
+    if (m_ata == nullptr) return 0;
     return m_ata->systemPortIn(port);
 }
 
@@ -264,6 +264,7 @@ bool ATA::DevicePrivate::reset()
     write(status(), 4);
     write(status(), 0);
 #endif
+
     wait();
     return waitStatus();
 }
@@ -501,11 +502,13 @@ void ATA::DevicePrivate::detect()
 {
     if (m_avail) return;
 
+    if (m_basePort == 0) return;
+
     m_mode = ATA_MODE_PIO;
     //m_mode = ATA_MODE_LBA;
 
     //write(control(), 2);
-    write(control(), m_irq?0:0x2);
+    write(control(), m_irq ? 0 : 0x2);
 
     if (!reset()) return;
     if (!identify()) {
@@ -526,22 +529,22 @@ void ATA::DevicePrivate::detect()
     uint32_t errcnt = 0;
     while (1) {
         uint8_t status = getStatus();
-        if ((status & ATA_STATUS_ERROR)>0) {
+        if ((status & ATA_STATUS_ERROR) > 0) {
             error = 1;
             break;
         }
-        if ((status & ATA_STATUS_BUSY)==0 && (status & ATA_STATUS_DRQ)>0) {
+        if ((status & ATA_STATUS_BUSY) == 0 && (status & ATA_STATUS_DRQ) > 0) {
             break;
         }
-        if (errcnt++>ATA_MAX_WAIT_CNT) {
+        if (errcnt++ > ATA_MAX_WAIT_CNT) {
             m_avail = false;
             return;
         }
     }
 
     detectModel();
-    if (m_model==STORAGE_UNKNOWN) return;
-    if (error>0) {
+    if (m_model == STORAGE_UNKNOWN) return;
+    if (error > 0) {
         write(command(), ATA_CMD_IDENTIFY_PACKET);
         Timer::get()->msleep(1);
     }
@@ -571,11 +574,11 @@ void ATA::DevicePrivate::detect()
         else m_size = 0;
         //Platform::video()->printf("Size: sec %u cyl %u head %u == %u (%u MB)\n",m_sect,m_cyl,m_head,m_size,m_size/1024/1024);
     } else {
-        m_size = *(uint32_t*)(buf+ATA_IDENT_MAX_LBA)*512;
+        m_size = *(uint32_t*)(buf+ATA_IDENT_MAX_LBA) * 512;
     }
     Platform::video()->printf("Size: %u (%u MB)\n",
         m_size,
-        m_size/1024/1024
+        m_size / 1024 / 1024
         );
 
     m_avail = true;
@@ -601,9 +604,10 @@ void ATA::init()
         /* Go thorought all the controllers */
         do {
             hdr = m_pci->findNextDevice(i, 0x1, 0x1);
-            if (hdr!=nullptr && (((PCI::HeaderCommon*)hdr)->headerType&0x1F)==0) {
+            if (hdr != nullptr && (((PCI::HeaderCommon*)hdr)->headerType & 0x1F) == 0) {
                 m_pci->set(i, 0x3C, 0xFE);
                 hdr = m_pci->getCurrent(i);
+                
                 PCI::Header00 *h = (PCI::Header00*)hdr;
                 uint16_t cmd = h->common.command;
                 cmd &= ~(1<<10);
@@ -626,18 +630,20 @@ void ATA::init()
                 else h->baseAddress2 &= 0xFFFFFFFC;
                 if (h->baseAddress3==0 || h->baseAddress3==1) h->baseAddress3 = 0x374;
                 else h->baseAddress3 &= 0xFFFFFFFC;
+
                 Platform::video()->printf("Addr: %x %x %x %x\n", h->baseAddress0, h->baseAddress1, h->baseAddress2, h->baseAddress3);
 #endif
-
                 /* Multiple controller and device support */
                 DevicePrivate *dev1 = new DevicePrivate(this);
                 DevicePrivate *dev2 = new DevicePrivate(this);
                 DevicePrivate *dev3 = new DevicePrivate(this);
                 DevicePrivate *dev4 = new DevicePrivate(this);
+
                 dev1->setup(h->baseAddress0, h->baseAddress1, ATA::DevicePrivate::ATAMaster);
                 dev2->setup(h->baseAddress0, h->baseAddress1, ATA::DevicePrivate::ATASlave);
                 dev3->setup(h->baseAddress2, h->baseAddress3, ATA::DevicePrivate::ATAMaster);
                 dev4->setup(h->baseAddress2, h->baseAddress3, ATA::DevicePrivate::ATASlave);
+
                 addDevice(dev1);
                 addDevice(dev2);
                 addDevice(dev3);
