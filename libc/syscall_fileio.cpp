@@ -156,7 +156,8 @@ int syscall_read(int fd, void *buf, size_t cnt)
         return -1;
     }
 
-    return fs->read(fd, (char*)buf, cnt);
+    int res = fs->read(fd, (char*)buf, cnt);
+    return res;
 #else
     (void)fd;
     (void)buf;

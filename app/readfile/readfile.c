@@ -14,15 +14,16 @@ int main(int argc, char **argv)
     printf("fopen fd: %d\n", fd);
     if (fd != NULL) {
         char buf[256];
-        int cnt = 256;
+        const int cnt = 256;
         int res = 0;
-        printf("Data: ");
+        printf("Data: \n");
         while (1) {
             res = fread(buf, 1, cnt, fd);
-            if (res <= 0)
+            //res = fread(buf, cnt, 1, fd);
+            if (feof(fd) || res <= 0)
                 break;
 
-            for (int i = 0; i < res; ++i) {
+            for (int i = 0; i < cnt; ++i) {
                 //printf("%x %c\n", (unsigned char)buf[i], (unsigned char)buf[i]);
                 printf("%c", (unsigned char)buf[i]);
             }

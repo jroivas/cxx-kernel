@@ -202,14 +202,19 @@ ssize_t Ustar::Iterator::read(
     while (cnt > 0) {
         uint32_t cblock = m_data_index / m_fs->blockSize();
         if (m_data_block + cblock >= end_block)
-            return 0;
+            return readcnt;
         if (!m_fs->getBlock(m_data_block + cblock, m_content))
-            return 0;
+            return readcnt;
         uint64_t bcnt = cnt;
         if (bcnt > m_fs->blockSize())
             bcnt = m_fs->blockSize();
-        /* FIXME access in the middle / random access */
-        Mem::copy(buf + readcnt, m_content, bcnt);
+
+        /* Partial offset access */
+        uint32_t offset = m_data_index % m_fs->blockSize();
+        if (offset + bcnt > m_fs->blockSize())
+            bcnt = m_fs->blockSize() - offset;
+
+        Mem::copy(buf + readcnt, m_content + offset, bcnt);
         cnt -= bcnt;
         m_data_index += bcnt;
         readcnt += bcnt;
