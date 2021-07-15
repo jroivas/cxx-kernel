@@ -1160,6 +1160,12 @@ set(MUSL_NETWORK
     ${MUSL_PREFIX}/network/connect.c
     )
 
+set(MUSL_SELECT
+    ${MUSL_PREFIX}/select/select.c
+    ${MUSL_PREFIX}/select/pselect.c
+    ${MUSL_PREFIX}/select/poll.c
+    )
+
 #set(MUSL_DUMMY
 #    )
 
@@ -1197,4 +1203,5 @@ add_library(musl
     ${MUSL_LEGACY}
     ${MUSL_SCHED}
     ${MUSL_DLSO}
+    ${MUSL_SELECT}
     )

@@ -41,3 +41,16 @@ int syscall_sigaltstack(const stack_t *ss, stack_t *old_ss)
     errno = EPERM;
     return -1;
 }
+
+int syscall_sigaction(int signum, const struct sigaction *act, struct sigaction *oldact, size_t sigsetsize)
+{
+    (void)signum;
+    (void)act;
+    (void)oldact;
+
+    if (sigsetsize != sizeof(sigset_t))
+        return -EINVAL;
+
+    /* TODO implement */
+    return -EFAULT;
+}
