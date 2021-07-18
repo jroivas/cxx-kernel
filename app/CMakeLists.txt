@@ -184,6 +184,13 @@ elseif (APP STREQUAL "micropython")
     set(PYTHON_PATH "micropython/micropython-${PYTHON_VERSION}")
 
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=unused-parameter -Wno-unused-parameter")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=sign-compare -Wno-sign-compare")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=missing-field-initializers -Wno-missing-field-initializers")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=unused-but-set-variable -Wno-unused-but-set-variable")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=unused-parameter -Wno-unused-parameter")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=uninitialized -Wno-uninitialized")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=implicit-function-declaration -Wno-implicit-function-declaration")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error")
 
     include_directories(${PYTHON_PATH}/py)
     include_directories(${PYTHON_PATH}/)
@@ -389,6 +396,9 @@ elseif (APP STREQUAL "micropython")
     add_definitions(
         -DFFCONF_H="oofatfs/ffconf.h"
         -DMICROPY_PY_SYS_PLATFORM="cxx-kernel"
+        -DUNDO_PRELUDE=0
+        -DMICROPY_DEBUG_PARSE_RULE_NAME=1
+        #-DMICROPY_NLR_SETJMP
         )
 
 elseif (APP STREQUAL "randomfile")

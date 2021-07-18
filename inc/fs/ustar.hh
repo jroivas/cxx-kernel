@@ -156,6 +156,10 @@ public:
         {
             return m_block;
         }
+        inline uint32_t blockSize() const
+        {
+            return m_fs->blockSize();
+        }
 
     protected:
         bool getCurrent();
@@ -188,6 +192,10 @@ public:
         uint32_t parent);
     uint64_t size() const {
         return m_phys ? m_phys->size() : 0;
+    }
+    uint32_t getDevId() const
+    {
+        return (uint32_t)m_phys;
     }
 
 protected:

@@ -66,6 +66,10 @@ public:
 
     virtual Filesystem *mount(String mountpoint, String options) = 0;
     virtual void setPhysical(FilesystemPhys *phys) = 0;
+    virtual uint32_t getDevId() const
+    {
+        return 0;
+    }
 
     virtual bool umount(Filesystem *fs) = 0;
     virtual const String &mountpoint() const = 0;

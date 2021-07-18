@@ -22,6 +22,18 @@
 extern "C" int app_main(int argc, char **argv);
 void app_proc()
 {
+#if 1
+    int argc = 2;
+    char *appname = (char*)MM::instance()->alloc(4);
+    char *fname = (char*)MM::instance()->alloc(32);
+    Mem::copy(appname, "app", 4);
+    Mem::copy(fname, "/ustar/hello.py", 15);
+    char * argv[] = {
+        appname,
+        fname,
+        nullptr
+    };
+#else
     int argc = 1;
     char *appname = (char*)MM::instance()->alloc(4);
     Mem::copy(appname, "app", 4);
@@ -29,6 +41,7 @@ void app_proc()
         appname,
         nullptr
     };
+#endif
 
     int res = app_main(argc, argv);
     Platform::video()->printf("\n\nApplication exit with code: %d\nHalting...\n", res);

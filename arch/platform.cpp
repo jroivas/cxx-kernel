@@ -298,3 +298,18 @@ void Platform::continueInterrupts()
     sti();
     #endif
 }
+
+int kprintf(const char *fmt, ...)
+{
+    (void)fmt;
+#if 1
+    va_list al;
+    va_start(al, fmt);
+
+    int res = Platform::video()->vprintf(fmt, al);
+
+    va_end(al);
+
+    return res;
+#endif
+}

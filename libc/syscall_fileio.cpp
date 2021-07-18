@@ -1,8 +1,8 @@
 #include "syscall_fileio.h"
 #include <platform.h>
-#include <errno.h>
 #include <fs/filesystem.hh>
 #include <sys/ioctl.h>
+#include <errno.h>
 #include <termios.h>
 #include <sys/uio.h>
 #include <sys/stat.h>
@@ -26,7 +26,6 @@ ssize_t syscall_writev(int fd, const struct iovec *iov, int iovcnt)
         return cnt;
     }
 
-    errno = EINVAL;
     return -EINVAL;
 }
 
@@ -34,21 +33,18 @@ ssize_t syscall_readv(int fd, const struct iovec *iov, int iovcnt)
 {
     //Platform::video()->printf(">> readv %d\n", fd);
     if (fd == 1 || fd == 2) {
-        errno = EPERM;
-        return -1;
+        return -EPERM;
     }
     if (fd == 0) {
         /* TODO read from stdin */
-        errno = EBADF;
-        return -1;
+        return -EBADF;
     }
 
 #ifdef FEATURE_STORAGE
     VFS *vfs = Platform::vfs();
     Filesystem *fs = vfs->accessHandle(fd);
     if (fs == nullptr) {
-        errno = EPERM;
-        return -1;
+        return -EPERM;
     }
 
     ssize_t cnt = 0;
@@ -71,8 +67,7 @@ ssize_t syscall_readv(int fd, const struct iovec *iov, int iovcnt)
 #else
     (void)iov;
     (void)iovcnt;
-    errno = EPERM;
-    return -1;
+    return -EPERM;
 #endif
 }
 
@@ -83,8 +78,7 @@ int syscall_llseek(int fd, long high, long low, loff_t* res, int orig)
     (void)low;
     (void)res;
     (void)orig;
-    errno = EPERM;
-    return -1;
+    return -EPERM;
 }
 
 int syscall_ioctl(int fd, long cmd, long arg)
@@ -114,16 +108,15 @@ int syscall_ioctl(int fd, long cmd, long arg)
         return 0;
     }
 
-    errno = EINVAL;
-    return -1;
+    return -EINVAL;
 }
 
 int syscall_open(const char *name, int flags, int mode)
 {
+    //Platform::video()->printf("Opening: %s\n", name);
     (void)mode;
     if (name == nullptr) {
-        errno = ENOENT;
-        return -1;
+        return -ENOENT;
     }
 
 #ifdef FEATURE_STORAGE
@@ -131,8 +124,7 @@ int syscall_open(const char *name, int flags, int mode)
     Filesystem *fs = vfs->access(name);
 
     if (fs == nullptr) {
-        errno = ENOENT;
-        return -1;
+        return -ENOENT;
     }
 
     String base = vfs->stripslash(vfs->basedir(name, fs));
@@ -141,8 +133,7 @@ int syscall_open(const char *name, int flags, int mode)
     return res;
 #else
     (void)flags;
-    errno = ENOENT;
-    return -1;
+    return -ENOENT;
 #endif
 }
 
@@ -152,8 +143,7 @@ int syscall_read(int fd, void *buf, size_t cnt)
     VFS *vfs = Platform::vfs();
     Filesystem *fs = vfs->accessHandle(fd);
     if (fs == nullptr) {
-        errno = EPERM;
-        return -1;
+        return -EPERM;
     }
 
     int res = fs->read(fd, (char*)buf, cnt);
@@ -162,8 +152,7 @@ int syscall_read(int fd, void *buf, size_t cnt)
     (void)fd;
     (void)buf;
     (void)cnt;
-    errno = ENOENT;
-    return -1;
+    return -ENOENT;
 #endif
 }
 
@@ -179,8 +168,7 @@ int syscall_write(int fd, void *buf, size_t cnt)
     VFS *vfs = Platform::vfs();
     Filesystem *fs = vfs->accessHandle(fd);
     if (fs == nullptr) {
-        errno = EPERM;
-        return -1;
+        return -EPERM;
     }
 
     return fs->write(fd, (char*)buf, cnt);
@@ -188,8 +176,7 @@ int syscall_write(int fd, void *buf, size_t cnt)
     (void)fd;
     (void)buf;
     (void)cnt;
-    errno = ENOENT;
-    return -1;
+    return -ENOENT;
 #endif
 }
 
@@ -199,15 +186,13 @@ int syscall_close(int fd)
     VFS *vfs = Platform::vfs();
     Filesystem *fs = vfs->accessHandle(fd);
     if (fs == nullptr) {
-        errno = EPERM;
-        return -1;
+        return -EPERM;
     }
 
     return fs->close(fd);
 #else
     (void)fd;
-    errno = ENOENT;
-    return -1;
+    return -ENOENT;
 #endif
 }
 
@@ -218,8 +203,7 @@ int syscall_fcntl(int fd, int cmd, int arg)
     VFS *vfs = Platform::vfs();
     Filesystem *fs = vfs->accessHandle(fd);
     if (fs == nullptr) {
-        errno = EPERM;
-        return -1;
+        return -EPERM;
     }
 
     if (cmd == F_SETFD) {
@@ -234,19 +218,18 @@ int syscall_fcntl(int fd, int cmd, int arg)
     (void)arg;
 #endif
     Platform::video()->printf("fcntl64 err\n");
-    errno = ENOENT;
-    return -1;
+    return -ENOENT;
 }
 
 int syscall_fstat(int fd, struct stat *sb)
 {
+    //Platform::video()->printf("Called: fstat\n");
     if (sb == nullptr) {
-        errno = -EINVAL;
-        return -1;
+        return -EINVAL;
     }
 
     /* Pseudo stdin/stdout/stderr devices, fake the data */
-    if (fd >= 0 && fd <= 3) {
+    if (fd >= 0 && fd <= 2) {
         Mem::set(sb, 0, sizeof(struct stat));
 
         sb->st_dev = 24;
@@ -261,19 +244,62 @@ int syscall_fstat(int fd, struct stat *sb)
 
         return 0;
     }
+    if (fd >= 3) {
+        VFS *vfs = Platform::vfs();
+        Filesystem *fs = vfs->accessHandle(fd);
+        if (!fs)
+            return -EPERM;
+
+        Mem::set(sb, 0, sizeof(struct stat));
+
+        // FIXME set proper values
+        sb->st_dev = fs->getDevId();
+        sb->st_mode = 020600;
+        sb->st_nlink = 1;
+        sb->st_rdev = 34826;
+
+        return fs->stat(fd, sb);
+
+#if 0
+        sb->st_dev = 99;
+        sb->st_ino = 99;
+        sb->st_mode = 020620;
+        sb->st_nlink = 1;
+        sb->st_uid = 0;
+        sb->st_rdev = 34826;
+        sb->st_size = fs->;
+        sb->st_blksize = 1024;
+        sb->st_blocks = 0;
+
+        return 0;
+#endif
+    }
 #ifdef FEATURE_STORAGE
 #endif
     Platform::video()->printf("fstat failed\n");
-    errno = ENOENT;
-    return -1;
+    return -ENOENT;
 }
 
 int syscall_stat(const char *pathname, struct stat *statbuf)
 {
     (void)statbuf;
     if (pathname == nullptr) {
-        errno = ENOENT;
-        return -1;
+        return -ENOENT;
+    }
+    Platform::video()->printf("stat: %s\n", pathname);
+    // FIXME hardcoded
+    if (String("/proc/self/fd/3") == pathname) {
+        int res;
+        res = syscall_fstat(3, statbuf);
+        Platform::video()->printf("statres: %d\n", res);
+        return res;
+#if 0
+        Mem::set(statbuf, 0, sizeof(*statbuf));
+        Platform::video()->printf("fk\n");
+        statbuf->st_mode = 0700;
+        statbuf->st_nlink = 1;
+        return 0;
+#endif
     }
 
 #ifdef FEATURE_STORAGE
@@ -281,25 +307,22 @@ int syscall_stat(const char *pathname, struct stat *statbuf)
     Filesystem *fs = vfs->access(pathname);
 
     if (fs == nullptr) {
-        errno = ENOENT;
-        return -1;
+        return -ENOENT;
     }
 
     String base = vfs->stripslash(vfs->basedir(pathname, fs));
     int fd = fs->open(base, O_RDONLY);
     if (fd < 0) {
-        errno = ENOENT;
-        return -1;
+        return -ENOENT;
     }
 
     int res = fs->stat(fd, statbuf);
     if (res < 0)
-        errno = EBADF;
+        return -EBADF;
     return res;
 #endif
 
-    errno = ENOENT;
-    return -1;
+    return -ENOENT;
 }
 
 int syscall_readlink(const char *pathname, char *buf, size_t bufsize)
@@ -309,26 +332,39 @@ int syscall_readlink(const char *pathname, char *buf, size_t bufsize)
     (void)bufsize;
 
     if (pathname == nullptr || String::length(pathname) == 0) {
-        errno = ENOENT;
-        return -1;
+        return -ENOENT;
     }
 
+    // FIXME hardcoding
+#if 0
+    if (String("/proc/self/fd/3") == pathname) {
+        Mem::copy(buf, "/proc/42/3", 10);
+        return 10;
+    }
+#endif
+#if 1
     Platform::video()->printf("Readlink: %s\n", pathname);
+    size_t cnt = 0;
+    const char *r = pathname;
+    char *d = buf;
+    while (r && *r && cnt < bufsize) {
+        *d++ = *r++;
+        cnt++;
+    }
+    Platform::video()->printf("Readlink got: %s, %d\n", buf, cnt);
+#endif
 
-    errno = EACCES;
-    return -1;
+    return cnt;
 }
 
 long syscall_getcwd(char *buf, size_t size)
 {
     if (buf == nullptr || size == 0) {
-        errno = EINVAL;
-        return -1;
+        return -EINVAL;
     }
 
     if (size < 2) {
-        errno = ENAMETOOLONG;
-        return -1;
+        return -ENAMETOOLONG;
     }
 
     buf[0] = '/';

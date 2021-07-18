@@ -70,21 +70,26 @@ __call_kernel:
     hlt
 
 loader_smp_init:
+    ; get current core number
     mov eax, 1
     cpuid
     shr ebx, 24
 
+    ; setup stack space according the core
     mov edi, ebx
     shl ebx, 14
     mov esp, [__stack_top]
     sub esp, ebx
     push edi
 
+    ; unlock initialization of next core
     mov word [lock_address], 1
-.1:  pause
+    ; wait until all cores are initialized
+.1: pause
     cmp byte [done_address], 0
     jz .1
 
+    ; jump to core specific main handler
     call _smp_main
     cli
     hlt

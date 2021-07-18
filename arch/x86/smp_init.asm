@@ -56,7 +56,8 @@ entry_32:
     ; 0xBA420042 is magic to detect SMP CPUs
     mov edx, 0xBA420042
 
-    ; jump to loader
-    jmp 0x100000
+    ; jump to loader, FIXME
+    ;jmp 0x100000
+    jmp 0x100024
 
     hlt

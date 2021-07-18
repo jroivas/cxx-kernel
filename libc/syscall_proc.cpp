@@ -12,8 +12,7 @@ long syscall_rt_sigprocmask(int how, const sigset_t *set,
 
     Platform::video()->printf("rt_sigprocmask: %d, 0x%x, 0x%x, %d\n", how, set, oldset, sigsetsize);
 
-    errno = EINVAL;
-    return -1;
+    return -EINVAL;
 }
 
 long syscall_gettid(void)
@@ -28,8 +27,7 @@ long syscall_tkill(int tid, int sig)
 {
     Platform::video()->printf("tkill: %u %d\n", tid, sig);
 
-    errno = EPERM;
-    return -1;
+    return -EPERM;
 }
 
 int syscall_sigaltstack(const stack_t *ss, stack_t *old_ss)
@@ -38,8 +36,7 @@ int syscall_sigaltstack(const stack_t *ss, stack_t *old_ss)
     (void)old_ss;
     Platform::video()->printf("sigaltstack: 0x%lx, 0x%lx\n", ss, old_ss);
 
-    errno = EPERM;
-    return -1;
+    return -EPERM;
 }
 
 int syscall_sigaction(int signum, const struct sigaction *act, struct sigaction *oldact, size_t sigsetsize)
@@ -48,9 +45,11 @@ int syscall_sigaction(int signum, const struct sigaction *act, struct sigaction 
     (void)act;
     (void)oldact;
 
+    Platform::video()->printf("rt_sigaction: %d, 0x%x, 0x%x, %d\n", signum, act, oldact, sigsetsize);
+
     if (sigsetsize != sizeof(sigset_t))
         return -EINVAL;
 
     /* TODO implement */
-    return -EFAULT;
+    return -EINVAL;
 }

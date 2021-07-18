@@ -1,0 +1,16 @@
+Only in micropython-1.16.b/ports/unix: .Makefile.swp
+diff -ur micropython-1.16/py/nlrx86.c micropython-1.16.b/py/nlrx86.c
+--- micropython-1.16/py/nlrx86.c	2021-06-18 11:48:45.000000000 +0300
++++ micropython-1.16.b/py/nlrx86.c	2021-07-18 14:24:06.726189921 +0300
+@@ -49,8 +49,10 @@
+ #define UNDO_PRELUDE (0)
+ #else
+ #define USE_NAKED (0)
++#ifndef UNDO_PRELUDE // FIXME
+ #define UNDO_PRELUDE (1)
+ #endif
++#endif
+ 
+ #if USE_NAKED
+ __attribute__((naked))
+Only in micropython-1.16.b/py: .py.mk.swp

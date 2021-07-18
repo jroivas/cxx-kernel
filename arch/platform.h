@@ -69,4 +69,6 @@ private:
     State *m_state;
 };
 
+extern "C" int kprintf(const char *fmt, ...);
+
 #endif

@@ -9,6 +9,7 @@
 #include <fcntl.h>
 #include <platform.h>
 #endif
+#include <sys/stat.h>
 
 static const uint32_t MAX_SECTOR_SIZE = 512;
 static const uint32_t MAX_BLOCK_SIZE = 512;
@@ -198,13 +199,17 @@ ssize_t Ustar::Iterator::read(
 {
     ssize_t readcnt = 0;
     uint32_t end_block = m_block + (size() + m_fs->blockSize() - 1) / m_fs->blockSize() + 1;
+#if 0
+    Platform::video()->printf("End block: %u, idx %u, size %llu, %u\n",
+        end_block, m_data_index, size(), cnt);
+#endif
 
-    while (cnt > 0) {
+    while (cnt > 0 && m_data_index < size()) {
         uint32_t cblock = m_data_index / m_fs->blockSize();
         if (m_data_block + cblock >= end_block)
-            return readcnt;
+            break;
         if (!m_fs->getBlock(m_data_block + cblock, m_content))
-            return readcnt;
+            break;
         uint64_t bcnt = cnt;
         if (bcnt > m_fs->blockSize())
             bcnt = m_fs->blockSize();
@@ -213,7 +218,9 @@ ssize_t Ustar::Iterator::read(
         uint32_t offset = m_data_index % m_fs->blockSize();
         if (offset + bcnt > m_fs->blockSize())
             bcnt = m_fs->blockSize() - offset;
-
+        if (m_data_index + bcnt > size()) {
+            bcnt = size() - m_data_index;
+        }
         Mem::copy(buf + readcnt, m_content + offset, bcnt);
         cnt -= bcnt;
         m_data_index += bcnt;
@@ -338,6 +345,7 @@ int UstarFilesystem::open(String path, int flags)
         return -1;
     }
     if ((iter.type() != Ustar::TYPE_FILE)) {
+        Platform::video()->printf("Itertype: %u\n", iter.type());
         errno = EPERM;
         return -1;
     }
@@ -443,7 +451,18 @@ int UstarFilesystem::stat(int fd, struct stat *st)
 {
     (void)fd;
     (void)st;
-    return -1;
+
+    Ustar::Iterator *data = (Ustar::Iterator *)getCustom(fd);
+    if (data == nullptr) {
+        return -ENOENT;
+    }
+
+    st->st_size = data->size();
+    st->st_blksize = data->blockSize();
+    st->st_blocks = (st->st_size + st->st_blksize - 1) / st->st_blksize;
+    st->st_ino = data->block();
+
+    return 0;
 }
 
 int UstarFilesystem::flush(int fd)
