@@ -16,6 +16,7 @@
 #include "processmanager.h"
 #include "atomic.hh"
 #include "cpu.h"
+#include "realtime.h"
 #include "fs/vfs.hh"
 
 #ifdef ARCH_x86
@@ -47,6 +48,7 @@ public:
     static VFS *vfs();
     static Random *random();
     static CPU *cpu();
+    static Realtime *realtime();
 
     static inline int CAS(ptr_val_t volatile *m_ptr, int cmp, int set)
     {

@@ -31,6 +31,7 @@ if (PLATFORM STREQUAL "x86")
         x86/randomx86.cpp
         x86/x86.cpp
         x86/regs.cpp
+        x86/realtimex86.cpp
         )
     if (PCI)
         set(ARCH_FILES

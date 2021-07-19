@@ -15,6 +15,7 @@
 #include "x86/taskx86.h"
 #include "x86/randomx86.h"
 #include "x86/cpux86.h"
+#include "x86/realtimex86.h"
 #endif
 
 #ifdef ARCH_ARM
@@ -48,6 +49,7 @@ static ProcessManager *__platform_pm = nullptr;
 static VFS   *__platform_vfs   = nullptr;
 static Random *__platform_random = nullptr;
 static CPU *__platform_cpu     = nullptr;
+static Realtime *__platform_realtime = nullptr;
 
 Platform::Platform()
 {
@@ -276,6 +278,19 @@ Random *Platform::random()
         __platform_random = new Random();
     }
     return __platform_random;
+}
+
+Realtime *Platform::realtime()
+{
+    #ifdef ARCH_x86
+    if (__platform_realtime == nullptr) {
+        __platform_realtime = new RealtimeX86();
+    }
+    #endif
+    if (__platform_realtime == nullptr) {
+        __platform_realtime = new Realtime();
+    }
+    return __platform_realtime;
 }
 
 void Platform::halt()

@@ -2,6 +2,7 @@
 #include "syscall_fileio.h"
 #include "syscall_mem.h"
 #include "syscall_proc.h"
+#include "syscall_time.h"
 #include <stdarg.h>
 #include <platform.h>
 #include <sys/syscall.h>
@@ -80,6 +81,7 @@ long syscall_va(long num, va_list al)
         SYS_CALL2(SYS_getcwd, syscall_getcwd, char*, size_t);
         SYS_CALL2(SYS_sigaltstack, syscall_sigaltstack, const stack_t*, stack_t*);
         SYS_CALL4(SYS_rt_sigaction, syscall_sigaction, int, const struct sigaction *, struct sigaction *, size_t);
+        SYS_CALL2(SYS_clock_gettime, syscall_clock_gettime, clockid_t, struct timespec*);
 
         default:
             Platform::video()->printf("Unsupported syscall %lld\n", num);
