@@ -19,6 +19,7 @@ public:
     void handleChar(char c);
 
     void resize(int width, int height);
+    void adapt(int width, int height);
     void scroll();
 
     unsigned int size() const;

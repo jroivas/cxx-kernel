@@ -260,6 +260,7 @@ int Kernel::initFrameBuffer()
 
     FB::ModeConfig *vconf = platform->fb()->query(&conf);
     if (vconf != nullptr) {
+        video->adapt(vconf->width, vconf->height);
         video->printf("FB3\n");
         platform->fb()->configure(vconf);
 

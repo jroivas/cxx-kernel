@@ -61,6 +61,16 @@ void Video::resize(int width, int height)
     m_height = height;
 }
 
+void Video::adapt(int width, int height)
+{
+    if (m_font == nullptr) {
+        m_font = new KernelFont();
+        m_x = 0;
+        m_y = 0;
+    }
+    resize(width / m_font->width(), height / m_font->height());
+}
+
 void Video::clear()
 {
     if (Platform::fb() != nullptr && Platform::fb()->isConfigured()) {
@@ -82,9 +92,12 @@ void Video::scroll()
 {
     if (Platform::fb() != nullptr && Platform::fb()->isConfigured()) {
         if (m_y >= height()) {
-            Platform::fb()->clear();
-            m_x = 0;
-            m_y = 0;
+
+            uint32_t scroll_size = SCROLL_SIZE * m_font->height() * Platform::fb()->bpl();
+
+            Mem::copy(Platform::fb()->data(), Platform::fb()->data() + scroll_size, Platform::fb()->size() - scroll_size);
+            Mem::set(Platform::fb()->data() + Platform::fb()->size() - scroll_size, 0, scroll_size);
+            m_y -= SCROLL_SIZE;
         }
     } else {
         if (m_videomem == nullptr) return;
@@ -93,7 +106,7 @@ void Video::scroll()
             Mem::copy(m_videomem, m_videomem + SCROLL_SIZE * width() * 2, ss * 2);
             Mem::setw(m_videomem + ss, 0, width());
             //Mem::setw(m_videomem + ss-width(), ' '|VIDEO_COLOR_MASK, width());
-            m_y = height()-2;
+            m_y = height() - 2;
         }
     }
     if (m_x >= width()) m_x = 0;
@@ -358,7 +371,10 @@ void Video::handleChar(char c)
 
 void Video::putCh(char c)
 {
-    if (c == '\n') return;
+    if (c == '\n') {
+        scroll();
+        return;
+    }
     if (m_x >= width()) {
             m_x -= width();
             m_y++;

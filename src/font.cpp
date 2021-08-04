@@ -14,7 +14,7 @@ void KernelFont::drawFont(FB *fb, int x, int y, unsigned char c)
     if (current == nullptr) return;
 
 #ifdef FEATURE_GRAPHICS
-    for (int32_t i=0; i<RAWFONT(current)->height; i++) {
+    for (int32_t i=0; i < RAWFONT(current)->height; i++) {
         int32_t p = RAWFONT(current)->width;
         uint32_t index = (uint32_t)(c * RAWFONT(current)->height + i);
         unsigned char ch = RAWFONT(current)->data[index];

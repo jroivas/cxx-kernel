@@ -39,6 +39,25 @@ public:
         return true;
     }
 
+    uint32_t width() const {
+        if (!m_current)
+            return 0;
+        return m_current->width;
+    }
+    uint32_t bpl() const {
+        if (!m_current)
+            return 0;
+        return m_current->bytes_per_line;
+    }
+    uint32_t height() const {
+        if (!m_current)
+            return 0;
+        return m_current->height;
+    }
+    uint32_t size() const {
+        return m_size;
+    }
+
 protected:
     void allocBuffers();
     void freeBuffers();
