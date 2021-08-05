@@ -36,8 +36,34 @@ ssize_t syscall_readv(int fd, const struct iovec *iov, int iovcnt)
         return -EPERM;
     }
     if (fd == 0) {
+        ssize_t cnt = 0;
+        for (int vptr = 0; vptr < iovcnt; ++vptr) {
+            size_t len = iov[vptr].iov_len;
+            if ((ssize_t)len < 0) {
+                return -EINVAL;
+            }
+            size_t got = 0;
+            char *target = (char*)iov[vptr].iov_base;
+            while (got < len) {
+                if (!Platform::kb()->hasKey()) {
+                    Platform::timer()->msleep(1);
+                } else {
+                    const char *tmp = Platform::kb()->getKey();
+                    if (tmp) {
+                        if (tmp[0] == '\n')
+                            break;
+                        int rcnt = String::length(tmp);
+                        Mem::copy(target, tmp, rcnt);
+                        target += rcnt;
+                        got += rcnt;
+                    }
+                }
+            }
+            cnt += got;
+        }
+        return cnt;
         /* TODO read from stdin */
-        return -EBADF;
+        //return -EBADF;
     }
 
 #ifdef FEATURE_STORAGE
@@ -139,6 +165,24 @@ int syscall_open(const char *name, int flags, int mode)
 
 int syscall_read(int fd, void *buf, size_t cnt)
 {
+    if (fd == 0) {
+        size_t c = 0;
+        while (c < cnt) {
+            const char *tmp = Platform::kb()->getKey();
+            if (!tmp) {
+                Platform::timer()->msleep(1);
+                continue;
+            }
+            if (tmp[0] == '\n')
+                break;
+            size_t l = String::length(tmp);
+            if (l > cnt)
+                l = cnt;
+            Mem::copy((char*)buf + c, tmp, l);
+            c += l;
+        }
+        return c;
+    }
 #ifdef FEATURE_STORAGE
     VFS *vfs = Platform::vfs();
     Filesystem *fs = vfs->accessHandle(fd);

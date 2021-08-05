@@ -13,7 +13,6 @@ public:
 
 protected:
     virtual void run(Regs *r);
-    virtual void nop() const;
     ProcessManager *pm;
 };
 

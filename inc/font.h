@@ -10,6 +10,7 @@ class KernelFont
 public:
     KernelFont();
     void drawFont(FB *fb, int x, int y, unsigned char c);
+    void drawFontFill(FB *fb, int x, int y, unsigned char c, int fill);
     uint8_t width();
     uint8_t height();
 

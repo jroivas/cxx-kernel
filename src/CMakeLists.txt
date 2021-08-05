@@ -21,6 +21,7 @@ set(TABLES_FILES
 
 set(KB_FILES
     kb.cpp
+    layout.cpp
     )
 
 set(GRAPHICS_FILES

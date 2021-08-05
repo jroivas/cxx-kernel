@@ -22,7 +22,7 @@
 extern "C" int app_main(int argc, char **argv);
 void app_proc()
 {
-#if 1
+#if 0
     int argc = 2;
     char *appname = (char*)MM::instance()->alloc(4);
     char *fname = (char*)MM::instance()->alloc(32);

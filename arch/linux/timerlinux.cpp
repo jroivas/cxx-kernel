@@ -41,6 +41,6 @@ void TimerLinux::wait(unsigned long ticks_to_wait) const
 {
     clock_t target = clock() + ticks_to_wait;
     while (clock() < target) {
-        nop();
+        // NOP
     }
 }

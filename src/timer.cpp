@@ -29,10 +29,6 @@ void Timer::run(Regs *r)
     //TODO
 }
 
-void Timer::nop() const
-{
-}
-
 int Timer::handler(Regs *r)
 {
     if (__global_timer == nullptr) return -1;
@@ -43,9 +39,23 @@ int Timer::handler(Regs *r)
 
 void Timer::wait(unsigned long ticks_to_wait) const
 {
-    unsigned long target = ticks_to_wait + m_ticks;
+    unsigned long now = m_ticks;
+    unsigned long target = ticks_to_wait + now;
+
+    /* Detect overflow */
+    if (target < now) {
+
+        /* Wait until ticks flip */
+        while (now < m_ticks) {
+#ifdef ARCH_x86
+            asm("nop");
+#endif
+        }
+    }
     while (m_ticks < target) {
-        nop();
+#ifdef ARCH_x86
+        asm("nop");
+#endif
     }
 }
 

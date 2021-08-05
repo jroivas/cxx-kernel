@@ -8,7 +8,7 @@ KernelFont::KernelFont()
     current = fontGetDefault();
 }
 
-void KernelFont::drawFont(FB *fb, int x, int y, unsigned char c)
+void KernelFont::drawFontFill(FB *fb, int x, int y, unsigned char c, int fill)
 {
     if (fb == nullptr) return;
     if (current == nullptr) return;
@@ -21,7 +21,8 @@ void KernelFont::drawFont(FB *fb, int x, int y, unsigned char c)
         for (int32_t j=0; j < RAWFONT(current)->width; j++) {
             if (ch & (1 << (--p))) {
                 fb->putPixel(x+j, y+i, font_color);
-            }
+            } else if (fill)
+                fb->putPixel(x+j, y+i, 0);
         }
     }
 #else
@@ -29,6 +30,11 @@ void KernelFont::drawFont(FB *fb, int x, int y, unsigned char c)
     (void)y;
     (void)c;
 #endif
+}
+
+void KernelFont::drawFont(FB *fb, int x, int y, unsigned char c)
+{
+    drawFontFill(fb, x, y, c, 0);
 }
 
 uint8_t KernelFont::width()

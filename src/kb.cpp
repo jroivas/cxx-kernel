@@ -23,3 +23,14 @@ int KB::handler(Regs *r)
     __global_kb->run(r);
     return 0;
 }
+
+bool KB::hasKey()
+{
+    return false;
+}
+
+
+const char *KB::getKey()
+{
+    return nullptr;
+}

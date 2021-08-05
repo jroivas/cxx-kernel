@@ -284,6 +284,7 @@ extern "C" int isr_handler(Regs * regs)
     if (regs->int_no == 6) {
         VideoX86 tmp;
         tmp.printf("\nERROR! Invalid instruction: %x: EIP: %x\n", debug_ptr, regs->eip);
+        regs->dump();
         Platform p;
         p.state()->seizeInterrupts();
         p.state()->halt();

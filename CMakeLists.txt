@@ -152,6 +152,7 @@ else()
         $<TARGET_FILE:libc_init>
         $<TARGET_FILE:coretools>
         $<TARGET_FILE:libc>
+        $<TARGET_FILE:musl>
         )
     set(libc_deps libc musl coretools)
 endif()
@@ -179,6 +180,7 @@ add_custom_command(OUTPUT kernel.bin
         ${extra_pre}
         ${extra_mid}
         $<TARGET_FILE:arch>
+        $<TARGET_FILE:kb>
         $<TARGET_FILE:bits>
         $<TARGET_FILE:arch_late>
         $<TARGET_FILE:task>

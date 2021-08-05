@@ -375,7 +375,19 @@ void Video::putCh(char c)
         scroll();
         return;
     }
-    if (m_x >= width()) {
+    if (c == '\b') {
+        // Back one char if possible
+        if (m_x > 0) {
+            m_x--;
+        }
+        // Draw empty at current char
+        m_font->drawFontFill(
+            Platform::fb(),
+            m_x * m_font->width(),
+            m_y * m_font->height(),
+            ' ', 1);
+        return;
+    } else if (m_x >= width()) {
             m_x -= width();
             m_y++;
     }

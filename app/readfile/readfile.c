@@ -50,6 +50,13 @@ int main(int argc, char **argv)
         printf("\n");
 
         fclose(fd);
+    } else {
+#define BUFLEN 32
+        char buf[BUFLEN] = {};
+        printf("Please write something:\n");
+        int cnt = read(0, buf, BUFLEN - 1);
+        buf[BUFLEN - 1] = 0;
+        printf("\nGot %d: %s\n", cnt, buf);
     }
 
     return 0;

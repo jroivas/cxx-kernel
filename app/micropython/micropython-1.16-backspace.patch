@@ -1,0 +1,25 @@
+--- micropython-1.16/ports/unix/input.c	2021-08-06 02:04:05.919653888 +0300
++++ micropython-1.16.b/ports/unix/input.c	2021-06-18 11:48:45.000000000 +0300
+@@ -54,7 +54,22 @@
+         l++;
+     }
+     char *line = malloc(l);
++#if MICROPY_HACK_BACKSPACE == 1
++    int n = 0;
++    for (int c = 0; c < l; c++) {
++        // Handle backspace
++        if (buf[c] == '\b') {
++            if (n > 0)
++                n--;
++        } else {
++            line[n] = buf[c];
++            n++;
++        }
++    }
++    line[n] = 0;
++#else
+     memcpy(line, buf, l);
++#endif
+     return line;
+ }
+ #endif

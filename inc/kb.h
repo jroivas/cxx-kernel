@@ -7,6 +7,9 @@ class KB
 {
 public:
     static KB *get();
+    virtual ~KB() {};
+    virtual bool hasKey();
+    virtual const char *getKey();
 
 protected:
     KB() { }

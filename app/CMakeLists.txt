@@ -398,6 +398,7 @@ elseif (APP STREQUAL "micropython")
         -DMICROPY_PY_SYS_PLATFORM="cxx-kernel"
         -DUNDO_PRELUDE=0
         -DMICROPY_DEBUG_PARSE_RULE_NAME=1
+        -DMICROPY_HACK_BACKSPACE=1
         #-DMICROPY_NLR_SETJMP
         )
 

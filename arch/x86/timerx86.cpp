@@ -36,8 +36,3 @@ void TimerX86::run(Regs *r)
         }
     }
 }
-
-void TimerX86::nop() const
-{
-    asm("nop");
-}
