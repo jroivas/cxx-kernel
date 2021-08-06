@@ -63,12 +63,17 @@ void Video::resize(int width, int height)
 
 void Video::adapt(int width, int height)
 {
+#if 1
     if (m_font == nullptr) {
         m_font = new KernelFont();
         m_x = 0;
         m_y = 0;
     }
     resize(width / m_font->width(), height / m_font->height());
+#else
+    (void)width;
+    (void)height;
+#endif
 }
 
 void Video::clear()
@@ -318,8 +323,6 @@ int Video::vprintf(const char *fmt, va_list al)
             m_x = 0;
         }
         else if (*ch == '\n') {
-            m_x = 0;
-            m_y++;
             putCh(*ch);
             ++print_count;
         }
@@ -372,10 +375,19 @@ void Video::handleChar(char c)
 void Video::putCh(char c)
 {
     if (c == '\n') {
+        m_y++;
+        m_x = 0;
         scroll();
         return;
     }
-    if (c == '\b') {
+    if (c == '\t') {
+        // Tab
+        if (m_x + TAB_SIZE < width())
+            m_x += TAB_SIZE;
+        else
+            m_x = width() - 1;
+        return;
+    } else if (c == '\b') {
         // Back one char if possible
         if (m_x > 0) {
             m_x--;

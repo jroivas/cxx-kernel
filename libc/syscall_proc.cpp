@@ -10,7 +10,7 @@ long syscall_rt_sigprocmask(int how, const sigset_t *set,
     (void)oldset;
     (void)sigsetsize;
 
-    Platform::video()->printf("rt_sigprocmask: %d, 0x%x, 0x%x, %d\n", how, set, oldset, sigsetsize);
+    //Platform::video()->printf("rt_sigprocmask: %d, 0x%x, 0x%x, %d\n", how, set, oldset, sigsetsize);
 
     return -EINVAL;
 }
@@ -34,7 +34,7 @@ int syscall_sigaltstack(const stack_t *ss, stack_t *old_ss)
 {
     (void)ss;
     (void)old_ss;
-    Platform::video()->printf("sigaltstack: 0x%lx, 0x%lx\n", ss, old_ss);
+    //Platform::video()->printf("sigaltstack: 0x%lx, 0x%lx\n", ss, old_ss);
 
     return -EPERM;
 }
@@ -45,7 +45,7 @@ int syscall_sigaction(int signum, const struct sigaction *act, struct sigaction 
     (void)act;
     (void)oldact;
 
-    Platform::video()->printf("rt_sigaction: %d, 0x%x, 0x%x, %d\n", signum, act, oldact, sigsetsize);
+    //Platform::video()->printf("rt_sigaction: %d, 0x%x, 0x%x, %d\n", signum, act, oldact, sigsetsize);
 
     if (sigsetsize != sizeof(sigset_t))
         return -EINVAL;

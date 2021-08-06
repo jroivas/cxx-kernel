@@ -173,13 +173,13 @@ int syscall_read(int fd, void *buf, size_t cnt)
                 Platform::timer()->msleep(1);
                 continue;
             }
-            if (tmp[0] == '\n')
-                break;
             size_t l = String::length(tmp);
             if (l > cnt)
                 l = cnt;
             Mem::copy((char*)buf + c, tmp, l);
             c += l;
+            if (tmp[0] == '\n')
+                break;
         }
         return c;
     }

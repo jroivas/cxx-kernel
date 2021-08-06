@@ -135,7 +135,9 @@ static unsigned char mods = 0;
 static enum layout_code layout_code = LAYOUT_DEFAULT;
 //static enum layout_code layout_code = LAYOUT_FI;
 
-#define KEY_BUFFER_SIZE 32
+// Have to be power of 2
+#define KEY_BUFFER_SIZE (1 << 5)
+#define KEY_BUFFER_MASK (KEY_BUFFER_SIZE - 1)
 static const char *keybuffer[KEY_BUFFER_SIZE] = { 0 };
 static unsigned int keybuffer_write = 0;
 static unsigned int keybuffer_read = 0;
@@ -153,7 +155,7 @@ const char *KBX86::getKey()
         return nullptr;
 
     const char *res = keybuffer[keybuffer_read];
-    keybuffer_read = (keybuffer_read + 1) % KEY_BUFFER_SIZE;
+    keybuffer_read = (keybuffer_read + 1) & KEY_BUFFER_MASK;
 
     return res;
 }
@@ -182,7 +184,7 @@ void KBX86::run(Regs *r)
             if (mapped) {
                 Video::get()->printf("%s", mapped);
                 keybuffer[keybuffer_write] = mapped;
-                keybuffer_write = (keybuffer_write + 1) % KEY_BUFFER_SIZE;
+                keybuffer_write = (keybuffer_write + 1) & KEY_BUFFER_MASK;
             }
         }
 
