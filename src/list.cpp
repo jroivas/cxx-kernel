@@ -5,6 +5,7 @@ List::List()
     m_first = nullptr;
     m_last = nullptr;
     m_size = 0;
+    m_freed_idx = 0;
 }
 
 List::~List()

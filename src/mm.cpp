@@ -200,6 +200,8 @@ void MM::treeAdd(PtrInfo *cur)
     if (cur == nullptr) return;
 
     ptr_t p = (ptr_t)((ptr_val_t)cur + sizeof(PtrInfo));
+    cur->next = nullptr;
+    cur->prev = nullptr;
 
     if (__mm_last_free == nullptr) {
         __mm_last_free = (ptr_t)p;
@@ -263,51 +265,28 @@ void *MM::releaseFree(PtrInfo *p, PtrInfo *parent)
             __mm_last_free = p->prev;
         } else if (p->prev != nullptr && p->next != nullptr) {
             __mm_last_free = p->next;
-            PtrInfo *tmp = (PtrInfo*)((ptr_val_t)p->prev-sizeof(PtrInfo));
+            PtrInfo *tmp = (PtrInfo*)((ptr_val_t)p->prev - sizeof(PtrInfo));
             treeAdd(tmp);
         } else if (p->prev == nullptr && p->next == nullptr) {
             parent = nullptr;
         } else {
             printf("===0 ERROR\n");
-        }
-    } else if (p->prev == nullptr && p->next != nullptr) {
-        if (parent->prev == ptr) {
-            parent->prev = p->next;
-        } else if (parent->next == ptr) {
-            parent->next = p->next;
-        } else {
-            printf("===1 ERROR\n");
-        }
-    } else if (p->prev != nullptr && p->next == nullptr) {
-        if (parent->prev==ptr) {
-            parent->prev = p->prev;
-        } else if (parent->next==ptr) {
-            parent->next = p->prev;
-        } else {
-            printf("===2 ERROR\n");
-        }
-    } else if (p->prev!=nullptr && p->next!=nullptr) {
-        if (parent->prev==ptr) {
-            PtrInfo *tmp = (PtrInfo*)((ptr_val_t)p->next-sizeof(PtrInfo));
-            parent->prev = p->prev;
-            treeAdd(tmp);
-        } else if (parent->next==ptr) {
-            PtrInfo *tmp = (PtrInfo*)((ptr_val_t)p->prev-sizeof(PtrInfo));
-            parent->next = p->next;
-            treeAdd(tmp);
-        } else {
-            printf("===3 ERROR\n");
-        }
-    } else if (p->prev==nullptr && p->next==nullptr) {
-        if (parent->prev==ptr) {
-            parent->prev = nullptr;
-        } else if (parent->next==ptr) {
-            parent->next = nullptr;
-        } else {
-            printf("===5 ERROR\n");
+            uart_print("===0 ERROR\n");
         }
     } else {
-        printf("===4 ERROR\n");
+        if (parent->prev == ptr)
+            parent->prev = nullptr;
+        if (parent->next == ptr)
+            parent->next = nullptr;
+
+        if (p->prev != nullptr) {
+            PtrInfo *lnode = (PtrInfo*)((ptr_val_t)p->prev - sizeof(PtrInfo));
+            treeAdd(lnode);
+        }
+        if (p->next != nullptr) {
+            PtrInfo *rnode = (PtrInfo*)((ptr_val_t)p->next - sizeof(PtrInfo));
+            treeAdd(rnode);
+        }
     }
 #if 0
     printf("relfree\n");

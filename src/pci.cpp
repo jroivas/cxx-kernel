@@ -29,6 +29,7 @@ public:
 };
 
 PCI::PCI()
+    : m_verbose(false)
 {
 }
 
