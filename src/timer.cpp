@@ -56,6 +56,7 @@ void Timer::wait(unsigned long ticks_to_wait) const
 #ifdef ARCH_x86
         asm("nop");
 #endif
+        //Platform::processManager()->yield();
     }
 }
 

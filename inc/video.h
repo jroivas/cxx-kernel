@@ -16,6 +16,7 @@ public:
     int vprintf(const char *fmt, va_list al);
     int print(const char *cp);
     virtual void putCh(char c);
+    virtual void putChDebug(char c);
     void handleChar(char c);
 
     void resize(int width, int height);

@@ -46,7 +46,7 @@ ssize_t syscall_readv(int fd, const struct iovec *iov, int iovcnt)
             char *target = (char*)iov[vptr].iov_base;
             while (got < len) {
                 if (!Platform::kb()->hasKey()) {
-                    Platform::timer()->msleep(1);
+                    Platform::timer()->msleep(10);
                 } else {
                     const char *tmp = Platform::kb()->getKey();
                     if (tmp) {
@@ -170,7 +170,7 @@ int syscall_read(int fd, void *buf, size_t cnt)
         while (c < cnt) {
             const char *tmp = Platform::kb()->getKey();
             if (!tmp) {
-                Platform::timer()->msleep(1);
+                Platform::timer()->msleep(10);
                 continue;
             }
             size_t l = String::length(tmp);

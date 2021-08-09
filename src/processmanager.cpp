@@ -181,6 +181,15 @@ Task *ProcessManager::schedule()
     return current;
 }
 
+void ProcessManager::yield()
+{
+    Platform::seizeInterrupts();
+    if (m_current != nullptr) {
+        m_current->resetSlice();
+    }
+    Platform::continueInterrupts();
+}
+
 Task *ProcessManager::clone()
 {
     return nullptr;

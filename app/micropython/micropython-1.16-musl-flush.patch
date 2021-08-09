@@ -1,0 +1,10 @@
+--- micropython-1.16/ports/unix/input.c	2021-08-09 21:02:53.371680474 +0300
++++ micropython-1.16.b/ports/unix/input.c	2021-08-09 21:01:46.318787903 +0300
+@@ -43,6 +43,7 @@
+     // simple read string
+     static char buf[256];
+     fputs(p, stdout);
++    fflush(stdout); // musl fix
+     char *s = fgets(buf, sizeof(buf), stdin);
+     if (!s) {
+         return NULL;

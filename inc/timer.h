@@ -21,8 +21,8 @@ public:
 protected:
     Timer();
     virtual void run(Regs *r);
-    volatile unsigned long m_ticks;
     unsigned long m_hz;
+    volatile unsigned long m_ticks;
 };
 
 #endif

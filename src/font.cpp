@@ -29,6 +29,7 @@ void KernelFont::drawFontFill(FB *fb, int x, int y, unsigned char c, int fill)
     (void)x;
     (void)y;
     (void)c;
+    (void)fill;
 #endif
 }
 

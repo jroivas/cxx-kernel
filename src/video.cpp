@@ -95,6 +95,7 @@ void Video::clear()
 
 void Video::scroll()
 {
+#ifdef FEATURE_GRAPHICS
     if (Platform::fb() != nullptr && Platform::fb()->isConfigured()) {
         if (m_y >= height()) {
 
@@ -104,10 +105,12 @@ void Video::scroll()
             Mem::set(Platform::fb()->data() + Platform::fb()->size() - scroll_size, 0, scroll_size);
             m_y -= SCROLL_SIZE;
         }
-    } else {
+    } else
+#endif
+    {
         if (m_videomem == nullptr) return;
         if (m_y >= height()) {
-            unsigned int ss = (height() - 2) * width();
+            unsigned int ss = (height() - 1) * width();
             Mem::copy(m_videomem, m_videomem + SCROLL_SIZE * width() * 2, ss * 2);
             Mem::setw(m_videomem + ss, 0, width());
             //Mem::setw(m_videomem + ss-width(), ' '|VIDEO_COLOR_MASK, width());
@@ -115,7 +118,7 @@ void Video::scroll()
         }
     }
     if (m_x >= width()) m_x = 0;
-    if (m_y > height()) m_y = height() - 2;
+    if (m_y > height()) m_y = height() - 1;
 }
 
 int Video::print(const char *cp)
@@ -372,12 +375,18 @@ void Video::handleChar(char c)
     putCh(c);
 }
 
+void Video::putChDebug(char c)
+{
+    (void)c;
+}
+
 void Video::putCh(char c)
 {
     if (c == '\n') {
         m_y++;
         m_x = 0;
         scroll();
+        setCursor();
         return;
     }
     if (c == '\t') {
@@ -386,6 +395,7 @@ void Video::putCh(char c)
             m_x += TAB_SIZE;
         else
             m_x = width() - 1;
+        setCursor();
         return;
     } else if (c == '\b') {
         // Back one char if possible
@@ -393,11 +403,20 @@ void Video::putCh(char c)
             m_x--;
         }
         // Draw empty at current char
-        m_font->drawFontFill(
-            Platform::fb(),
-            m_x * m_font->width(),
-            m_y * m_font->height(),
-            ' ', 1);
+#ifdef FEATURE_GRAPHICS
+        if (Platform::fb() != nullptr && Platform::fb()->isConfigured()) {
+            m_font->drawFontFill(
+                Platform::fb(),
+                m_x * m_font->width(),
+                m_y * m_font->height(),
+                ' ', 1);
+        } else
+#endif
+        if (m_videomem != nullptr) {
+            unsigned int offset = m_y * width() + m_x;
+            m_videomem[offset] = 0;
+        }
+        setCursor();
         return;
     } else if (m_x >= width()) {
             m_x -= width();
@@ -406,6 +425,7 @@ void Video::putCh(char c)
 
     scroll();
 
+#ifdef FEATURE_GRAPHICS
     if (Platform::fb() != nullptr && Platform::fb()->isConfigured()) {
         if (m_font == nullptr) {
             m_font = new KernelFont();
@@ -419,8 +439,9 @@ void Video::putCh(char c)
             m_y * (m_font->height() + 0),
             c);
         m_x++;
-    } else {
-        if (m_videomem == nullptr) return;
+    } else
+#endif
+    if (m_videomem != nullptr) {
         unsigned int offset = m_y * width() + m_x;
 
         m_videomem[offset] = c | VIDEO_COLOR_MASK;

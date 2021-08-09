@@ -20,7 +20,7 @@ public:
     virtual TimeInfo getTime() const
     {
         /* Just return zeros */
-        TimeInfo info;
+        TimeInfo info = {};
         return info;
     }
 };

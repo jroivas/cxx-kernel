@@ -56,6 +56,18 @@ void VideoX86::setCursor()
     Port::out(PORT+1, (pos>>8)&0xFF);
 }
 
+void VideoX86::putChDebug(char c)
+{
+    if (!__uart_initted) {
+        uart_init();
+    }
+    uart_putc(c);
+
+    if (c == '\n') {
+        uart_putc('\r');
+    }
+}
+
 void VideoX86::putCh(char c)
 {
     if (!__uart_initted) {

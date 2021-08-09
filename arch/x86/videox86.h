@@ -8,6 +8,7 @@ class VideoX86 : public Video
 public:
     VideoX86();
     virtual void putCh(char c);
+    virtual void putChDebug(char c);
 
 protected:
     void setCursor();

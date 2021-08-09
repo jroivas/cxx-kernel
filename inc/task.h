@@ -65,6 +65,10 @@ public:
             m_slice--;
         }
     }
+    inline void resetSlice()
+    {
+        m_slice = 0;
+    }
 
     inline uint32_t priority() const
     {

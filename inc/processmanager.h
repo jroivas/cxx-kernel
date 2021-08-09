@@ -46,6 +46,9 @@ public:
     static void killer();
     Task *clone();
 
+    /* Yield by zeroing current slice */
+    void yield();
+
 private:
     void doKill();
     uint32_t approxPool(Task *t, uint32_t base=0);

@@ -35,7 +35,7 @@ extern uint32_t localId();
 
 #define STACK_SIZE 0x4000 * 64
 uint8_t __stack_bottom[STACK_SIZE] = {};
-uint32_t __stack_top = (uint32_t)__stack_bottom + STACK_SIZE;
+ptr_t __stack_top = (ptr_t)(__stack_bottom + STACK_SIZE);
 
 extern "C" void _smp_main()
 {

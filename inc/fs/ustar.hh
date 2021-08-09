@@ -195,7 +195,7 @@ public:
     }
     uint32_t getDevId() const
     {
-        return (uint32_t)m_phys;
+        return (uint32_t)(uint64_t)m_phys;
     }
 
 protected:
