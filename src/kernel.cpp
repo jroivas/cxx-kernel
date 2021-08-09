@@ -60,7 +60,7 @@ void kernel_loop()
     Task *a_task = Platform::task()->create((ptr_val_t)&app_proc, 0, 0);
     a_task->setName("Application main");
     pm->addTask(a_task);
-    a_task->setPriority(40);
+    a_task->setPriority(1);
 
     while (1) {
 #ifdef FEATURE_GRAPHICS
@@ -71,7 +71,7 @@ void kernel_loop()
 #endif
 
         /* Update screen */
-        Timer::get()->wait(1);
+        Timer::get()->wait(10);
     }
 }
 

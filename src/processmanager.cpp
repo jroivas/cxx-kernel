@@ -157,11 +157,11 @@ Task *ProcessManager::schedule()
 
     if (m_tasks->size() > 0) {
         m_pool_slice = SCHEDULING_GRANULARITY / m_tasks->size() / approx;
-        if (m_pool_slice < SCHEDULING_GRANULARITY_MIN) {
-            m_pool_slice = SCHEDULING_GRANULARITY_MIN;
-        }
     } else {
         m_pool_slice = SCHEDULING_GRANULARITY / approx;
+    }
+    if (m_pool_slice < SCHEDULING_GRANULARITY_MIN) {
+        m_pool_slice = SCHEDULING_GRANULARITY_MIN;
     }
 
     next->setSlice(m_pool_slice);
