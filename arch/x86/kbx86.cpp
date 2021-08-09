@@ -175,19 +175,6 @@ void KBX86::run(Regs *r)
     if ((code & KEY_RELEASE) != 0) {
         unsigned char bcode = code & ~KEY_RELEASE;
 
-        if (bcode < 0x60) {
-            const char *mapped;
-            if (mods & MOD_SHIFT)
-                mapped = layout_upcase[bcode];
-            else
-                mapped = layout[bcode];
-            if (mapped) {
-                Video::get()->printf("%s", mapped);
-                keybuffer[keybuffer_write] = mapped;
-                keybuffer_write = (keybuffer_write + 1) & KEY_BUFFER_MASK;
-            }
-        }
-
         if (bcode == KEY_LSHIFT)
             mods &= ~MOD_SHIFT;
         if (bcode == KEY_RSHIFT)
@@ -204,20 +191,36 @@ void KBX86::run(Regs *r)
             mods &= ~MOD_RIGHT;
 
     } else {
-        if (code & KEY_RIGHT_MODIFIER)
+        unsigned char bcode = code;
+
+        if (bcode & KEY_RIGHT_MODIFIER)
             mods |= MOD_RIGHT;
 
-        if (code == KEY_LSHIFT)
+        if (bcode == KEY_LSHIFT)
             mods |= MOD_SHIFT;
-        else if (code == KEY_RSHIFT)
+        else if (bcode == KEY_RSHIFT)
             mods |= MOD_SHIFT;
-        else if (code == KEY_CTRL)
+        else if (bcode == KEY_CTRL)
             mods |= MOD_CTRL;
-        else if (code == KEY_ALT) {
+        else if (bcode == KEY_ALT) {
             if (mods & MOD_RIGHT)
                 mods |= MOD_ALTGR;
             else
                 mods |= MOD_ALT;
         }
+
+        if (bcode < 0x60) {
+            const char *mapped;
+            if (mods & MOD_SHIFT)
+                mapped = layout_upcase[bcode];
+            else
+                mapped = layout[bcode];
+            if (mapped) {
+                Video::get()->printf("%s", mapped);
+                keybuffer[keybuffer_write] = mapped;
+                keybuffer_write = (keybuffer_write + 1) & KEY_BUFFER_MASK;
+            }
+        }
+
     }
 }
