@@ -126,6 +126,8 @@ void Kernel::initVideo()
     if (video != nullptr) {
         video->clear();
 
+        initFrameBuffer();
+
         video->printf("Ticks: %lu!\n", Timer::get()->getTicks());
 
         video->printf("\nC++ kernel %s!!!\n\n", kernel_version);
@@ -148,7 +150,7 @@ void Kernel::initPCI()
     if (pcidev != nullptr) {
         if (pcidev->isAvailable()) video->printf("Found PCI\n");
         else video->printf("PCI not available\n");
-        pcidev->setVerbose();
+        //pcidev->setVerbose();
         pcidev->scanDevices();
     }
 #endif
@@ -211,7 +213,6 @@ void Kernel::initVirtualDisc()
 void Kernel::drawTestData()
 {
 #ifdef FEATURE_GRAPHICS
-    video->printf("FB3.2\n");
     platform->fb()->swap();
     platform->fb()->blit();
 #if 1
@@ -220,7 +221,6 @@ void Kernel::drawTestData()
     }
     platform->fb()->swap();
     platform->fb()->blit();
-    video->printf("FB5\n");
 #if 1
     for (int j=100; j<120; j++) {
         for (int i=100; i<200; i++) {
@@ -261,12 +261,11 @@ int Kernel::initFrameBuffer()
     FB::ModeConfig *vconf = platform->fb()->query(&conf);
     if (vconf != nullptr) {
         video->adapt(vconf->width, vconf->height);
-        video->printf("FB3\n");
         platform->fb()->configure(vconf);
 
         // TODO: Can be removed
         drawTestData();
-#if 1
+#if 0
         video->printf("C++ test kernel\n");
         platform->fb()->swap();
         platform->fb()->blit();
@@ -324,11 +323,6 @@ int Kernel::run()
 #endif
 
     initVirtualDisc();
-
-    int res = initFrameBuffer();
-    if (res != 0) {
-        return res;
-    }
 
     initSysCall();
 

@@ -43,7 +43,7 @@ void ProcessManager::addTask(Task *t)
     Platform::seizeInterrupts();
 
     Task *current = m_current;
-    Platform::video()->printf("CURR %d %x\n", m_tasks->size(), current);
+    //Platform::video()->printf("CURR %d %x\n", m_tasks->size(), current);
 
     if (current != nullptr) {
         current->lock();
