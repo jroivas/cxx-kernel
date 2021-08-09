@@ -39,7 +39,6 @@ public:
     ~LockMutex();
 };
 
-
 inline void Mutex::lock() {
     if (m_ptr == nullptr) return;
 

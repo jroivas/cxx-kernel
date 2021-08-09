@@ -289,6 +289,7 @@ int syscall_fstat(int fd, struct stat *sb)
         return 0;
     }
     if (fd >= 3) {
+#ifdef FEATURE_STORAGE
         VFS *vfs = Platform::vfs();
         Filesystem *fs = vfs->accessHandle(fd);
         if (!fs)
@@ -303,6 +304,7 @@ int syscall_fstat(int fd, struct stat *sb)
         sb->st_rdev = 34826;
 
         return fs->stat(fd, sb);
+#endif
 
 #if 0
         sb->st_dev = 99;

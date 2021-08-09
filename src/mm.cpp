@@ -15,6 +15,41 @@ static MM __mm_static_instance;
 static volatile ptr_val_t  __mm_mutex;
 static ptr_t __mm_last_free = nullptr;
 
+#ifdef USE_LINUX
+void uart_print(const char *c)
+{
+    printf("%s", c);
+}
+void uart_putch(const char c)
+{
+    printf("%c", c);
+}
+void uart_print_uint64(uint64_t v)
+{
+    printf("%llu", v);
+}
+#elif defined( ARCH_x86)
+extern void uart_print(const char *c);
+extern void uart_putch(const char c);
+void uart_print_uint64(uint64_t v)
+{
+    if (!v) {
+        uart_print("0\n");
+        return;
+    }
+    while (v) {
+        int m = v % 10;
+        uart_putch('0' + m);
+        v /= 10;
+    }
+    uart_putch('\n');
+}
+#else
+void uart_print(const char *) {}
+void uart_putch(const char) {}
+void uart_print_uint64(uint64_t) {}
+#endif
+
 #define SIZEMASK 0xFFFFFFFF
 
 #ifdef USE_LINUX
@@ -327,8 +362,6 @@ void *MM::findAvail(size_t size)
 
 void *MM::allocMem(size_t size, AllocType t)
 {
-    ptr_val_t m = 0;
-
     ptr_val_t size2 = size + sizeof(PtrInfo);
 
 #if 0
@@ -349,8 +382,10 @@ void *MM::allocMem(size_t size, AllocType t)
     size2=s;
 #endif
 
-    if (size2%PAGE_SIZE!=0) m=1;
-    ptr_val_t cnt = size2/PAGE_SIZE+m;
+    ptr_val_t cnt = 0;
+    if ((size2 % PAGE_SIZE) != 0)
+        cnt = 1;
+    cnt += size2 / PAGE_SIZE;
 
 
     ptr_t ptr = nullptr;
@@ -385,7 +420,7 @@ void *MM::allocMem(size_t size, AllocType t)
                 nb->state = PtrStateUsed;
                 nb->used = 1;
                 ptr = (ptr_t)((ptr_val_t)nb+sizeof(PtrInfo));
-                free(ptr, AllocDoNotLock);
+                freeNoLock(ptr);
             }
 #endif
             ptr = (ptr_t)allocPage(cnt);
@@ -477,11 +512,9 @@ void *MM::alloc(size_t size, AllocType t)
     return res;
 }
 
-bool MM::free(void *p, AllocLock l)
+bool MM::freeNoLock(void *p)
 {
     if (p == nullptr) return false;
-
-    if (l == AllocDoLock) m.lock();
 
     PtrInfo *cur = (PtrInfo*)((ptr_val_t)p - sizeof(PtrInfo));
     if (cur->used == 0) {
@@ -489,12 +522,10 @@ bool MM::free(void *p, AllocLock l)
     }
     if (cur->state == PtrStateFreed) {
         //printf("===FF ERROR, double free\n");
-        if (l==AllocDoLock) m.unlock();
         return false;
     }
     if (cur->state != PtrStateUsed) {
         //printf("===FD ERROR, invalid block: %d\n", cur->state);
-        if (l==AllocDoLock) m.unlock();
         return false;
     }
 
@@ -512,10 +543,20 @@ bool MM::free(void *p, AllocLock l)
     }
         printf("\n");
 #endif
-
-    if (l == AllocDoLock) m.unlock();
-
     return true;
+}
+
+bool MM::free(void *p)
+{
+    bool res;
+
+    m.lock();
+
+    res = freeNoLock(p);
+
+    m.unlock();
+
+    return res;
 }
 
 void *MM::realloc(void *ptr, size_t size)
@@ -550,7 +591,7 @@ void *MM::realloc(void *ptr, size_t size)
     }
 
     Mem::move((char*)tmp, (char*)ptr, min);
-    free(ptr, AllocDoNotLock);
+    freeNoLock(ptr);
     m.unlock();
 
     return tmp;

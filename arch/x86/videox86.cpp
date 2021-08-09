@@ -33,7 +33,7 @@ void uart_init()
     __uart_avail = true;
 }
 
-void uart_putc(char c)
+void uart_putc(const char c)
 {
     if (!__uart_initted || !__uart_avail) return;
 
@@ -44,6 +44,24 @@ void uart_putc(char c)
         Timer::get()->wait(1);
     }
     Port::out(COM1, c);
+}
+
+void uart_putch(const char c)
+{
+    if (!__uart_initted) {
+        uart_init();
+    }
+    uart_putc(c);
+
+    if (c == '\n') {
+        uart_putc('\r');
+    }
+}
+
+void uart_print(const char *c)
+{
+    while (c && *c)
+        uart_putch(*c++);
 }
 
 void VideoX86::setCursor()
@@ -58,14 +76,7 @@ void VideoX86::setCursor()
 
 void VideoX86::putChDebug(char c)
 {
-    if (!__uart_initted) {
-        uart_init();
-    }
-    uart_putc(c);
-
-    if (c == '\n') {
-        uart_putc('\r');
-    }
+    uart_putch(c);
 }
 
 void VideoX86::putCh(char c)

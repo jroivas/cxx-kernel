@@ -3,6 +3,8 @@
 
 #include "types.h"
 
+#define LIST_MAX_FREED 32
+
 class List
 {
 public:
@@ -19,6 +21,11 @@ public:
             ptr = val;
             next = nullptr;
         }
+        void assign(void *val)
+        {
+            ptr = val;
+            next = nullptr;
+        }
 
     protected:
         ListObject *next;
@@ -26,6 +33,7 @@ public:
     };
 
     List();
+    ~List();
     void addFirst(void *val);
     void append(void *val);
     void *first();
@@ -47,5 +55,9 @@ protected:
     ListObject *m_first;
     ListObject *m_last;
     uint32_t m_size;
+    ListObject *getFree(void *val);
+    void free(ListObject *);
+    ListObject *m_freed[LIST_MAX_FREED];
+    uint32_t m_freed_idx;
 };
 #endif

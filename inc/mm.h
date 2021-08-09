@@ -24,7 +24,7 @@ public:
     MM();
     static MM *instance();
     void *alloc(size_t size, AllocType t=AllocNormal);
-    bool free(void *p, AllocLock l=AllocDoLock);
+    bool free(void *p);
     void *realloc(void *ptr, size_t size);
 
 private:
@@ -34,6 +34,7 @@ private:
     void *allocMem(size_t size, AllocType t);
     void *allocMemClear(size_t size);
     void *findAvail(size_t size);
+    bool freeNoLock(void *p);
     Mutex m;
     void *m_lastPage;
     void *m_freeTop;

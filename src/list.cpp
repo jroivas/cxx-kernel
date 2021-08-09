@@ -7,9 +7,38 @@ List::List()
     m_size = 0;
 }
 
+List::~List()
+{
+    for (uint32_t i = 0; i < m_freed_idx; i++)
+        delete m_freed[i];
+}
+
+List::ListObject *List::getFree(void *val)
+{
+    ListObject *res;
+
+    if (m_freed_idx > 0) {
+        res = m_freed[--m_freed_idx];
+        res->assign(val);
+    } else {
+        res = new ListObject(val);
+    }
+
+    return res;
+}
+
+void List::free(ListObject *obj)
+{
+    if (m_freed_idx + 1 >= LIST_MAX_FREED) {
+        delete obj;
+        return;
+    }
+    m_freed[m_freed_idx++] = obj;
+}
+
 void List::addFirst(void *val)
 {
-    ListObject *obj = new ListObject(val);
+    ListObject *obj = getFree(val);
     if (m_first != nullptr) {
         ListObject *tmp = m_first;
         obj->next = tmp;
@@ -27,7 +56,7 @@ void List::append(void *val)
         return;
     }
 
-    ListObject *obj = new ListObject(val);
+    ListObject *obj = getFree(val);
     ListObject *tmp = m_last;
     tmp->next = obj;
     m_last = obj;
@@ -53,7 +82,7 @@ void *List::takeFirst()
     }
     void *val = tmp->ptr;
     m_size--;
-    delete tmp;
+    free(tmp);
     return val;
 }
 
@@ -82,7 +111,7 @@ void List::deleteAll(void *val)
                 prev->next = nullptr;
             }
             m_size--;
-            delete obj;
+            free(obj);
             obj = prev->next;
         }
         prev = obj;
@@ -158,7 +187,7 @@ bool List::appendAfter(uint32_t i, void *val)
         obj = obj->next;
     }
 
-    ListObject *another_obj = new ListObject(val);
+    ListObject *another_obj = getFree(val);
     if (obj->next != nullptr) {
         another_obj->next = obj->next;
     } else {
@@ -191,7 +220,7 @@ bool List::addAt(uint32_t i, void *val)
         obj = obj->next;
     }
 
-    ListObject *another_obj = new ListObject(val);
+    ListObject *another_obj = getFree(val);
     if (obj->next != nullptr) {
         another_obj->next = obj->next;
     }
@@ -243,13 +272,13 @@ bool List::deleteAt(uint32_t i)
             m_last = obj;
         }
         m_size--;
-        delete tmp;
+        free(tmp);
     }
     else {
         m_first = nullptr;
         m_last = nullptr;
         m_size = 0;
-        delete obj;
+        free(obj);
     }
 
     return true;

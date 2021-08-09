@@ -18,6 +18,7 @@ static ptr8_t  __free_page_address = (ptr8_t)KERNEL_PRE_POS;
 static ptr8_t  __heap_address      = (ptr8_t)HEAP_START;
 static ptr8_t  __user_heap_address = (ptr8_t)USER_HEAP_START;
 static ptr32_val_t __mem_size      = 0;
+extern void uart_print(const char *c);
 
 /* Memory mapping structure */
 struct MemoryMap
