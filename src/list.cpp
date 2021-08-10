@@ -70,6 +70,21 @@ void *List::first()
     return m_first->ptr;
 }
 
+void List::rotateFirstLast()
+{
+    if (m_first == nullptr)
+        return;
+
+    ListObject *tmp = m_first;
+    if (tmp == m_last)
+        return;
+
+    m_first = tmp->next;
+    m_last->next = tmp;
+    tmp->next = nullptr;
+    m_last = tmp;
+}
+
 void *List::takeFirst()
 {
     if (m_first == nullptr) return nullptr;
@@ -122,7 +137,7 @@ void List::deleteAll(void *val)
     }
 }
 
-uint32_t List::size()
+uint32_t List::size() const
 {
     return m_size;
 }

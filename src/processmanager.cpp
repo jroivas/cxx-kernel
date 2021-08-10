@@ -53,10 +53,11 @@ void ProcessManager::addTask(Task *t)
         t->setPid(++m_pid);
     }
 
+    m_tasks->append(t);
+
     volatile ptr_val_t *lock = nullptr;
     if (current != nullptr) {
         lock = current->getLock();
-        m_tasks->append(current);
         if (current->save()) {
             Platform::continueInterrupts();
             return;
@@ -71,6 +72,7 @@ void ProcessManager::addTask(Task *t)
 void ProcessManager::doKill()
 {
     if (m_current == nullptr) return;
+    /* Stop scheduling this one */
     m_tasks->deleteAll(m_current);
 }
 
@@ -110,8 +112,9 @@ Task *ProcessManager::schedule()
     //Platform::video()->printf("Curr %x %d\n",current, current==nullptr?0:current->pid());
     //Platform::video()->printf("Curr %d\n", m_tasks->size());
 
-    void *tmp = m_tasks->takeFirst();
+    void *tmp = m_tasks->first();
     if (tmp == nullptr) {
+        /* This should not happen! */
         current->unlock();
         Platform::continueInterrupts();
         return nullptr;
@@ -119,18 +122,17 @@ Task *ProcessManager::schedule()
 
     Task *next = (Task*)tmp;
     if (next == current) {
+        /* Have only one task, continue it */
         current->unlock();
         Platform::continueInterrupts();
         return current;
     }
-    if (current != nullptr) {
-        m_tasks->append(current);
-    }
-
+    /* Move next task last, and switch to it */
+    m_tasks->rotateFirstLast();
     m_current = next;
 
     if (*(next->getLock()) == 1) {
-        Platform::video()->printf("NEXT ALREADY LOCKED: %d %x!\n",next->pid(), next);
+        Platform::video()->printf("NEXT ALREADY LOCKED: %d %x!\n", next->pid(), next);
         while(1) ;
     }
 
@@ -171,7 +173,7 @@ Task *ProcessManager::schedule()
 
 #ifdef DEBUG
     Platform::video()->printf("\n::: %s slice: %5d,  %d\n",next->name(), m_pool_slice, m_tasks->size());
-    Platform::video()->printf("\n:::%d\n",next->pid());
+    Platform::video()->printf("\n:::%d\n", next->pid());
 #endif
 
     next->unlock();

@@ -40,8 +40,9 @@ public:
     void *last();
     void deleteAll(void *val);
     void *takeFirst();
+    void rotateFirstLast();
 
-    uint32_t size();
+    uint32_t size() const;
     void *at(uint32_t i);
     bool appendAfter(uint32_t i, void *val);
     bool addAt(uint32_t i, void *val);
