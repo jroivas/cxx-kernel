@@ -27,6 +27,8 @@ public:
     unsigned int width() const;
     unsigned int height() const;
 
+    void setOrigin();
+
 protected:
     int print_ull(unsigned long long val, int radix=10, int fmtcnt=0);
     int print_l(long val, int radix=10, int fmtcnt=0);
@@ -34,11 +36,12 @@ protected:
 
     virtual void setCursor() = 0;
     unsigned short *m_videomem;
+    KernelFont *m_font;
     unsigned int m_x;
     unsigned int m_y;
     unsigned int m_width;
     unsigned int m_height;
-    KernelFont *m_font;
+    unsigned int m_origin;
 };
 
 #endif

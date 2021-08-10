@@ -10,11 +10,17 @@ public:
     virtual ~KB() {};
     virtual bool hasKey();
     virtual const char *getKey();
+    void startReading();
+    void stopReading()
+    {
+        m_reading = false;
+    }
 
 protected:
-    KB() { }
+    KB() : m_reading(false) { }
     static int handler(Regs *r);
     virtual void run(Regs *r) = 0;
+    bool m_reading;
 };
 
 #endif

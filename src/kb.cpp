@@ -29,8 +29,13 @@ bool KB::hasKey()
     return false;
 }
 
-
 const char *KB::getKey()
 {
     return nullptr;
+}
+
+void KB::startReading()
+{
+    Video::get()->setOrigin();
+    m_reading = true;
 }

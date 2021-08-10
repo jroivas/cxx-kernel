@@ -23,15 +23,14 @@ Video *Video::get()
 }
 
 Video::Video()
+    : m_videomem(nullptr),
+    m_font(nullptr),
+    m_x(0),
+    m_y(0),
+    m_width(80),
+    m_height(25),
+    m_origin(0)
 {
-    m_x = 0;
-    m_y = 0;
-
-    m_width = 80;
-    m_height = 25;
-
-    m_videomem = nullptr;
-    m_font = nullptr;
 }
 
 Video::~Video()
@@ -385,6 +384,7 @@ void Video::putCh(char c)
     if (c == '\n') {
         m_y++;
         m_x = 0;
+        m_origin = 0;
         scroll();
         setCursor();
         return;
@@ -399,7 +399,7 @@ void Video::putCh(char c)
         return;
     } else if (c == '\b') {
         // Back one char if possible
-        if (m_x > 0) {
+        if (m_x > 0 && m_x > m_origin) {
             m_x--;
         }
         // Draw empty at current char
@@ -449,4 +449,9 @@ void Video::putCh(char c)
         m_x++;
         setCursor();
     }
+}
+
+void Video::setOrigin()
+{
+    m_origin = m_x;
 }

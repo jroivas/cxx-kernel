@@ -167,6 +167,7 @@ int syscall_read(int fd, void *buf, size_t cnt)
 {
     if (fd == 0) {
         size_t c = 0;
+        Platform::kb()->startReading();
         while (c < cnt) {
             const char *tmp = Platform::kb()->getKey();
             if (!tmp) {
@@ -181,6 +182,7 @@ int syscall_read(int fd, void *buf, size_t cnt)
             if (tmp[0] == '\n')
                 break;
         }
+        Platform::kb()->stopReading();
         return c;
     }
 #ifdef FEATURE_STORAGE
