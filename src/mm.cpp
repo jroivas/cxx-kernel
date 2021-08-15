@@ -379,7 +379,7 @@ void *MM::allocMem(size_t size, AllocType t)
         if (m_lastPage == nullptr
             || m_freeTop == nullptr
             || m_freeMax == nullptr
-            || ((ptr_val_t)m_freeTop+size2 >= (ptr_val_t)m_freeMax)) {
+            || ((ptr_val_t)m_freeTop + size2 >= (ptr_val_t)m_freeMax)) {
 #if 1
             if (m_lastPage != nullptr
                 && m_freeTop != nullptr
@@ -427,9 +427,7 @@ void *MM::allocMem(size_t size, AllocType t)
     tmp->state = PtrStateUsed;
     tmp->used = 1;
 
-    ptr = (ptr_t)((ptr_val_t)ptr + sizeof(PtrInfo));
-
-    return ptr;
+    return ptrinfo_to_ptr(tmp);
 }
 
 void *MM::allocMemClear(size_t size)
@@ -491,7 +489,6 @@ bool MM::freeNoLock(void *p)
 {
     if (p == nullptr) return false;
 
-    //PtrInfo *cur = (PtrInfo*)((ptr_val_t)p - sizeof(PtrInfo));
     PtrInfo *cur = ptr_to_ptrinfo((ptr_t)p);
     if (cur->used == 0) {
         //printf("===FFF Warn, probably not a valid block\n");
@@ -560,17 +557,19 @@ void *MM::realloc(void *ptr, size_t size)
 
     void *tmp = alloc(size);
     // FIXME: This does not handle error properly
-    if (tmp == nullptr) return ptr;
+    if (tmp == nullptr) return nullptr;
     if (ptr == nullptr) return tmp;
 
     m.lock();
 
-    unsigned int min = old->size;
-    if (min > size) {
-        min = size;
-    }
+    if (old) {
+        unsigned int min = old->size;
+        if (min > size) {
+            min = size;
+        }
 
-    Mem::move((char*)tmp, (char*)ptr, min);
+        Mem::move((char*)tmp, (char*)ptr, min);
+    }
     freeNoLock(ptr);
     m.unlock();
 
