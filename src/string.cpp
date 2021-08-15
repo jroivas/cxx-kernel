@@ -2,10 +2,15 @@
 #include "types.h"
 #include "mm.h"
 #include "platform.h"
+#include "uart.hh"
+
+#define DBG_RANGE 0x1000
 
 void *Mem::copy(void *dest, const void *src, size_t size)
 {
     if (dest == src) return dest;
+    if (dest == nullptr) return nullptr;
+    if (src == nullptr) return nullptr;
 
     char *d = (char*)dest;
     char *s = (char*)src;
@@ -75,7 +80,7 @@ int Mem::cmp(const void *s1, const void *s2, size_t size)
 
 extern "C" void *memcpy(void *dest, const void *src, unsigned int n)
 {
-    return Mem::copy(dest, (void*)src, n);
+    return Mem::copy(dest, src, n);
 }
 
 extern "C" void *memset(void *s, int c, size_t n)

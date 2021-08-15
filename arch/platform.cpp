@@ -328,3 +328,65 @@ int kprintf(const char *fmt, ...)
     return res;
 #endif
 }
+
+#ifdef USE_LINUX
+void uart_print(const char *c)
+{
+    printf("%s", c);
+}
+void uart_putch(const char c)
+{
+    printf("%c", c);
+}
+void uart_print_uint64(uint64_t v)
+{
+    printf("%llu", v);
+}
+void uart_print_uint64_hex(uint64_t v)
+{
+    printf("%llx", v);
+}
+#elif defined( ARCH_x86)
+extern void uart_print(const char *c);
+extern void uart_putch(const char c);
+static char __hex_chars[] = "0123456789abcdef";
+static void uart_print_num_rec(uint64_t n, bool hex)
+{
+    (void)__hex_chars;
+    if (n) {
+        if (hex) {
+            uart_print_num_rec(n / 16, hex);
+            uart_putch(__hex_chars[n % 16]);
+        } else {
+            uart_print_num_rec(n / 10, hex);
+            uart_putch('0' + (n % 10));
+        }
+    }
+}
+
+void uart_print_uint64(uint64_t v)
+{
+    if (!v) {
+        uart_print("0\n");
+        return;
+    }
+    uart_print_num_rec(v, false);
+    uart_putch('\n');
+}
+
+void uart_print_uint64_hex(uint64_t v)
+{
+    if (!v) {
+        uart_print("0\n");
+        return;
+    }
+    uart_print_num_rec(v, true);
+    uart_putch('\n');
+}
+#else
+void uart_print(const char *) {}
+void uart_putch(const char) {}
+void uart_print_uint64(uint64_t) {}
+void uart_print_uint64_hex(uint64_t) {}
+#endif
+

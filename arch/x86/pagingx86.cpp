@@ -18,7 +18,6 @@ static ptr8_t  __free_page_address = (ptr8_t)KERNEL_PRE_POS;
 static ptr8_t  __heap_address      = (ptr8_t)HEAP_START;
 static ptr8_t  __user_heap_address = (ptr8_t)USER_HEAP_START;
 static ptr32_val_t __mem_size      = 0;
-extern void uart_print(const char *c);
 
 /* Memory mapping structure */
 struct MemoryMap
@@ -260,6 +259,8 @@ void PagingPrivate::unlockStatic()
 bool PagingPrivate::identityMapFrame(Page *p, ptr_val_t addr, MapType type, MapPermissions perms)
 {
     if (p == nullptr) return false;
+    if (p->getPresent() && p->getAddress() == addr)
+        return true;
     bool res = true;
 
     uint32_t i = addr / PAGE_SIZE;
@@ -543,7 +544,7 @@ Page *PageDir::getPage(ptr_val_t addr, PageReserve reserve)
     if (tables[index] != nullptr) {
         return tables[index]->get(addr % PAGES_PER_TABLE);
     }
-    else if (reserve==PageDoReserve) {
+    else if (reserve == PageDoReserve) {
         ptr_val_t physPtr = 0;
         tables[index] = new ((ptr_t)&physPtr) PageTable();
         if (physPtr == 0) {

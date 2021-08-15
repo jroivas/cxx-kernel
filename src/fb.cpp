@@ -120,7 +120,7 @@ void FB::freeBuffers()
 
 bool FB::configure(ModeConfig *mode)
 {
-    if (mode==nullptr) return false;
+    if (mode == nullptr) return false;
 
     m_current = mode;
 

@@ -103,11 +103,12 @@ Kernel::Kernel(Platform *_platform, MultibootInfo *multiboot)
 
     paging_init(multiboot);
 
+    // This needs to be done before we start interrupts
+    KB::get();
+
     Timer::get()->setFrequency(KERNEL_FREQUENCY);
     platform->state()->startInterrupts();
     platform->cpu()->initSMP(platform);
-
-    KB::get();
 }
 
 Kernel::~Kernel()

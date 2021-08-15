@@ -4,6 +4,7 @@
 #include "string.hh"
 #include "videox86.h"
 #include "platform.h"
+#include "uart.hh"
 
 extern "C" void idt_load();
 
@@ -258,8 +259,51 @@ extern "C" int irq_handler(Regs *regs)
     return res;
 }
 
-extern uint32_t debug_ptr;
-extern uint32_t debug_ptr_cr2;
+#ifdef ARCH_x86
+typedef struct StackFrame {
+  ptr_t ebp;
+  ptr_t eip;
+} StackFrame;
+#endif
+
+static void stacktrace(uint32_t frames)
+{
+#ifdef ARCH_x86
+    VideoX86 tmp;
+    StackFrame *frame = nullptr;
+    Paging p;
+
+    register ptr_t *ebp asm("ebp");
+    frame = (StackFrame*)ebp;
+
+    // It's possible pages are not mapped, map them now
+    p.identityMap((ptr_val_t)frame);
+
+    //tmp.printf("Stacktrace:\n");
+    uart_print("Stacktrace\n");
+    for (uint32_t i = 0; frame && i < frames; ++i) {
+        uart_print_uint64((ptr_val_t)frame);
+        uart_print_uint64((uint64_t)frame->eip);
+        uart_print_uint64_hex((uint64_t)frame->eip);
+#if 0
+        tmp.printf("  0x%8x ", (ptr_val_t)frame);
+        tmp.printf("  0x%x\n", frame->eip);
+#endif
+        if (!frame->ebp)
+            break;
+        p.identityMap((ptr_val_t)frame->ebp);
+        frame = (StackFrame*)frame->ebp;
+        //if (frame)
+        //p.identityMap((ptr_val_t)frame);
+    }
+#else
+    (void)frames;
+#endif
+}
+
+extern ptr_val_t debug_ptr;
+extern ptr_val_t debug_ptr_cr2;
+extern ptr_val_t debug_ptr_eip;
 extern "C" int isr_handler(Regs * regs)
 {
     if (regs == nullptr) {
@@ -273,9 +317,16 @@ extern "C" int isr_handler(Regs * regs)
         return -1;
     }
     if (regs->int_no == 0xE) {
+        uart_print_uint64(regs->eip);
+        uart_print_uint64(regs->eax);
+        uart_print_uint64_hex(debug_ptr_eip);
+        (void)stacktrace;
+        stacktrace(10);
+#if 1
         VideoX86 tmp;
         tmp.printf("\nERROR! Page fault! error: cr2: %x EIP: %x  \n", debug_ptr_cr2, regs->eip);
         regs->dump();
+#endif
         Platform p;
         p.state()->seizeInterrupts();
         p.state()->halt();
@@ -285,6 +336,7 @@ extern "C" int isr_handler(Regs * regs)
         VideoX86 tmp;
         tmp.printf("\nERROR! Invalid instruction: %x: EIP: %x\n", debug_ptr, regs->eip);
         regs->dump();
+        stacktrace(10);
         Platform p;
         p.state()->seizeInterrupts();
         p.state()->halt();

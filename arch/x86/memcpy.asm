@@ -41,6 +41,7 @@ sse2_has:
 
 [global mmx_memcpy]
 mmx_memcpy:
+    push ebp
     mov edi, [esp+4]
     mov esi, [esp+8]
     mov ecx, [esp+12]
@@ -86,6 +87,7 @@ __mmx_memcpy_rest:
     
 __mmx_memcpy_end:
     emms
+    pop ebp
     ret
 
 [extern memcpy]
@@ -93,6 +95,9 @@ __mmx_memcpy_end:
 __memcpy_internal_has_mmx:
     dd 0
 memcpy_opt:
+    push ebp
+    mov ebp, esp
+    sub esp, 0x10
     mov eax, [__memcpy_internal_has_mmx]
     cmp eax, 1
     je __memcpy_mmx_has
@@ -106,22 +111,30 @@ __memcpy_mmx_update_info:
     mov dword [__memcpy_internal_has_mmx], 1
 
 __memcpy_mmx_has:
-    mov ebp, esp
+    ;mov ebp, esp
+    ;push dword [ebp+12]
+    ;push dword [ebp+8]
+    ;push dword [ebp+4]
+    push dword [ebp+16]
     push dword [ebp+12]
     push dword [ebp+8]
-    push dword [ebp+4]
     call mmx_memcpy
-    add esp, 12
+    ;pop ebp
+    ;add esp, 12
+    ;add esp, 0x10
+    leave
     ret
 
 __memcpy_trad_update:
     mov dword [__memcpy_internal_has_mmx], 2
 
 __memcpy_trad:
-    mov ebp, esp
+    ;push ebp
+    ;mov ebp, esp
+    push dword [ebp+16]
     push dword [ebp+12]
     push dword [ebp+8]
-    push dword [ebp+4]
     call memcpy
-    add esp, 12
+    add esp, 0x10
+    leave
     ret

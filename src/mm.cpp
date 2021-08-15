@@ -9,46 +9,12 @@
 #include "arch/platform.h"
 #endif
 #include "string.hh"
+#include "uart.hh"
 
 
 static MM __mm_static_instance;
 static volatile ptr_val_t  __mm_mutex;
 static ptr_t __mm_last_free = nullptr;
-
-#ifdef USE_LINUX
-void uart_print(const char *c)
-{
-    printf("%s", c);
-}
-void uart_putch(const char c)
-{
-    printf("%c", c);
-}
-void uart_print_uint64(uint64_t v)
-{
-    printf("%llu", v);
-}
-#elif defined( ARCH_x86)
-extern void uart_print(const char *c);
-extern void uart_putch(const char c);
-void uart_print_uint64(uint64_t v)
-{
-    if (!v) {
-        uart_print("0\n");
-        return;
-    }
-    while (v) {
-        int m = v % 10;
-        uart_putch('0' + m);
-        v /= 10;
-    }
-    uart_putch('\n');
-}
-#else
-void uart_print(const char *) {}
-void uart_putch(const char) {}
-void uart_print_uint64(uint64_t) {}
-#endif
 
 #define SIZEMASK 0xFFFFFFFF
 
@@ -93,7 +59,7 @@ struct PtrInfo
 {
     ptr_t prev;
     ptr_t next;
-#if 0
+#if 1
     ptr_val_t size;
     ptr_val_t ressize;
 #else
@@ -103,6 +69,16 @@ struct PtrInfo
     PtrState state:7;
     char used:1;
 };
+
+static inline PtrInfo *ptr_to_ptrinfo(ptr_t val)
+{
+    return(PtrInfo*)((ptr_val_t)val - sizeof(PtrInfo));
+}
+
+static inline ptr_t ptrinfo_to_ptr(PtrInfo *info)
+{
+    return(ptr_t)((ptr_val_t)info + sizeof(PtrInfo));
+}
 
 MM::MM()
     : m_lastPage(nullptr),
@@ -199,23 +175,43 @@ void MM::treeAdd(PtrInfo *cur)
 {
     if (cur == nullptr) return;
 
-    ptr_t p = (ptr_t)((ptr_val_t)cur + sizeof(PtrInfo));
+    if (!m.isLocked())
+        uart_print("ERROR: TREEADD nolock\n");
+
+    ptr_t p = ptrinfo_to_ptr(cur);
     cur->next = nullptr;
     cur->prev = nullptr;
 
     if (__mm_last_free == nullptr) {
         __mm_last_free = (ptr_t)p;
     } else {
-        PtrInfo *tmp = (PtrInfo*)((ptr_val_t)__mm_last_free - sizeof(PtrInfo));
+        PtrInfo *tmp = ptr_to_ptrinfo(__mm_last_free);
 
         /* Setup a binary tree */
         while (tmp != nullptr) {
+            bool inv = false;
+            if ((ptr_val_t)tmp->prev == SIZEMASK) {
+                inv = true;
+            }
+            if ((ptr_val_t)tmp->next == SIZEMASK) {
+                inv = true;
+            }
+            if (inv) {
+                uart_print("ERROR: INV node containing:\n");
+                uart_print_uint64_hex((uint64_t)tmp);
+                uart_print_uint64_hex((uint64_t)tmp->prev);
+                uart_print_uint64_hex((uint64_t)tmp->next);
+                uart_print_uint64_hex((uint64_t)tmp->size);
+                uart_print_uint64_hex((uint64_t)tmp->ressize);
+                uart_print_uint64_hex((uint64_t)tmp->state);
+                uart_print_uint64_hex((uint64_t)tmp->used);
+            }
             if (cur->size < tmp->size) {
                 if (tmp->prev == nullptr) {
                     tmp->prev = (ptr_t)p;
                     return;
                 } else {
-                    PtrInfo *tmp2 = (PtrInfo*)((ptr_val_t)tmp->prev - sizeof(PtrInfo));
+                    PtrInfo *tmp2 = ptr_to_ptrinfo(tmp->prev);
 #if 0
                     if (tmp2==tmp) {
                             printf("===A ERROR\n");
@@ -229,7 +225,7 @@ void MM::treeAdd(PtrInfo *cur)
                     tmp->next = (ptr_t)p;
                     return;
                 } else {
-                    PtrInfo *tmp2 = (PtrInfo*)((ptr_val_t)tmp->next - sizeof(PtrInfo));
+                    PtrInfo *tmp2 = ptr_to_ptrinfo(tmp->next);
 #if 0
                     if (tmp2==tmp) {
                             printf("===B ERROR %u %p\n",(unsigned int)tmp->size,tmp->next);
@@ -248,7 +244,7 @@ void *MM::releaseFree(PtrInfo *p, PtrInfo *parent)
     if (p == nullptr) {
         return nullptr;
     }
-    ptr_t ptr = (ptr_t)((ptr_val_t)p + sizeof(PtrInfo));
+    ptr_t ptr = ptrinfo_to_ptr(p);
 
 #if 0
     printf("relfreepre %lu %p %p\n",p->size,p->prev,p->next);
@@ -265,7 +261,7 @@ void *MM::releaseFree(PtrInfo *p, PtrInfo *parent)
             __mm_last_free = p->prev;
         } else if (p->prev != nullptr && p->next != nullptr) {
             __mm_last_free = p->next;
-            PtrInfo *tmp = (PtrInfo*)((ptr_val_t)p->prev - sizeof(PtrInfo));
+            PtrInfo *tmp = ptr_to_ptrinfo(p->prev);
             treeAdd(tmp);
         } else if (p->prev == nullptr && p->next == nullptr) {
             parent = nullptr;
@@ -280,11 +276,11 @@ void *MM::releaseFree(PtrInfo *p, PtrInfo *parent)
             parent->next = nullptr;
 
         if (p->prev != nullptr) {
-            PtrInfo *lnode = (PtrInfo*)((ptr_val_t)p->prev - sizeof(PtrInfo));
+            PtrInfo *lnode = ptr_to_ptrinfo(p->prev);
             treeAdd(lnode);
         }
         if (p->next != nullptr) {
-            PtrInfo *rnode = (PtrInfo*)((ptr_val_t)p->next - sizeof(PtrInfo));
+            PtrInfo *rnode = ptr_to_ptrinfo(p->next);
             treeAdd(rnode);
         }
     }
@@ -305,7 +301,7 @@ void *MM::findAvail(size_t size)
 {
     if (__mm_last_free == nullptr) return nullptr;
 
-    PtrInfo *tmp = (PtrInfo*)((ptr_val_t )__mm_last_free - sizeof(PtrInfo));
+    PtrInfo *tmp = ptr_to_ptrinfo(__mm_last_free);
     PtrInfo *tmp2 = nullptr;
 
     while (tmp != nullptr) {
@@ -314,22 +310,22 @@ void *MM::findAvail(size_t size)
         } else if (size < tmp->size) {
             if (tmp->prev != nullptr) {
                 tmp2 = tmp;
-                tmp = (PtrInfo*)((ptr_val_t)tmp->prev - sizeof(PtrInfo));
+                tmp = ptr_to_ptrinfo(tmp->prev);
             } else if (tmp->next != nullptr
-                && size <= ((PtrInfo*)((ptr_val_t)tmp->next-sizeof(PtrInfo)))->size) {
+                && size <= ptr_to_ptrinfo(tmp->next)->size) {
                 tmp2 = tmp;
-                tmp = (PtrInfo*)((ptr_val_t)tmp->next - sizeof(PtrInfo));
+                tmp = ptr_to_ptrinfo(tmp->next);
             } else {
                 return nullptr;
             }
         } else if (size > tmp->size) {
             if (tmp->next != nullptr) {
                 tmp2 = tmp;
-                tmp = (PtrInfo*)((ptr_val_t)tmp->next - sizeof(PtrInfo));
+                tmp = ptr_to_ptrinfo(tmp->next);
             } else if (tmp->prev != nullptr
-                && size >= ((PtrInfo*)((ptr_val_t)tmp->prev-sizeof(PtrInfo)))->size) {
+                && size >= ptr_to_ptrinfo(tmp->prev)->size) {
                 tmp2 = tmp;
-                tmp = (PtrInfo*)((ptr_val_t)tmp->prev - sizeof(PtrInfo));
+                tmp = ptr_to_ptrinfo(tmp->prev);
             } else {
                 return nullptr;
             }
@@ -388,17 +384,17 @@ void *MM::allocMem(size_t size, AllocType t)
             if (m_lastPage != nullptr
                 && m_freeTop != nullptr
                 && m_freeMax != nullptr
-                && (((ptr_val_t)m_freeTop+sizeof(PtrInfo)+sizeof(ptr_val_t)) < (ptr_val_t)m_freeMax)) {
+                && (((ptr_val_t)m_freeTop + sizeof(PtrInfo) + sizeof(ptr_val_t)) < (ptr_val_t)m_freeMax)) {
 
-                ptr_val_t diff = (ptr_val_t)m_freeMax-(ptr_val_t)m_freeTop;
+                ptr_val_t diff = (ptr_val_t)m_freeMax - (ptr_val_t)m_freeTop;
                 PtrInfo *nb = reinterpret_cast<PtrInfo*>(m_freeTop);
                 nb->prev = nullptr;
                 nb->next = nullptr;
-                nb->size = (unsigned int)(diff-sizeof(PtrInfo))&SIZEMASK;
-                nb->ressize = (unsigned int)(diff&SIZEMASK);
+                nb->size = (unsigned int)(diff - sizeof(PtrInfo)) & SIZEMASK;
+                nb->ressize = (unsigned int)(diff & SIZEMASK);
                 nb->state = PtrStateUsed;
                 nb->used = 1;
-                ptr = (ptr_t)((ptr_val_t)nb+sizeof(PtrInfo));
+                ptr = (ptr_t)((ptr_val_t)nb + sizeof(PtrInfo));
                 freeNoLock(ptr);
             }
 #endif
@@ -495,16 +491,21 @@ bool MM::freeNoLock(void *p)
 {
     if (p == nullptr) return false;
 
-    PtrInfo *cur = (PtrInfo*)((ptr_val_t)p - sizeof(PtrInfo));
+    //PtrInfo *cur = (PtrInfo*)((ptr_val_t)p - sizeof(PtrInfo));
+    PtrInfo *cur = ptr_to_ptrinfo((ptr_t)p);
     if (cur->used == 0) {
         //printf("===FFF Warn, probably not a valid block\n");
+        uart_print("ERROR: freeing non-valid block\n");
+        return false;
     }
     if (cur->state == PtrStateFreed) {
         //printf("===FF ERROR, double free\n");
+        uart_print("ERROR: double free\n");
         return false;
     }
     if (cur->state != PtrStateUsed) {
         //printf("===FD ERROR, invalid block: %d\n", cur->state);
+        uart_print("ERROR: Block not used\n");
         return false;
     }
 
@@ -547,7 +548,7 @@ void *MM::realloc(void *ptr, size_t size)
 
     PtrInfo *old = nullptr;
     if (ptr != nullptr) {
-        old = (PtrInfo*)((ptr_val_t)ptr - sizeof(PtrInfo));
+        old = ptr_to_ptrinfo((ptr_t)ptr);
         if (old->size == size) {
             return ptr;
         }

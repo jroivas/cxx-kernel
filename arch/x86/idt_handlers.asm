@@ -7,9 +7,12 @@ KERNEL_GS equ 0x38
 
 [global debug_ptr]
 [global debug_ptr_cr2]
+[global debug_ptr_eip]
 debug_ptr:
     dd 0
 debug_ptr_cr2:
+    dd 0
+debug_ptr_eip:
     dd 0
 
 [global get_esp]
@@ -199,8 +202,11 @@ __isr%1:
 
 __isr%1:
     cli
-    pop eax
-    mov [debug_ptr],eax
+    mov eax, [esp]
+    mov [debug_ptr], eax
+    mov [debug_ptr_eip], eax
+    ;pop eax
+    ;mov [debug_ptr],eax
     push dword 0
     push dword %1
     jmp __isr_common
@@ -214,6 +220,8 @@ __isr%1:
 __isr%1:
     cli
     push eax
+    mov eax, [esp + 8]
+    mov [debug_ptr_eip], eax
     mov eax, cr2
     mov [debug_ptr_cr2], eax
     pop eax

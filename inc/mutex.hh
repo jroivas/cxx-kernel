@@ -5,6 +5,7 @@ class Mutex;
 
 #include "types.h"
 #include "atomic.hh"
+#include "uart.hh"
 
 #if __cplusplus >= 201103L
 #define STATE_DELETE = delete
@@ -49,11 +50,18 @@ inline void Mutex::lock() {
 inline void Mutex::unlock() {
     if (m_ptr == nullptr) return;
 
+#if 1
     // If already unlocked return
-    if (*m_ptr == 0) return;
+    if (*m_ptr == 0) {
+        uart_print("ERROR: double unlock mutex\n");
+        return;
+    }
 
     *m_ptr = 0;
     memory_barrier();
+#else
+    __sync_bool_compare_and_swap(m_ptr, 1, 0);
+#endif
 }
 
 class MutexLocker

@@ -97,11 +97,14 @@ void Video::scroll()
 #ifdef FEATURE_GRAPHICS
     if (Platform::fb() != nullptr && Platform::fb()->isConfigured()) {
         if (m_y >= height()) {
+            unsigned char *dataptr = Platform::fb()->data();
 
             uint32_t scroll_size = SCROLL_SIZE * m_font->height() * Platform::fb()->bpl();
 
-            Mem::copy(Platform::fb()->data(), Platform::fb()->data() + scroll_size, Platform::fb()->size() - scroll_size);
-            Mem::set(Platform::fb()->data() + Platform::fb()->size() - scroll_size, 0, scroll_size);
+            if (Platform::fb()->size() >= scroll_size) {
+                Mem::copy(dataptr, dataptr + scroll_size, Platform::fb()->size() - scroll_size);
+                Mem::set(dataptr + Platform::fb()->size() - scroll_size, 0, scroll_size);
+            }
             m_y -= SCROLL_SIZE;
         }
     } else

@@ -64,6 +64,8 @@ __call_kernel:
     mov ebx, [multiboot_info_data]
     push ebx
 
+    ; Nullify ebp for stack trace
+    xor ebp, ebp
     call _main
     call _atexit
     cli
@@ -90,6 +92,7 @@ loader_smp_init:
     jz .1
 
     ; jump to core specific main handler
+    xor ebp, ebp
     call _smp_main
     cli
     hlt

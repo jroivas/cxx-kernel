@@ -206,7 +206,7 @@ FB::ModeConfig *BochsFB::query(FB::ModeConfig *prefer)
     res->base = (unsigned char*)m_video;
     p.map(res->base, &newbase, 0x3);
     ptr_val_t tmpbase = 0;
-    for (uint32_t i=PAGE_SIZE; i<=s; i+=PAGE_SIZE) {
+    for (uint32_t i = PAGE_SIZE; i <= s; i += PAGE_SIZE) {
         p.map(res->base + i, &tmpbase, 0x3);
         if (newbase + i != tmpbase) {
             Platform::video()->printf("Discontinuation: %x\n",tmpbase);
@@ -252,6 +252,7 @@ void BochsFB::setBank(uint16_t bank)
 void BochsFB::blit()
 {
     if (m_direct) return;
+    if (!m_current) return;
 
     m.lock();
     memcpy_opt(m_current->base, m_buffer, m_size);
@@ -260,5 +261,6 @@ void BochsFB::blit()
 
 void BochsFB::clear()
 {
+    if (!m_current) return;
     Mem::set(m_current->base, 0, m_size);
 }

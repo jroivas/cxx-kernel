@@ -12,4 +12,3 @@ diff -ur micropython-1.16/py/nlrx86.c micropython-1.16.b/py/nlrx86.c
  
  #if USE_NAKED
  __attribute__((naked))
-Only in micropython-1.16.b/py: .py.mk.swp
