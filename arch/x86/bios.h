@@ -17,7 +17,6 @@ private:
     void setupX86EMU(void *ptr);
     void *bios_pages;
     ptr_val_t free_base;
-    Mutex m_bios;
     void *bios_stack;
     void *bios_halt;
 };

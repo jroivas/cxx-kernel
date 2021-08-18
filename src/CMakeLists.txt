@@ -4,6 +4,7 @@ set(CORE_FILES
     main.cpp
     cxa.cpp
     local.cpp
+    waitlist.cpp
     mutex.cpp
     operators.cpp
     timer.cpp

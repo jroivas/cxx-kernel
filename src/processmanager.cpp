@@ -6,8 +6,6 @@
 #define SCHEDULING_GRANULARITY (KERNEL_FREQUENCY >> 1)
 #define SCHEDULING_GRANULARITY_MIN (KERNEL_FREQUENCY / 50)
 
-static ptr_val_t __pm_mutex = 0;
-
 ProcessManager::ProcessManager()
 {
     for (uint32_t i = 0; i < TASK_POOLS; i++) {
@@ -19,8 +17,6 @@ ProcessManager::ProcessManager()
     m_current = nullptr;
     m_running = false;
     m_pid = 1;
-
-    m.assign(&__pm_mutex);
 }
 
 uint32_t ProcessManager::approxPool(Task *t, uint32_t base)
@@ -109,8 +105,7 @@ Task *ProcessManager::schedule()
     if (current != nullptr) {
         TEST_LOCK(current);
     }
-    //Platform::video()->printf("Curr %x %d\n",current, current==nullptr?0:current->pid());
-    //Platform::video()->printf("Curr %d\n", m_tasks->size());
+    //Platform::video()->printf("Curr %x %u total %u\n", current, current == nullptr ? 0 : current->pid(), m_tasks->size());
 
     void *tmp = m_tasks->first();
     if (tmp == nullptr) {
@@ -127,8 +122,27 @@ Task *ProcessManager::schedule()
         Platform::continueInterrupts();
         return current;
     }
-    /* Move next task last, and switch to it */
+    /* Move next task last */
     m_tasks->rotateFirstLast();
+    /* Check it's not blocked */
+    while (next->status() == Task::STATUS_BLOCKED) {
+        tmp = m_tasks->first();
+        if (tmp == nullptr) {
+            /* This should not happen! */
+            current->unlock();
+            Platform::continueInterrupts();
+            return nullptr;
+        }
+        next = (Task*)tmp;
+        if (next == current) {
+            /* Have only one task, continue it */
+            current->unlock();
+            Platform::continueInterrupts();
+            return current;
+        }
+        m_tasks->rotateFirstLast();
+    }
+    /* switch to it  */
     m_current = next;
 
     if (*(next->getLock()) == 1) {
@@ -138,8 +152,11 @@ Task *ProcessManager::schedule()
 
     TEST_LOCK(next);
 
+    next->setStatus(Task::STATUS_RUNNING);
     volatile ptr_val_t *lock = nullptr;
     if (current != nullptr) {
+        if (current->status() != Task::STATUS_BLOCKED)
+            current->setStatus(Task::STATUS_WAITING);
         lock = current->getLock();
     }
 
@@ -171,6 +188,9 @@ Task *ProcessManager::schedule()
     next->setSlice(SCHEDULING_GRANULARITY);
 #endif
 
+#if 0
+    Platform::video()->printf("::: %s slice: %5d,  %d -> %u\n",next->name(), m_pool_slice, m_tasks->size(), next->pid());
+#endif
 #ifdef DEBUG
     Platform::video()->printf("\n::: %s slice: %5d,  %d\n",next->name(), m_pool_slice, m_tasks->size());
     Platform::video()->printf("\n:::%d\n", next->pid());

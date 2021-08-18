@@ -141,7 +141,7 @@ static enum layout_code layout_code = LAYOUT_DEFAULT;
 static const char *keybuffer[KEY_BUFFER_SIZE] = { 0 };
 static unsigned int keybuffer_write = 0;
 static unsigned int keybuffer_read = 0;
-static ptr_val_t keybuffer_read_lock = 0;
+static Mutex keybuffer_read_lock;
 
 bool KBX86::hasKey()
 {
@@ -150,7 +150,7 @@ bool KBX86::hasKey()
 
 const char *KBX86::getKey()
 {
-    LockMutex mtx(&keybuffer_read_lock);
+    MutexLocker mtx(&keybuffer_read_lock);
     if (keybuffer_write == keybuffer_read)
         return nullptr;
 

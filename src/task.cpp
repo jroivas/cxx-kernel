@@ -15,8 +15,8 @@ Task::Task()
     m_size = 0;
 
     m_pid = 0;
+    m_status = STATUS_WAITING;
 
-    m_lock = 0;
-    m_m.assign(&m_lock);
     m_userSpace = false;
+    wait.task = this;
 }

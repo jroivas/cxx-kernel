@@ -44,17 +44,16 @@ void Timer::wait(unsigned long ticks_to_wait) const
 
     /* Detect overflow */
     if (target < now) {
-
         /* Wait until ticks flip */
         while (now < m_ticks) {
 #ifdef ARCH_x86
-            asm("nop");
+            asm("rep; nop");
 #endif
         }
     }
     while (m_ticks < target) {
 #ifdef ARCH_x86
-        asm("nop");
+        asm("rep; nop");
 #endif
         //Platform::processManager()->yield();
     }

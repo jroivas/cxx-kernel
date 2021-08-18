@@ -3,7 +3,7 @@
 #include "arch/platform.h"
 
 //Mutex for locking
-ptr32_val_t __page_mapping_alloc_mutex = 0;
+static Mutex __page_mapping_alloc_mutex;
 
 class PagingPrivateLocker {
 public:
@@ -24,19 +24,18 @@ static PagingPrivate __paging_private;
 Paging::Paging()
 {
     _d = &__paging_private;
-    m.assign(&__page_mapping_alloc_mutex);
 }
 
 /* User lock, do not use internally */
 void Paging::lock()
 {
-    m.lock();
+    __page_mapping_alloc_mutex.lock();
 }
 
 /* User unlock, do not use internally */
 void Paging::unlock()
 {
-    m.unlock();
+    __page_mapping_alloc_mutex.unlock();
 }
 
 bool Paging::isOk()

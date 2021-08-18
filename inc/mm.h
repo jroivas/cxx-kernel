@@ -35,7 +35,6 @@ private:
     void *allocMemClear(size_t size);
     void *findAvail(size_t size);
     bool freeNoLock(void *p);
-    Mutex m;
     void *m_lastPage;
     void *m_freeTop;
     void *m_freeMax;

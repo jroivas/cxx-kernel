@@ -45,6 +45,14 @@ public:
     }
     static void killer();
     Task *clone();
+    const Task *current() const
+    {
+        return m_current;
+    }
+    Task *currentTask()
+    {
+        return m_current;
+    }
 
     /* Yield by zeroing current slice */
     void yield();
@@ -60,7 +68,6 @@ private:
     uint32_t m_pool_slice;
     Task *m_current;
     uint32_t m_pid;
-    Mutex m;
 };
 
 #endif

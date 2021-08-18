@@ -13,7 +13,7 @@
 
 
 static MM __mm_static_instance;
-static volatile ptr_val_t  __mm_mutex;
+static Mutex __mm_mutex;
 static ptr_t __mm_last_free = nullptr;
 
 #define SIZEMASK 0xFFFFFFFF
@@ -85,7 +85,6 @@ MM::MM()
     m_freeTop(nullptr),
     m_freeMax(nullptr)
 {
-    m.assign(&__mm_mutex);
 }
 
 MM *MM::instance()
@@ -175,7 +174,7 @@ void MM::treeAdd(PtrInfo *cur)
 {
     if (cur == nullptr) return;
 
-    if (!m.isLocked())
+    if (!__mm_mutex.isLocked())
         uart_print("ERROR: TREEADD nolock\n");
 
     ptr_t p = ptrinfo_to_ptr(cur);
@@ -264,6 +263,7 @@ void *MM::releaseFree(PtrInfo *p, PtrInfo *parent)
             PtrInfo *tmp = ptr_to_ptrinfo(p->prev);
             treeAdd(tmp);
         } else if (p->prev == nullptr && p->next == nullptr) {
+            __mm_last_free = nullptr;
             parent = nullptr;
         } else {
             printf("===0 ERROR\n");
@@ -272,8 +272,10 @@ void *MM::releaseFree(PtrInfo *p, PtrInfo *parent)
     } else {
         if (parent->prev == ptr)
             parent->prev = nullptr;
-        if (parent->next == ptr)
+        else if (parent->next == ptr)
             parent->next = nullptr;
+        else
+            uart_print("ERROR: mem release parent error");
 
         if (p->prev != nullptr) {
             PtrInfo *lnode = ptr_to_ptrinfo(p->prev);
@@ -357,11 +359,9 @@ void *MM::allocMem(size_t size, AllocType t)
     size2=s;
 #endif
 
-    ptr_val_t cnt = 0;
+    ptr_val_t cnt = size2 / PAGE_SIZE;
     if ((size2 % PAGE_SIZE) != 0)
-        cnt = 1;
-    cnt += size2 / PAGE_SIZE;
-
+        cnt++;
 
     ptr_t ptr = nullptr;
 #if 1
@@ -385,19 +385,26 @@ void *MM::allocMem(size_t size, AllocType t)
                 && m_freeTop != nullptr
                 && m_freeMax != nullptr
                 && (((ptr_val_t)m_freeTop + sizeof(PtrInfo) + sizeof(ptr_val_t)) < (ptr_val_t)m_freeMax)) {
+                /* There's space at end of the allocation we can use, but
+                 * it's too small for current allocation. Thus reserve it all,
+                 * and then instantly free it. This way if there comes
+                 * an allocation which fits there we can still use that one.
+                 */
 
                 ptr_val_t diff = (ptr_val_t)m_freeMax - (ptr_val_t)m_freeTop;
                 PtrInfo *nb = reinterpret_cast<PtrInfo*>(m_freeTop);
                 nb->prev = nullptr;
                 nb->next = nullptr;
-                nb->size = (unsigned int)(diff - sizeof(PtrInfo)) & SIZEMASK;
-                nb->ressize = (unsigned int)(diff & SIZEMASK);
+                nb->size = (ptr_val_t)(diff - sizeof(PtrInfo)) & SIZEMASK;
+                nb->ressize = (ptr_val_t)(diff & SIZEMASK);
                 nb->state = PtrStateUsed;
                 nb->used = 1;
-                ptr = (ptr_t)((ptr_val_t)nb + sizeof(PtrInfo));
+                ptr = ptrinfo_to_ptr(nb);
                 freeNoLock(ptr);
+                ptr = nullptr;
             }
 #endif
+            /* Allocate new memory */
             ptr = (ptr_t)allocPage(cnt);
             if (ptr == nullptr) {
                 printf("=== ptr is null\n");
@@ -422,8 +429,8 @@ void *MM::allocMem(size_t size, AllocType t)
     PtrInfo *tmp = reinterpret_cast<PtrInfo*>(ptr);
     tmp->prev = nullptr;
     tmp->next = nullptr;
-    tmp->size = (unsigned int)(size & SIZEMASK);
-    tmp->ressize = (unsigned int)(size2 & SIZEMASK);
+    tmp->size = (ptr_val_t)(size & SIZEMASK);
+    tmp->ressize = (ptr_val_t)(size2 & SIZEMASK);
     tmp->state = PtrStateUsed;
     tmp->used = 1;
 
@@ -454,7 +461,7 @@ void *MM::alloc(size_t size, AllocType t)
         return nullptr;
     }
 
-    m.lock();
+    MutexLocker lock(&__mm_mutex);
     void *res = nullptr;
 
     switch (t) {
@@ -481,7 +488,6 @@ void *MM::alloc(size_t size, AllocType t)
     }
         printf("\n");
 #endif
-    m.unlock();
     return res;
 }
 
@@ -527,11 +533,10 @@ bool MM::free(void *p)
 {
     bool res;
 
-    m.lock();
+    MutexLocker lock(&__mm_mutex);
 
     res = freeNoLock(p);
 
-    m.unlock();
 
     return res;
 }
@@ -560,7 +565,7 @@ void *MM::realloc(void *ptr, size_t size)
     if (tmp == nullptr) return nullptr;
     if (ptr == nullptr) return tmp;
 
-    m.lock();
+    MutexLocker lock(&__mm_mutex);
 
     if (old) {
         unsigned int min = old->size;
@@ -571,7 +576,6 @@ void *MM::realloc(void *ptr, size_t size)
         Mem::move((char*)tmp, (char*)ptr, min);
     }
     freeNoLock(ptr);
-    m.unlock();
 
     return tmp;
 }

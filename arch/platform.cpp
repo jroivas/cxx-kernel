@@ -390,3 +390,12 @@ void uart_print_uint64(uint64_t) {}
 void uart_print_uint64_hex(uint64_t) {}
 #endif
 
+void yield()
+{
+    Platform::processManager()->yield();
+}
+
+void reschedule()
+{
+    Platform::processManager()->schedule();
+}

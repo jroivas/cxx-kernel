@@ -53,14 +53,56 @@ void app_proc()
     }
 }
 
+#if 0
+static BaseMutex mtx;
+
+void proc1()
+{
+    while (true) {
+        uart_print("a");
+        mtx.lock();
+        //Platform::video()->printf("A");
+        uart_print("A");
+        Platform::timer()->msleep(100);
+        mtx.unlock();
+    }
+}
+
+void proc2()
+{
+    while (true) {
+        uart_print("b");
+        mtx.lock();
+        //Platform::video()->printf("B");
+        uart_print("B");
+        Platform::timer()->msleep(1);
+        mtx.unlock();
+    }
+}
+#endif
+
 void kernel_loop()
 {
     ProcessManager *pm = Platform::processManager();
 
+#if 0
+
+    Task *a_task = Platform::task()->create((ptr_val_t)&proc1, 0, 0);
+    a_task->setName("A");
+    pm->addTask(a_task);
+    a_task->setPriority(1);
+
+    Task *b_task = Platform::task()->create((ptr_val_t)&proc2, 0, 0);
+    b_task->setName("B");
+    pm->addTask(b_task);
+    b_task->setPriority(1);
+#endif
+#if 1
     Task *a_task = Platform::task()->create((ptr_val_t)&app_proc, 0, 0);
     a_task->setName("Application main");
     pm->addTask(a_task);
     a_task->setPriority(1);
+#endif
 
     while (1) {
 #ifdef FEATURE_GRAPHICS

@@ -3,6 +3,7 @@
 #include "x86.h"
 #include "bits.h"
 #include "multiboot.h"
+#include "string.hh"
 
 #define PDIR(x) ((PageDir*)x)
 #define BITS(x) ((Bits*)x)
@@ -10,9 +11,9 @@
 #define KERNEL_PRE_POS     0x20000000
 #define KERNEL_INIT_SIZE   0x000FFFFF
 #define HEAP_START         0x30000000
-#define HEAP_END           0x3FFFFFFF
-#define USER_HEAP_START    0x40000000
-#define USER_HEAP_END      0x4FFFFFFF
+#define HEAP_END           0xCFFFFFFF
+#define USER_HEAP_START    0xD0000000
+#define USER_HEAP_END      0xDFFFFFFF
 
 static ptr8_t  __free_page_address = (ptr8_t)KERNEL_PRE_POS;
 static ptr8_t  __heap_address      = (ptr8_t)HEAP_START;
@@ -36,8 +37,8 @@ extern "C" void pagingDisable();
 extern "C" void pagingDirectoryChange(ptr_t a);
 
 //Mutex for locking mapping and prevent theading/SMP problems
-ptr32_val_t __page_mapping_mutex          = 0;
-ptr32_val_t __page_mapping_static_mutex   = 0;
+static Mutex __page_mapping_mutex;
+static Mutex __page_mapping_static_mutex;
 
 extern "C" void copyPhysicalPage(ptr_val_t a, ptr_val_t b);
 
@@ -67,6 +68,7 @@ void Page::alloc(PageType type)
 
 PageTable::PageTable()
 {
+    Mem::set(pages, 0, sizeof(pages));
 }
 
 Page *PageTable::get(uint32_t i)
@@ -97,8 +99,6 @@ PagingPrivate::PagingPrivate()
     pageCnt(0),
     is_ok(false)
 {
-    m.assign(&__page_mapping_mutex);
-    m_static.assign(&__page_mapping_static_mutex);
     __mem_size = 0;
 
     // Map free space after kernel
@@ -157,6 +157,7 @@ bool PagingPrivate::init(void *platformData)
 
     data = (void*)new Bits(pageCnt);
     directory = (void*)new PageDir();
+    uart_print_uint64_hex((uint64_t)directory);
     while (directory == nullptr) ;
 
 #if 1
@@ -171,39 +172,39 @@ bool PagingPrivate::init(void *platformData)
 
     // Identify mapping, skip first page to detect nullptr
     uint32_t i = 1;
-    while (i<(ptr_val_t)0x10000) {
+    while (i < (ptr_val_t)0x10000) {
         identityMapFrame(PDIR(directory)->getPage(i, PageDir::PageDoReserve), i, MapPageKernel, MapPageRW);
         i += PAGE_SIZE;
     }
     i = 0xA0000;
-    while (i<(ptr_val_t)0xBFFFF) { //VGA display memory
+    while (i < (ptr_val_t)0xBFFFF) { //VGA display memory
         identityMapFrame(PDIR(directory)->getPage(i, PageDir::PageDoReserve), i, MapPageKernel, MapPageRW);
         i += PAGE_SIZE;
     }
     i = 0xC0000;
-    while (i<(ptr_val_t)0xC7FFF) { //Video BIOS
+    while (i < (ptr_val_t)0xC7FFF) { //Video BIOS
         identityMapFrame(PDIR(directory)->getPage(i, PageDir::PageDoReserve), i, MapPageKernel, MapPageRW);
         i += PAGE_SIZE;
     }
     i = 0xC8000;
-    while (i<(ptr_val_t)0xEFFFF) { //Mapped HW
+    while (i < (ptr_val_t)0xEFFFF) { //Mapped HW
         identityMapFrame(PDIR(directory)->getPage(i, PageDir::PageDoReserve), i, MapPageKernel, MapPageRW);
         i += PAGE_SIZE;
     }
     i = 0xF0000;
-    while (i<(ptr_val_t)0xFFFFF) { //BIOS
+    while (i < (ptr_val_t)0xFFFFF) { //BIOS
         identityMapFrame(PDIR(directory)->getPage(i, PageDir::PageDoReserve), i, MapPageKernel, MapPageRW);
         i += PAGE_SIZE;
     }
 
     i = 0x100000;
-    while (i<(ptr_val_t)__free_page_address) {
+    while (i < (ptr_val_t)__free_page_address) {
         identityMapFrame(PDIR(directory)->getPage(i, PageDir::PageDoReserve), i, MapPageKernel, MapPageRW);
         i += PAGE_SIZE;
     }
 #if 1
     i = (uint32_t)&__stack_bottom;
-    while (i<(ptr_val_t)__stack_top) {
+    while (i < (ptr_val_t)__stack_top) {
         identityMapFrame(PDIR(directory)->getPage(i, PageDir::PageDoReserve), i, MapPageKernel, MapPageRW);
         i += PAGE_SIZE;
     }
@@ -212,7 +213,7 @@ bool PagingPrivate::init(void *platformData)
 #if 1
     i = (ptr_val_t)__free_page_address;
     ptr_val_t start = i;
-    while (i<(ptr_val_t)start+KERNEL_INIT_SIZE) {
+    while (i < (ptr_val_t)start + KERNEL_INIT_SIZE) {
         identityMapFrame(PDIR(directory)->getPage(i, PageDir::PageDoReserve), i, MapPageKernel, MapPageRW);
         i += PAGE_SIZE;
     }
@@ -237,30 +238,28 @@ void PagingPrivate::lock()
 {
     // Doing it hard way...
     //cli();
-    m.lock();
+    __page_mapping_mutex.lock();
 }
 
 void PagingPrivate::unlock()
 {
-    m.unlock();
+    __page_mapping_mutex.unlock();
     //sti();
 }
 
 void PagingPrivate::lockStatic()
 {
-    m_static.lock();
+    __page_mapping_static_mutex.lock();
 }
 
 void PagingPrivate::unlockStatic()
 {
-    m_static.unlock();
+    __page_mapping_static_mutex.unlock();
 }
 
 bool PagingPrivate::identityMapFrame(Page *p, ptr_val_t addr, MapType type, MapPermissions perms)
 {
     if (p == nullptr) return false;
-    if (p->getPresent() && p->getAddress() == addr)
-        return true;
     bool res = true;
 
     uint32_t i = addr / PAGE_SIZE;
@@ -317,6 +316,7 @@ bool PagingPrivate::mapFrame(Page *p, MapType type, MapPermissions perms)
                     i/=10;
             }
 #endif
+            uart_print("ERROR: No free memory!\n");
             while(1) ;
             return false;
         }
@@ -325,13 +325,13 @@ bool PagingPrivate::mapFrame(Page *p, MapType type, MapPermissions perms)
 
         p->setPresent(true);
 
-        if (perms==MapPageRW) p->setRw(true);
+        if (perms == MapPageRW) p->setRw(true);
         else p->setRw(false);
 
-        if (type==MapPageKernel) p->setUserspace(false);
+        if (type == MapPageKernel) p->setUserspace(false);
         else p->setUserspace(true);
 
-        p->setAddress(i*PAGE_SIZE);
+        p->setAddress(i * PAGE_SIZE);
         return true;
     }
     return false;
@@ -348,7 +348,7 @@ void *PagingPrivate::getPage()
     }
 
     BITS(data)->set(i);
-    return (void*)(i*PAGE_SIZE);
+    return (void*)(i * PAGE_SIZE);
 }
 
 /* Free physical page corresponding to given virtual address */
@@ -364,14 +364,14 @@ void PagingPrivate::freePage(void *ptr)
 bool PagingPrivate::mapPhys(void *phys, ptr_t virt, unsigned int flags)
 {
     ptr_val_t i = 0;
-    if (flags&PAGING_MAP_USER) {
-        while ((ptr_val_t)__user_heap_address%PAGE_SIZE!=0) __user_heap_address++;
+    if (flags & PAGING_MAP_USER) {
+        while ((ptr_val_t)__user_heap_address % PAGE_SIZE != 0) __user_heap_address++;
         i = (ptr_val_t)__user_heap_address;
-        __user_heap_address+=PAGE_SIZE;
+        __user_heap_address += PAGE_SIZE;
     } else {
-        while ((ptr_val_t)__heap_address%PAGE_SIZE!=0) __heap_address++;
+        while ((ptr_val_t)__heap_address % PAGE_SIZE != 0) __heap_address++;
         i = (ptr_val_t)__heap_address;
-        __heap_address+=PAGE_SIZE;
+        __heap_address += PAGE_SIZE;
     }
 
     Page *p = PDIR(directory)->getPage(i, PageDir::PageDoReserve);
@@ -383,7 +383,7 @@ bool PagingPrivate::mapPhys(void *phys, ptr_t virt, unsigned int flags)
     }
 
     bool res = true;
-    if (flags&PAGING_MAP_USER) {
+    if (flags & PAGING_MAP_USER) {
         res = identityMapFrame(p, (ptr_val_t)phys, MapPageUser, MapPageRW);
     } else {
         res = identityMapFrame(p, (ptr_val_t)phys, MapPageKernel, MapPageRW);
@@ -402,7 +402,7 @@ bool PagingPrivate::map(ptr_t virt, unsigned int flags, unsigned int cnt)
     ptr_val_t vptr = 0;
     unsigned int left = cnt;
     if (flags & PAGING_MAP_USER) {
-        while (((ptr_val_t)__user_heap_address%PAGE_SIZE) != 0) {
+        while (((ptr_val_t)__user_heap_address % PAGE_SIZE) != 0) {
             ++__user_heap_address;
         }
         i = (ptr_val_t)__user_heap_address;
@@ -410,7 +410,7 @@ bool PagingPrivate::map(ptr_t virt, unsigned int flags, unsigned int cnt)
             __user_heap_address += PAGE_SIZE;
         }
     } else {
-        while (((ptr_val_t)__heap_address%PAGE_SIZE) != 0) {
+        while (((ptr_val_t)__heap_address % PAGE_SIZE) != 0) {
             ++__heap_address;
         }
         i = (ptr_val_t)__heap_address;
@@ -453,22 +453,24 @@ void *PagingPrivate::unmap(void *ptr)
     i /= PAGE_SIZE;
 
     Page *p = PDIR(directory)->getPage(i, PageDir::PageDontReserve);
-    if (p==nullptr) return nullptr;
+    if (p == nullptr) return nullptr;
 
-    if (p->isAvail()) {
-        p->setPresent(false);
-        p->setRw(false);
-        p->setUserspace(false);
-        p->setAddress(0);
+    ptr_val_t unmap_index = p->getAddress() / PAGE_SIZE;
+    p->setPresent(false);
+    p->setRw(false);
+    p->setUserspace(false);
+    p->setAddress(0);
 
-        BITS(data)->clear(i);
+    BITS(data)->clear(unmap_index);
+    if (unmap_index != i) {
+        uart_print("ERROR: unmap index fail\n");
     }
     return nullptr;
 }
 
 ptr8_t PagingPrivate::freePageAddress()
 {
-    ptr_val_t i = (ptr_val_t)__free_page_address/PAGE_SIZE;
+    ptr_val_t i = (ptr_val_t)__free_page_address / PAGE_SIZE;
     if (!BITS(data)->isSet(i)) {
 #if 0
         identityMapFrame(PDIR(directory)->getPage(i, PageDir::PageDoReserve), i, MapPageKernel, MapPageRW);
@@ -500,7 +502,7 @@ void PagingPrivate::pageAlign(ptr_val_t align)
 {
     /* Align to proper boundaries */
 #if 1
-    while (((ptr32_val_t)__free_page_address & (align-1)) != 0) {
+    while (((ptr32_val_t)__free_page_address & (align - 1)) != 0) {
         BITS(data)->set((ptr_val_t)__free_page_address / PAGE_SIZE);
         __free_page_address++;
     }

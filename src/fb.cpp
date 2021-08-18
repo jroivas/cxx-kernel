@@ -5,7 +5,7 @@
 #include "arch/platform.h"
 #include "memcopy.h"
 
-static volatile ptr_val_t __fb_mutex = 0;
+static Mutex __fb_mutex;
 
 FB::FB()
     :
@@ -16,7 +16,7 @@ FB::FB()
     m_direct(false),
     m_configured(false)
 {
-    m.assign(&__fb_mutex);
+    m = &__fb_mutex;
 }
 
 FB::~FB()
@@ -26,20 +26,18 @@ FB::~FB()
 
 void FB::setSingleBuffer()
 {
-    m.lock();
+    MutexLocker lock(&__fb_mutex);
 
     m_double_buffer = false;
     if (m_buffer != nullptr) {
         MM::instance()->free(m_buffer);
     }
     m_buffer = nullptr;
-
-    m.unlock();
 }
 
 void FB::setDirect()
 {
-    m.lock();
+    MutexLocker lock(&__fb_mutex);
 
     m_direct = true;
     if (m_backbuffer != nullptr) {
@@ -50,14 +48,12 @@ void FB::setDirect()
     }
     m_backbuffer = m_current->base;
     m_buffer = m_current->base;
-
-    m.unlock();
 }
 
 void FB::allocBuffers()
 {
     if (m_direct) return;
-    m.lock();
+    MutexLocker lock(&__fb_mutex);
 
     m_size = m_current->bytes_per_line*(m_current->height);
     m_backbuffer = (unsigned char*)MM::instance()->alloc(m_size, MM::AllocClear);
@@ -101,12 +97,11 @@ void FB::allocBuffers()
     }
 #endif
     //Platform::video()->printf("Allocbuffers: %x %x %x sizes: %d\n",m_current->base,m_buffer,m_backbuffer,m_current->bytes_per_line*(m_current->height));
-    m.unlock();
 }
 
 void FB::freeBuffers()
 {
-    m.lock();
+    MutexLocker lock(&__fb_mutex);
     if (m_buffer!=nullptr) {
         MM::instance()->free(m_buffer);
         m_buffer = nullptr;
@@ -115,7 +110,6 @@ void FB::freeBuffers()
         MM::instance()->free(m_backbuffer);
         m_backbuffer = nullptr;
     }
-    m.unlock();
 }
 
 bool FB::configure(ModeConfig *mode)
@@ -146,12 +140,11 @@ void FB::swap()
         return;
     }
 
-    m.lock();
+    MutexLocker lock(&__fb_mutex);
     if (m_buffer!=nullptr && !m_direct) {
         memcpy_opt(m_buffer, m_backbuffer, m_size);
         //Mem::copy(m_buffer, m_backbuffer, m_size);
     }
-    m.unlock();
 }
 
 #if 0
@@ -228,10 +221,9 @@ void FB::putPixel(int x, int y, unsigned int color)
 
 void FB::clear()
 {
-    m.lock();
+    MutexLocker lock(&__fb_mutex);
     if (m_backbuffer != nullptr) Mem::set(m_backbuffer, 0, m_size);
     if (m_buffer != nullptr) Mem::set(m_buffer, 0, m_size);
-    m.unlock();
     //swap();
 #if 0
     unsigned char *dest = backbuffer+(current->height*current->bytes_per_line);

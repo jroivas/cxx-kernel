@@ -5,7 +5,7 @@
 #include <errno.h>
 
 int Filesystem::m_filehandle = 2;
-ptr_val_t Filesystem::m_mutex = 0;
+static Mutex __fs_mutex;
 List Filesystem::m_files;
 
 class FileData
@@ -56,7 +56,7 @@ int Filesystem::mapfile(
     Filesystem *owner,
     void *custom)
 {
-    LockMutex mtx(&m_mutex);
+    MutexLocker mtx(&__fs_mutex);
 
     ++m_filehandle;
     FileData *tmp = new FileData(
@@ -73,7 +73,7 @@ int Filesystem::mapfile(
 
 int Filesystem::getfile(const String &fs, const String &name) const
 {
-    LockMutex mtx(&m_mutex);
+    MutexLocker mtx(&__fs_mutex);
 
     for (uint32_t i = 0; i < m_files.size(); ++i) {
         FileData *tmp = reinterpret_cast<FileData*>(m_files.at(i));
@@ -87,7 +87,7 @@ int Filesystem::getfile(const String &fs, const String &name) const
 
 const String Filesystem::getFS(int fh) const
 {
-    LockMutex mtx(&m_mutex);
+    MutexLocker mtx(&__fs_mutex);
 
     for (uint32_t i = 0; i < m_files.size(); ++i) {
         FileData *tmp = reinterpret_cast<FileData*>(m_files.at(i));
@@ -101,7 +101,7 @@ const String Filesystem::getFS(int fh) const
 
 void *Filesystem::getCustom(int fh)
 {
-    LockMutex mtx(&m_mutex);
+    MutexLocker mtx(&__fs_mutex);
 
     for (uint32_t i = 0; i < m_files.size(); ++i) {
         FileData *tmp = reinterpret_cast<FileData*>(m_files.at(i));
@@ -115,7 +115,7 @@ void *Filesystem::getCustom(int fh)
 
 Filesystem *Filesystem::getFilesystem(int fh)
 {
-    LockMutex mtx(&m_mutex);
+    MutexLocker mtx(&__fs_mutex);
 
     for (uint32_t i = 0; i < m_files.size(); ++i) {
         FileData *tmp = reinterpret_cast<FileData*>(m_files.at(i));
@@ -129,7 +129,7 @@ Filesystem *Filesystem::getFilesystem(int fh)
 
 const String Filesystem::getName(int fh) const
 {
-    LockMutex mtx(&m_mutex);
+    MutexLocker mtx(&__fs_mutex);
 
     for (uint32_t i = 0; i < m_files.size(); ++i) {
         FileData *tmp = reinterpret_cast<FileData*>(m_files.at(i));
@@ -143,7 +143,7 @@ const String Filesystem::getName(int fh) const
 
 bool Filesystem::closefile(int fh)
 {
-    LockMutex mtx(&m_mutex);
+    MutexLocker mtx(&__fs_mutex);
 
     for (uint32_t i = 0; i < m_files.size(); ++i) {
         FileData *tmp = reinterpret_cast<FileData*>(m_files.at(i));
@@ -158,7 +158,7 @@ bool Filesystem::closefile(int fh)
 
 int Filesystem::getFcntl(int fh)
 {
-    LockMutex mtx(&m_mutex);
+    MutexLocker mtx(&__fs_mutex);
 
     for (uint32_t i = 0; i < m_files.size(); ++i) {
         FileData *tmp = reinterpret_cast<FileData*>(m_files.at(i));
@@ -173,7 +173,7 @@ int Filesystem::getFcntl(int fh)
 
 int Filesystem::setFcntl(int fh, int mode)
 {
-    LockMutex mtx(&m_mutex);
+    MutexLocker mtx(&__fs_mutex);
 
     for (uint32_t i = 0; i < m_files.size(); ++i) {
         FileData *tmp = reinterpret_cast<FileData*>(m_files.at(i));

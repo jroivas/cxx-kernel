@@ -170,7 +170,7 @@ bool BochsFB::validateMode(uint32_t width, uint32_t height, uint8_t bpp)
 
 FB::ModeConfig *BochsFB::query(FB::ModeConfig *prefer)
 {
-    m.lock();
+    MutexLocker lock(m);
 
     FB::ModeConfig *res = (FB::ModeConfig *)MM::instance()->alloc(sizeof(FB::ModeConfig));
 
@@ -217,8 +217,6 @@ FB::ModeConfig *BochsFB::query(FB::ModeConfig *prefer)
 
     res->base = (unsigned char*)newbase;
 
-    m.unlock();
-
     return res;
 }
 
@@ -254,13 +252,14 @@ void BochsFB::blit()
     if (m_direct) return;
     if (!m_current) return;
 
-    m.lock();
+    MutexLocker lock(m);
     memcpy_opt(m_current->base, m_buffer, m_size);
-    m.unlock();
 }
 
 void BochsFB::clear()
 {
     if (!m_current) return;
+
+    MutexLocker lock(m);
     Mem::set(m_current->base, 0, m_size);
 }

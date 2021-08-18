@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "mutex.hh"
+#include "waitlist.hh"
 
 #define MAX_PRIORITY 20
 #define MAX_NICE     20
@@ -11,6 +12,12 @@
 class Task
 {
 public:
+    enum Status {
+        STATUS_NONE     = 0,
+        STATUS_RUNNING  = (1<<0),
+        STATUS_WAITING  = (1<<1),
+        STATUS_BLOCKED  = (1<<2),
+    };
     enum CloneFlags {
         CLONE_NORMAL        = 0,
         CLONE_SHARE_ADDRESS = (1<<0),
@@ -105,10 +112,19 @@ public:
 
     inline volatile ptr_val_t *getLock()
     {
-        return &m_lock;
+        return m_m.getLock();
     }
     void lock();
     void unlock();
+
+    Status status() const
+    {
+        return m_status;
+    }
+    void setStatus(Status s) {
+        m_status = s;
+    }
+    WaitItem wait;
 
 protected:
     ptr_val_t m_stack;
@@ -120,10 +136,10 @@ protected:
     uint32_t m_size;
     uint32_t m_slice;
     uint32_t m_pid;
-    volatile ptr_val_t m_lock;
     char m_name[TASK_NAME_LEN];
     Mutex m_m;
     bool m_userSpace;
+    Status m_status;
 };
 
 inline void Task::lock()

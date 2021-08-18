@@ -6,6 +6,8 @@ class Mutex;
 #include "types.h"
 #include "atomic.hh"
 #include "uart.hh"
+#include "waitlist.hh"
+#include "scheduling.hh"
 
 #if __cplusplus >= 201103L
 #define STATE_DELETE = delete
@@ -13,56 +15,114 @@ class Mutex;
 #define STATE_DELETE {}
 #endif
 
-class Mutex
+
+class Spinlock
 {
 public:
-    Mutex();
-    Mutex(ptr_val_t volatile *ptr);
-    ~Mutex();
+    Spinlock() : locked(0) { }
+    ~Spinlock() { }
 
-    void assign(ptr_val_t volatile *ptr);
-    void lock();
-    void unlock();
-    bool isLocked();
-    bool wait();
-    void abort();
-
+    void lock() {
+        while (!__sync_bool_compare_and_swap(&locked, 0, 1))
+            yield();
+        __sync_synchronize();
+    }
+    bool trylock() {
+        if  (!__sync_bool_compare_and_swap(&locked, 0, 1))
+            return false;
+        __sync_synchronize();
+        return true;
+    }
+    void unlock() {
+        __sync_synchronize();
+        locked = 0;
+    }
+    bool isLocked() const {
+        return locked;
+    }
 private:
-    ptr_val_t volatile *m_ptr;
+    volatile ptr_val_t locked;
 };
 
-class LockMutex : public Mutex
+class BaseMutex
 {
 public:
-    LockMutex() STATE_DELETE;
-
-    LockMutex(ptr_val_t volatile *ptr);
-    ~LockMutex();
-};
-
-inline void Mutex::lock() {
-    if (m_ptr == nullptr) return;
-
-    //Platform_CAS(m_ptr, 0, 1);
-    while (!__sync_bool_compare_and_swap(m_ptr, 0, 1));
-}
-
-inline void Mutex::unlock() {
-    if (m_ptr == nullptr) return;
-
-#if 1
-    // If already unlocked return
-    if (*m_ptr == 0) {
-        uart_print("ERROR: double unlock mutex\n");
-        return;
+    BaseMutex() : value(0) {}
+    void lock()
+    {
+        locker.lock();
+        if (!value) {
+            value = 1;
+            locker.unlock();
+        } else {
+            queue.enqueue();
+            locker.unlock();
+            reschedule();
+        }
+    }
+    void unlock()
+    {
+        locker.lock();
+        if (queue.empty()) {
+            value = 0;
+        } else {
+            queue.dequeue();
+        }
+        locker.unlock();
+    }
+    volatile ptr_val_t *getLock()
+    {
+        return &value;
     }
 
-    *m_ptr = 0;
-    memory_barrier();
-#else
-    __sync_bool_compare_and_swap(m_ptr, 1, 0);
-#endif
-}
+protected:
+    volatile ptr_val_t value;
+    mutable Spinlock locker;
+    Waitlist queue;
+};
+
+class Mutex : public BaseMutex
+{
+public:
+    bool isLocked() const {
+        return value;
+    }
+};
+
+class GuardMutex : public Mutex
+{
+public:
+    GuardMutex(volatile ptr_val_t *ptr) : guard(ptr)
+    {
+        if (guard == nullptr)
+            guard = &value;
+    }
+    void lock() {
+        locker.lock();
+        if (!*guard) {
+            *guard = 1;
+            locker.unlock();
+        } else {
+            queue.enqueue();
+            locker.unlock();
+            reschedule();
+        }
+    }
+    void unlock() {
+        locker.lock();
+        if (queue.empty()) {
+            *guard = 0;
+        } else {
+            queue.dequeue();
+        }
+        locker.unlock();
+    }
+    void abort() {
+        // Not implemented
+    }
+private:
+    volatile ptr_val_t *guard;
+};
 
 class MutexLocker
 {

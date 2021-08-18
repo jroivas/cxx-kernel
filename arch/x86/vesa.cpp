@@ -97,19 +97,17 @@ bool Vesa::getVESA(void *ptr)
 
 FB::ModeConfig *Vesa::query(FB::ModeConfig *prefer)
 {
-    m.lock();
+    MutexLocker lock(m);
 
     BIOS *bios = BIOS::get();
     vbe_info_t *info = (vbe_info_t *)bios->alloc(sizeof(vbe_info_t));
     if (!getVESA(info)) {
-        m.unlock();
         return nullptr;
     }
 
     uint16_t *loc = (uint16_t*)VBE_Ptr((uint32_t)info->video_mode_ptr);
     //Platform::video()->printf("=== VBE2 %d %x %x\n",(loc<(uint16_t*)(info+sizeof(info))),loc,info+sizeof(info));
     if (loc == nullptr) {
-        m.unlock();
         return nullptr;
     }
 
@@ -132,14 +130,12 @@ FB::ModeConfig *Vesa::query(FB::ModeConfig *prefer)
 
         if (!bios->runInt(0x10, &r)) {
             Platform::video()->printf("=== BIOS run failed\n");
-            m.unlock();
             return nullptr;
         }
         if ((r.eax & 0xFF) != 0x4f) {
             Platform::video()->printf("=== VBE2 mode info not supported: 0x%x\n", r.eax & 0xFF);
             Platform::video()->printf("=== mode: %u\n", loc[i]);
 #if 1
-            m.unlock();
             return nullptr;
 #else
             continue;
@@ -147,7 +143,6 @@ FB::ModeConfig *Vesa::query(FB::ModeConfig *prefer)
         }
         if ((r.eax & 0xFF00) != 0) {
             Platform::video()->printf("=== VBE2 mode info failed %d %d\n", i, loc[i]);
-            m.unlock();
             return nullptr;
         }
         if (modeinfo->memory_model != 4 && modeinfo->memory_model != 6) {
@@ -218,7 +213,6 @@ FB::ModeConfig *Vesa::query(FB::ModeConfig *prefer)
     MM::instance()->free(conf);
     if (bestdiff == -1) {
         MM::instance()->free(res);
-        m.unlock();
         return nullptr;
     }
 
@@ -254,7 +248,6 @@ FB::ModeConfig *Vesa::query(FB::ModeConfig *prefer)
             for (int j=0; j<0x1ff; j++) ;
     }
 #endif
-    m.unlock();
 
     return res;
 }
@@ -301,8 +294,7 @@ void Vesa::blit()
     if (!m_double_buffer) Mem::copy(m_current->base, m_backbuffer, m_size);
     else memcpy_opt(m_current->base, m_buffer, m_size);
 #endif
-    m.lock();
+    MutexLocker lock(m);
     memcpy_opt(m_current->base, m_buffer, m_size);
-    m.unlock();
     //Mem::copy(m_current->base,m_buffer,m_size);
 }

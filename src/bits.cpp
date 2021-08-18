@@ -1,5 +1,7 @@
 #include "bits.h"
-#define BIT_CONVERT (8*4)
+#include "uart.hh"
+#include "platform.h"
+#define BIT_CONVERT (8 * 4)
 
 Bits::Bits(uint32_t cnt)
 {

@@ -4,7 +4,7 @@
 #include <errno.h>
 #include <stdio.h>
 
-static ptr_val_t __tsd_key_mutex = 0;
+static Mutex __tsd_key_mutex;
 
 #define PTHREAD_STUBBED() \
     fprintf(stderr, "%s: Not implemented!\n", __PRETTY_FUNCTION__);
@@ -38,7 +38,7 @@ int pthread_join(pthread_t thread, void** retval)
 
 int pthread_key_create(pthread_key_t* key, void (*dtor)(void*))
 {
-    LockMutex mtx(&__tsd_key_mutex);
+    MutexLocker mtx(&__tsd_key_mutex);
 
     bool ok = false;
     unsigned int i = 0;

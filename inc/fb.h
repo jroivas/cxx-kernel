@@ -69,6 +69,6 @@ protected:
     unsigned int m_size;
     bool m_direct;
     bool m_configured;
-    Mutex m;
+    Mutex *m;
 };
 #endif

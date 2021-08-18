@@ -95,7 +95,7 @@ static void bios_x86emu_mem_wrl(struct x86emu *emu, uint32_t addr, uint32_t val)
 
 
 static BIOS *__static_bios = nullptr;
-static ptr_val_t __bios_mutex = 0;
+static Mutex __bios_mutex;
 
 BIOS *BIOS::get()
 {
@@ -107,7 +107,6 @@ BIOS *BIOS::get()
 
 BIOS::BIOS()
 {
-    m_bios.assign(&__bios_mutex);
     free_base = BIOS_MEM_BASE;
     (void)bios_pages;
 
@@ -156,7 +155,7 @@ void BIOS::setupX86EMU(void *ptr)
 void *BIOS::alloc(uint32_t size)
 {
     if (free_base < BIOS_MEM_BASE + BIOS_MEM_SIZE) {
-        m_bios.lock();
+        __bios_mutex.lock();
 #ifdef ALIGN_BIOS
         while ((free_base % PAGE_SIZE) != 0) {
             free_base++;
@@ -165,7 +164,7 @@ void *BIOS::alloc(uint32_t size)
         void *tmp = (void*)free_base;
         free_base += size;
 
-        m_bios.unlock();
+        __bios_mutex.unlock();
 
         return tmp;
     }
@@ -179,7 +178,7 @@ bool BIOS::runInt(uint32_t interrupt, Regs *regs)
         return false;
     }
 
-    m_bios.lock();
+    __bios_mutex.lock();
 
     x86emu mach;
     Mem::set(&mach, 0, sizeof(struct x86emu));
@@ -219,7 +218,7 @@ bool BIOS::runInt(uint32_t interrupt, Regs *regs)
         regs->ebp = mach.x86.R_EBP;
     }
 
-    m_bios.unlock();
+    __bios_mutex.unlock();
 
     return true;
 }

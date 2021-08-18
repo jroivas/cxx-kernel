@@ -31,10 +31,10 @@ restoreProcess:
     mov ecx, [esp+4] ;lock
     mov eax, [esp+8] ;save stack
 
-    cmp byte [eax+24], 1
     mov edx, cr0
+    cmp byte [eax+24], 1
     je .restoreProcess_usesfpu
-    or eax, 0x8
+    or edx, 0x8
     jmp .restoreProcess_fpu_over
 .restoreProcess_usesfpu:
     and edx, 0xfffffff7
@@ -65,8 +65,8 @@ restoreProcess:
     xor eax,eax
     inc eax
 
-    sti
     push edx
+    sti
     ret
 
 [global restoreUserProcess]

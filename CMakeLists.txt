@@ -174,6 +174,7 @@ add_custom_command(OUTPUT kernel.bin
         ${extra_loader}
         $<TARGET_FILE:core>
         $<TARGET_FILE:mm>
+        $<TARGET_FILE:core>
         $<TARGET_FILE:tables>
         $<TARGET_FILE:kb>
         ${graphics_files}

@@ -69,8 +69,6 @@ public:
     void enablePagingSmp();
 
 private:
-    Mutex m;
-    Mutex m_static;
     void *data;
     void *directory;
     uint32_t pageCnt;
@@ -104,7 +102,6 @@ public:
     void enablePagingSmp();
 private:
     PagingPrivate *_d;
-    Mutex m;
 };
 
 
