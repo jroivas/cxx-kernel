@@ -8,7 +8,7 @@ public:
 #ifdef ARCH_x86
     Regs() {
         gs=0;fs=0;es=0;ds=0;
-        edi=0;esi=0;ebp=0;esp=0;ebx=0;edx=0;ecx=0;edx=0;
+        edi=0;esi=0;ebp=0;esp=0;ebx=0;edx=0;ecx=0;eax=0;
         int_no=0;err_code=0;
         eip=0;cs=0;eflags=0;useresp=0;ss=0;
     }

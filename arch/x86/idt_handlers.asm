@@ -101,14 +101,14 @@ __irq_common:
     pop edi
     pop esi
     pop ebp
-    pop ebx
+    pop ebx ; ignore esp
     pop ebx
     pop edx
     pop ecx
     ;pop eax
     add esp, 4 ;discard eax
 
-    add esp, 8
+    add esp, 28 ; discard extra
 
     iret
 
@@ -162,8 +162,13 @@ __irq%1:
 
 __irq%1:
     cli
-    push dword 0
-    push dword (%1 + 32)
+    push dword 0 ; ss
+    push dword 0 ; useresp
+    push dword 0 ; eflags
+    push dword 0 ; cs
+    push dword 0 ; eip
+    push dword 0 ; err code
+    push dword (%1 + 32) ; int no
     jmp __irq_common
 %endmacro
 

@@ -119,13 +119,15 @@ changeProcess:
     ;mov fs, bx
     ;mov gs, bx
 
-    mov ebp, esp
-    mov ecx, [ebp+4]   ;lock
-    mov ebx, [ebp+12]  ;stack
+    ;mov ebp, esp
+    mov ecx, [esp+4]   ;lock
+    mov ebx, [esp+12]  ;stack
 
-    mov esi, [ebp+20]  ;killer
-    mov edx, [ebp+16]  ;parm
-    mov eax, [ebp+8]   ;eip
+    mov esi, [esp+10]  ;killer
+    ;mov esi, [esp+20]  ;killer
+    ;mov edx, [esp+16]  ;parm
+    ;mov eax, [esp+8]   ;eip
+    mov edx, esp
 
     ; Change stack
     cmp ebx, 0
@@ -152,12 +154,13 @@ changeProcess:
     mov al, 0x20
     out 0x20, al
 
-    mov eax, [ebp+8]   ;eip
+    mov eax, [edx+8]   ;eip
 
-    push edx
+    ;push edx
     push esi ; Killer, when this thread exit
 
-    xor ebp, ebp
+    xor edx, edx
+    ;xor ebp, ebp
     sti
 
     jmp eax

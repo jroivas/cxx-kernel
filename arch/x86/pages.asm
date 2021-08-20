@@ -26,12 +26,13 @@ pagingDirectoryChange:
     mov ebp, esp
     mov eax, [ebp+8]
     mov cr3, eax
-    pop ebp
-
+    leave
     ret
 
 [GLOBAL copyPhysicalPage]
 copyPhysicalPage:
+    push ebp
+    mov ebp, esp
     push ebx
     pushf
 
@@ -56,4 +57,5 @@ copyPhysicalPage:
 
     popf
     pop ebx
+    leave
     ret

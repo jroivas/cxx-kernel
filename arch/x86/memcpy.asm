@@ -1,5 +1,7 @@
 [global cpuid_has_feature]
 cpuid_has_feature:
+    push ebp
+    mov ebp, esp
     push ebx
     push ecx
     push edx
@@ -13,6 +15,7 @@ cpuid_has_feature:
     pop edx
     pop ecx
     pop ebx
+    leave
     ret
 
 [global mmx_has]
@@ -42,6 +45,7 @@ sse2_has:
 [global mmx_memcpy]
 mmx_memcpy:
     push ebp
+    mov ebp, esp
     mov edi, [esp+4]
     mov esi, [esp+8]
     mov ecx, [esp+12]
@@ -87,7 +91,8 @@ __mmx_memcpy_rest:
     
 __mmx_memcpy_end:
     emms
-    pop ebp
+    ;pop ebp
+    leave
     ret
 
 [extern memcpy]
@@ -119,6 +124,7 @@ __memcpy_mmx_has:
     push dword [ebp+12]
     push dword [ebp+8]
     call mmx_memcpy
+    add esp, 0x10
     ;pop ebp
     ;add esp, 12
     ;add esp, 0x10

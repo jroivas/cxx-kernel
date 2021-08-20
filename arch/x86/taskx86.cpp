@@ -9,7 +9,7 @@
 
 extern "C" int saveProcess(uint32_t *stack);
 extern "C" int restoreProcess(volatile uint32_t *lock, uint32_t *stack);
-extern "C" void changeProcess(volatile uint32_t *lock, uint32_t eip, uint32_t stack, uint32_t parm, uint32_t *killer);
+extern "C" void changeProcess(volatile uint32_t *lock, uint32_t eip, uint32_t stack, uint32_t *killer);
 extern "C" uint32_t getEIP();
 extern "C" uint32_t getEIP2();
 extern "C" uint32_t getESP();
@@ -70,7 +70,7 @@ void TaskX86::init(ptr_val_t addr, ptr_val_t stack, uint32_t flags)
 void TaskX86::switchTo(volatile ptr_val_t *lock, ptr_t killer)
 {
     gdt_set_gate(5, (unsigned long) &m_tss, sizeof(task_tss_t) - 1, 0x89, 0x40);
-    changeProcess((volatile uint32_t*)lock, m_tss.eip, m_tss.esp, 0, (uint32_t*)killer);
+    changeProcess((volatile uint32_t*)lock, m_tss.eip, m_tss.esp, (uint32_t*)killer);
 }
 
 int TaskX86::save()
