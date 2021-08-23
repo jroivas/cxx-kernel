@@ -74,6 +74,9 @@ public:
     {
         return &value;
     }
+    bool isLocked() const {
+        return value;
+    }
 
 protected:
     volatile ptr_val_t value;
@@ -84,9 +87,7 @@ protected:
 class Mutex : public BaseMutex
 {
 public:
-    bool isLocked() const {
-        return value;
-    }
+    Mutex() : BaseMutex() {}
 };
 
 class GuardMutex : public Mutex
@@ -127,7 +128,7 @@ private:
 class MutexLocker
 {
 public:
-    MutexLocker(Mutex* m) : m_mutex(m) {
+    MutexLocker(BaseMutex* m) : m_mutex(m) {
         m_mutex->lock();
     }
     ~MutexLocker() {
@@ -136,7 +137,7 @@ public:
     }
 
 private:
-    Mutex *m_mutex;
+    BaseMutex *m_mutex;
 };
 
 #endif

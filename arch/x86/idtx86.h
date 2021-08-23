@@ -53,8 +53,14 @@ public:
     } __attribute__((packed));
 
 protected:
-    idt_routine_t getRoutine(unsigned int i);
-    Handler *getHandler(unsigned int i);
+    inline idt_routine_t getRoutine(unsigned int i) const
+    {
+        return routines[i];
+    }
+    inline Handler *getHandler(unsigned int i) const
+    {
+        return handlers[i];
+    }
 
 private:
     struct Entry {

@@ -12,7 +12,7 @@
 #include <sys/stat.h>
 
 static const uint32_t MAX_SECTOR_SIZE = 512;
-static const uint32_t MAX_BLOCK_SIZE = 512;
+//static const uint32_t MAX_BLOCK_SIZE = 512;
 
 #ifdef USE_CUSTOM_STRING
 #define returnError(X)\

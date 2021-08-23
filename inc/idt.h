@@ -19,6 +19,6 @@ public:
 
 protected:
     IDT() { }
-    virtual idt_routine_t getRoutine(unsigned int i) = 0;
+    virtual idt_routine_t getRoutine(unsigned int i) const = 0;
 };
 #endif

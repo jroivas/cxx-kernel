@@ -141,7 +141,7 @@ static enum layout_code layout_code = LAYOUT_DEFAULT;
 static const char *keybuffer[KEY_BUFFER_SIZE] = { 0 };
 static unsigned int keybuffer_write = 0;
 static unsigned int keybuffer_read = 0;
-static Mutex keybuffer_read_lock;
+static Spinlock keybuffer_read_lock;
 
 bool KBX86::hasKey()
 {
@@ -150,13 +150,16 @@ bool KBX86::hasKey()
 
 const char *KBX86::getKey()
 {
-    MutexLocker mtx(&keybuffer_read_lock);
-    if (keybuffer_write == keybuffer_read)
+    keybuffer_read_lock.lock();
+    if (keybuffer_write == keybuffer_read) {
+        keybuffer_read_lock.unlock();
         return nullptr;
+    }
 
     const char *res = keybuffer[keybuffer_read];
     keybuffer_read = (keybuffer_read + 1) & KEY_BUFFER_MASK;
 
+    keybuffer_read_lock.unlock();
     return res;
 }
 
@@ -216,9 +219,11 @@ void KBX86::run(Regs *r)
             else
                 mapped = layout[bcode];
             if (mapped) {
+                keybuffer_read_lock.lock();
                 Video::get()->printf("%s", mapped);
                 keybuffer[keybuffer_write] = mapped;
                 keybuffer_write = (keybuffer_write + 1) & KEY_BUFFER_MASK;
+                keybuffer_read_lock.unlock();
             }
         }
 

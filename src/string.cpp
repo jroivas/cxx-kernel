@@ -13,7 +13,7 @@ void *Mem::copy(void *dest, const void *src, size_t size)
     if (src == nullptr) return nullptr;
 
     char *d = (char*)dest;
-    char *s = (char*)src;
+    const char *s = (const char*)src;
     for (size_t i = 0; i < size; i++) {
         *d++ = *s++;
     }
@@ -27,13 +27,13 @@ void *Mem::move(void *dest, const void *src, size_t size)
 
     if (dest > src) {
         char *d = ((char*)dest) + size - 1;
-        char *s = ((char*)src) + size - 1;
+        const char *s = ((const char*)src) + size - 1;
         for (size_t i = 0; i < size; i++) {
             *d = *s;
             d--;
             s--;
         }
-    } else return Mem::copy(dest,src,size);
+    } else return Mem::copy(dest, src, size);
 
     return dest;
 }
@@ -80,7 +80,7 @@ int Mem::cmp(const void *s1, const void *s2, size_t size)
 
 extern "C" void *memcpy(void *dest, const void *src, unsigned int n)
 {
-    return Mem::copy(dest, src, n);
+    return Mem::move(dest, src, n);
 }
 
 extern "C" void *memset(void *s, int c, size_t n)
@@ -90,7 +90,7 @@ extern "C" void *memset(void *s, int c, size_t n)
 
 extern "C" void *memmove(void *dest, const void *src, size_t n)
 {
-    return Mem::move(dest, (void*)src, n);
+    return Mem::move(dest, src, n);
 }
 
 

@@ -5,13 +5,15 @@ cpuid_has_feature:
     push ebx
     push ecx
     push edx
+
     mov eax, 1
     xor ecx, ecx
     cpuid
     mov eax, ecx
-    mov ecx, [esp + 16]
+    mov ecx, [ebp + 8]
     shr eax, cl
     and eax, 1
+
     pop edx
     pop ecx
     pop ebx
@@ -46,9 +48,9 @@ sse2_has:
 mmx_memcpy:
     push ebp
     mov ebp, esp
-    mov edi, [esp+4]
-    mov esi, [esp+8]
-    mov ecx, [esp+12]
+    mov edi, [esp+8]
+    mov esi, [esp+12]
+    mov ecx, [esp+16]
     mov ebx, ecx
     shr ecx, 6
     push ecx
@@ -106,8 +108,8 @@ memcpy_opt:
     mov eax, [__memcpy_internal_has_mmx]
     cmp eax, 1
     je __memcpy_mmx_has
-    cmp eax, 0
-    jne __memcpy_trad
+    cmp eax, 2
+    je __memcpy_trad
 
 __memcpy_mmx_update_info:
     call mmx_has
@@ -116,18 +118,11 @@ __memcpy_mmx_update_info:
     mov dword [__memcpy_internal_has_mmx], 1
 
 __memcpy_mmx_has:
-    ;mov ebp, esp
-    ;push dword [ebp+12]
-    ;push dword [ebp+8]
-    ;push dword [ebp+4]
     push dword [ebp+16]
     push dword [ebp+12]
     push dword [ebp+8]
     call mmx_memcpy
     add esp, 0x10
-    ;pop ebp
-    ;add esp, 12
-    ;add esp, 0x10
     leave
     ret
 
@@ -135,8 +130,6 @@ __memcpy_trad_update:
     mov dword [__memcpy_internal_has_mmx], 2
 
 __memcpy_trad:
-    ;push ebp
-    ;mov ebp, esp
     push dword [ebp+16]
     push dword [ebp+12]
     push dword [ebp+8]

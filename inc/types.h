@@ -13,6 +13,8 @@
 
 #if defined(ARCH_ARM)
 typedef unsigned int operator_size_t;
+#elif defined(__clang__)
+typedef unsigned int operator_size_t;
 #else
 typedef size_t operator_size_t;
 #endif

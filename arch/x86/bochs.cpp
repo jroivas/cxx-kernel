@@ -67,7 +67,6 @@ void BochsFB::initialize()
         return;
 
     m_video = m_pci->readValue32(m_hg, PCI_BAR0) & 0xfffffff0;
-
     // TODO Fix support for memory mapped control
 #if 0
     m_mmio_reg = m_pci->readValue32(m_hg, PCI_BAR2) & 0xfffffff0;
@@ -209,7 +208,7 @@ FB::ModeConfig *BochsFB::query(FB::ModeConfig *prefer)
     for (uint32_t i = PAGE_SIZE; i <= s; i += PAGE_SIZE) {
         p.map(res->base + i, &tmpbase, 0x3);
         if (newbase + i != tmpbase) {
-            Platform::video()->printf("Discontinuation: %x\n",tmpbase);
+            Platform::video()->printf("Discontinuation: %x\n", tmpbase);
             for (int j=0; j<0xffffff; j++) ;
         }
     }
@@ -224,11 +223,13 @@ bool BochsFB::configure(ModeConfig *mode)
 {
     if (mode == nullptr) return false;
 
+    m->lock();
     initialize();
 
     setMode(mode->width, mode->height, mode->depth);
     if (!validateMode(mode->width, mode->height, mode->depth))
         return false;
+    m->unlock();
 
     if (!FB::configure(mode))
         return false;
@@ -253,7 +254,11 @@ void BochsFB::blit()
     if (!m_current) return;
 
     MutexLocker lock(m);
+#if 1
     memcpy_opt(m_current->base, m_buffer, m_size);
+#else
+    Mem::copy(m_current->base, m_buffer, m_size);
+#endif
 }
 
 void BochsFB::clear()

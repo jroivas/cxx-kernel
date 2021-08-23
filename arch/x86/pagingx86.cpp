@@ -433,6 +433,11 @@ bool PagingPrivate::map(ptr_t virt, unsigned int flags, unsigned int cnt)
             if (!mapFrame(p, MapPageUser, MapPageRW)) return false;
         } else {
             if (!mapFrame(p, MapPageKernel, MapPageRW)) return false;
+#if 0
+            uart_print("MAP:");
+            uart_print_uint64_hex(i);
+            uart_print_uint64_hex((uint64_t)p->getAddress());
+#endif
         }
 
         --cnt;

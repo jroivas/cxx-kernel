@@ -49,6 +49,9 @@ void app_proc()
     MM::instance()->free(appname);
 
     while (true) {
+#ifdef ARCH_x86
+        asm volatile ("rep; nop");
+#endif
         //Timer::get()->wait(500);
     }
 }
@@ -60,11 +63,10 @@ void proc1()
 {
     while (true) {
         uart_print("a");
-        mtx.lock();
+        MutexLocker lock(&mtx);
         //Platform::video()->printf("A");
         uart_print("A");
         Platform::timer()->msleep(100);
-        mtx.unlock();
     }
 }
 
@@ -72,11 +74,10 @@ void proc2()
 {
     while (true) {
         uart_print("b");
-        mtx.lock();
+        MutexLocker lock(&mtx);
         //Platform::video()->printf("B");
         uart_print("B");
         Platform::timer()->msleep(1);
-        mtx.unlock();
     }
 }
 #endif
@@ -96,17 +97,19 @@ void kernel_loop()
     b_task->setName("B");
     pm->addTask(b_task);
     b_task->setPriority(1);
-#endif
-#if 1
+#else
     Task *a_task = Platform::task()->create((ptr_val_t)&app_proc, 0, 0);
     a_task->setName("Application main");
     pm->addTask(a_task);
     a_task->setPriority(1);
 #endif
 
+#ifdef FEATURE_GRAPHICS
+    bool has_fb = Platform::fb() != nullptr && Platform::fb()->isConfigured();
+#endif
     while (1) {
 #ifdef FEATURE_GRAPHICS
-        if (Platform::fb() != nullptr && Platform::fb()->isConfigured()) {
+        if (has_fb) {
             Platform::fb()->swap();
             Platform::fb()->blit();
         }
@@ -280,8 +283,8 @@ int Kernel::initFrameBuffer()
 {
 #ifdef FEATURE_GRAPHICS
     FB::ModeConfig conf;
-    conf.width = 800;
-    conf.height = 600;
+    conf.width = 1024;
+    conf.height = 768;
     conf.depth = 24;
 
     if (platform->fb() == nullptr) return 1;

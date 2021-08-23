@@ -29,7 +29,6 @@ private:
     bool m_initialized;
     PCI *m_pci;
     PCI::HeaderGeneric *m_hg;
-    uint32_t m_mmio_reg;
     uint32_t m_video;
     uint16_t m_bank;
 };

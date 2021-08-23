@@ -73,7 +73,7 @@ extern "C" void _main(unsigned long multiboot, unsigned long magic)
 
     if (start_ctors!=nullptr) {
         void (**constructor)() = & start_ctors;
-        while (constructor<&end_ctors) {
+        while (constructor < &end_ctors) {
             ((void (*) (void)) (*constructor)) ();
             ++constructor;
         }

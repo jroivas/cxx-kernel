@@ -6,6 +6,8 @@
 #define SCHEDULING_GRANULARITY (KERNEL_FREQUENCY >> 1)
 #define SCHEDULING_GRANULARITY_MIN (KERNEL_FREQUENCY / 50)
 
+static Spinlock __scheduling_lock;
+
 ProcessManager::ProcessManager()
 {
     for (uint32_t i = 0; i < TASK_POOLS; i++) {
@@ -35,6 +37,7 @@ uint32_t ProcessManager::approxPool(Task *t, uint32_t base)
 void ProcessManager::addTask(Task *t)
 {
     if (t == nullptr) return;
+    __scheduling_lock.lock();
 
     Platform::seizeInterrupts();
 
@@ -55,6 +58,7 @@ void ProcessManager::addTask(Task *t)
     if (current != nullptr) {
         lock = current->getLock();
         if (current->save()) {
+            __scheduling_lock.unlock();
             Platform::continueInterrupts();
             return;
         }
@@ -62,20 +66,25 @@ void ProcessManager::addTask(Task *t)
 
     m_current = t;
 
+    __scheduling_lock.unlock();
     t->switchTo(lock, (ptr_t)&ProcessManager::killer);
 }
 
 void ProcessManager::doKill()
 {
     if (m_current == nullptr) return;
+    __scheduling_lock.lock();
     /* Stop scheduling this one */
     m_tasks->deleteAll(m_current);
+    __scheduling_lock.unlock();
 }
 
 void ProcessManager::killer()
 {
+    __scheduling_lock.lock();
     ProcessManager *pm = Platform::processManager();
     pm->doKill();
+    __scheduling_lock.unlock();
 }
 
 /*
@@ -100,6 +109,7 @@ do {\
 Task *ProcessManager::schedule()
 {
     Platform::seizeInterrupts();
+    __scheduling_lock.lock();
     Task *current = m_current;
 
     if (current != nullptr) {
@@ -111,6 +121,7 @@ Task *ProcessManager::schedule()
     if (tmp == nullptr) {
         /* This should not happen! */
         current->unlock();
+        __scheduling_lock.unlock();
         Platform::continueInterrupts();
         return nullptr;
     }
@@ -119,6 +130,7 @@ Task *ProcessManager::schedule()
     if (next == current) {
         /* Have only one task, continue it */
         current->unlock();
+        __scheduling_lock.unlock();
         Platform::continueInterrupts();
         return current;
     }
@@ -130,6 +142,7 @@ Task *ProcessManager::schedule()
         if (tmp == nullptr) {
             /* This should not happen! */
             current->unlock();
+            __scheduling_lock.unlock();
             Platform::continueInterrupts();
             return nullptr;
         }
@@ -137,6 +150,7 @@ Task *ProcessManager::schedule()
         if (next == current) {
             /* Have only one task, continue it */
             current->unlock();
+            __scheduling_lock.unlock();
             Platform::continueInterrupts();
             return current;
         }
@@ -163,6 +177,7 @@ Task *ProcessManager::schedule()
     if (current->save()) {
         next->unlock();
         current->unlock();
+        __scheduling_lock.unlock();
         Platform::continueInterrupts();
         return current;
     }
@@ -197,6 +212,7 @@ Task *ProcessManager::schedule()
 #endif
 
     next->unlock();
+    __scheduling_lock.unlock();
 
     next->restore(lock);
 
@@ -206,9 +222,11 @@ Task *ProcessManager::schedule()
 void ProcessManager::yield()
 {
     Platform::seizeInterrupts();
+    __scheduling_lock.lock();
     if (m_current != nullptr) {
         m_current->resetSlice();
     }
+    __scheduling_lock.unlock();
     Platform::continueInterrupts();
 }
 

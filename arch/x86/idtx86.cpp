@@ -64,16 +64,6 @@ void IDTX86::installHandler(unsigned int i, idt_handler_t high, idt_handler_t bo
     }
 }
 
-idt_routine_t IDTX86::getRoutine(unsigned int i)
-{
-    return routines[i];
-}
-
-IDTX86::Handler *IDTX86::getHandler(unsigned int i)
-{
-    return handlers[i];
-}
-
 IDTX86::Handler *IDTX86::handler(unsigned int i)
 {
     if (get() == nullptr) return nullptr;
@@ -216,47 +206,41 @@ void IDTX86::initIRQ()
     IRQ_GATE(121);
 }
 
-extern "C" int irq_handler(Regs *regs)
+extern "C" int irq_handler(Regs &regs)
 {
-    if (regs == nullptr) {
-        VideoX86 tmp;
-        tmp.printf("ERROR! IRQ, regs. \n");
-
-        Platform p;
-        p.state()->seizeInterrupts();
-        p.state()->halt();
-        return -1;
-    }
-
-    int (*routine)(Regs *r);
-    routine = nullptr;
-
-    if (regs->int_no < 32) {
+    if (regs.int_no < 32) {
         Port::out(0x20, 0x20);
         return -1;
     }
 
-    routine = IDTX86::get()->routine(regs->int_no);
+#if 1
+    int (*routine)(Regs *r);
+    routine = nullptr;
+
+    routine = IDTX86::get()->routine(regs.int_no);
     int res = 0;
     if (routine != nullptr) {
-        res = routine(regs);
+        res = routine(&regs);
     }
 
-    IDTX86::Handler *handler = IDTX86::handler(regs->int_no);
+#if 1
+    IDTX86::Handler *handler = IDTX86::handler(regs.int_no);
     while (handler != nullptr) {
         if (handler->high_half != nullptr) {
-            handler->high_half(regs->int_no, handler->data);
+            handler->high_half(regs.int_no, handler->data);
         }
         //handler->bottom_half(r->int_no, handler->data); //FIXME
         handler = handler->next;
     }
+#endif
 
-    if (regs->int_no >= 40) {
+    if (regs.int_no >= 40) {
         Port::out(0xA0, 0x20);
     }
 
     Port::out(0x20, 0x20);
     return res;
+#endif
 }
 
 #ifdef ARCH_x86
@@ -273,8 +257,12 @@ static void stacktrace(uint32_t frames)
     StackFrame *frame = nullptr;
     Paging p;
 
+#ifdef __clang__
+    asm("movl %%ebp,%0" : "=r"(frame));
+#else
     register ptr_t *ebp asm("ebp");
     frame = (StackFrame*)ebp;
+#endif
 
     // It's possible pages are not mapped, map them now
     p.identityMap((ptr_val_t)frame);
@@ -293,8 +281,6 @@ static void stacktrace(uint32_t frames)
             break;
         p.identityMap((ptr_val_t)frame->ebp);
         frame = (StackFrame*)frame->ebp;
-        //if (frame)
-        //p.identityMap((ptr_val_t)frame);
     }
 #else
     (void)frames;
@@ -304,49 +290,37 @@ static void stacktrace(uint32_t frames)
 extern ptr_val_t debug_ptr;
 extern ptr_val_t debug_ptr_cr2;
 extern ptr_val_t debug_ptr_eip;
-extern "C" int isr_handler(Regs * regs)
+extern "C" int isr_handler(Regs &regs)
 {
-    if (regs == nullptr) {
-        VideoX86 tmp;
-        tmp.clear();
-        tmp.printf("ERROR! ISR, regs. \n");
-
-        Platform p;
-        p.state()->seizeInterrupts();
-        p.state()->halt();
-        return -1;
-    }
-    if (regs->int_no == 0xE) {
-        uart_print_uint64(regs->eip);
-        uart_print_uint64(regs->eax);
+    (void)stacktrace;
+    if (regs.int_no == 0xE) {
+#if 0
+        uart_print("0xE:\n");
+        uart_print_uint64(regs.eip);
+        uart_print_uint64(regs.eax);
         uart_print_uint64_hex(debug_ptr_eip);
-        (void)stacktrace;
-        stacktrace(10);
-#if 1
-        VideoX86 tmp;
-        tmp.printf("\nERROR! Page fault! error: cr2: %x EIP: %x  \n", debug_ptr_cr2, regs->eip);
-        regs->dump();
 #endif
+        regs.dump();
         Platform p;
         p.state()->seizeInterrupts();
+        while (1);
         p.state()->halt();
         return -1;
     }
-    if (regs->int_no == 6) {
+    if (regs.int_no == 6) {
         VideoX86 tmp;
-        tmp.printf("\nERROR! Invalid instruction: %x: EIP: %x\n", debug_ptr, regs->eip);
-        regs->dump();
-        stacktrace(10);
+        tmp.printf("\nERROR! Invalid instruction: %x: EIP: %x\n", debug_ptr, regs.eip);
+        regs.dump();
+        //stacktrace(10);
         Platform p;
         p.state()->seizeInterrupts();
         p.state()->halt();
         return -1;
     }
-    if (regs->int_no < 32) {
+    if (regs.int_no < 32) {
         // Got it
         VideoX86 tmp;
-        //tmp.clear();
-        tmp.printf("ERROR! Exception %d EIP: %x\n",regs->int_no, regs->eip);
+        tmp.printf("ERROR! Exception %d EIP: %x\n",regs.int_no, regs.eip);
 
         Platform p;
         p.state()->seizeInterrupts();
@@ -354,11 +328,21 @@ extern "C" int isr_handler(Regs * regs)
         return -1;
     }
 
-    IDTX86::Handler *handler = IDTX86::handler(regs->int_no);
+    IDTX86::Handler *handler = IDTX86::handler(regs.int_no);
     while (handler != nullptr) {
-        handler->high_half(regs->int_no, handler->data);
+        handler->high_half(regs.int_no, handler->data);
         //handler->bottom_half(r->int_no, handler->data); //FIXME
         handler = handler->next;
     }
     return 0;
+}
+
+extern ptr_val_t irq_tmp_validate;
+extern ptr_val_t irq_esp_validate;
+extern "C" void irq_handler_error()
+{
+    uart_print("IRQ STACK mistmatch:");
+    uart_print_uint64_hex(irq_tmp_validate);
+    uart_print_uint64_hex(irq_esp_validate);
+    while (1);
 }

@@ -607,7 +607,7 @@ void ATA::init()
             if (hdr != nullptr && (((PCI::HeaderCommon*)hdr)->headerType & 0x1F) == 0) {
                 m_pci->set(i, 0x3C, 0xFE);
                 hdr = m_pci->getCurrent(i);
-                
+
                 PCI::Header00 *h = (PCI::Header00*)hdr;
                 uint16_t cmd = h->common.command;
                 cmd &= ~(1<<10);
